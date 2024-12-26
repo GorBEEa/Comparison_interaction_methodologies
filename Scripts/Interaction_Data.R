@@ -55,3 +55,27 @@ Fig.Y <- ggplot(topflor_df, aes(x = Species, y = interactions)) + geom_bar(stat 
   theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust = 1, size = 12),plot.title = element_text(hjust=0.5))
 
 
+
+## As of now, using UNITE for gut DNA metabarcoding, it looks like genus is the best I can get for taxonomic specificity
+#redo all of this just for Genus level
+
+df.int.genus <- data.frame(Genus = sapply(strsplit(as.character(df.bpasc.int$Planta), " "), `[`, 1))
+
+#Make new figure, Figure.Z
+
+title.int.genus <- expression(paste("Total ", italic("B. pascuorum"), " flower interactions by plant genus 2023 season")) #new plot, give it a title
+fig.z <- ggplot(data = df.int.genus, aes(Genus)) + geom_bar() + 
+  labs(x = "Floral genus", y = "Interaction count 2023 Season", title = title.int.genus) +
+  theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust = 1, size = 12),plot.title = element_text(hjust=0.5))
+
+#I beleive I can now bring in metabarcoding data for comparison
+#barcoding data downloaded from cluster
+
+#upload metabarcoding data and reformat into friendly df
+metab.genus.hits <- read.csv("Data/genus_hits.csv")
+df.metab <- data.frame(metab.genus.hits)
+colnames(df.metab) <- c("tax","count")
+df.metab$genus <- sapply(strsplit(as.character(df.metab$tax), "__"), `[`, 2)
+df.metab.genus <- df.metab[,-1]
+
+#next step is to visualize this. The data are in distinct format from the obs data 

@@ -239,10 +239,11 @@ data.d$Planta <- ifelse(data.d$Planta %in% c('Trifolium pratense'), 'Trifolium p
 data.d$Planta <- ifelse(data.d$Planta %in% c('Trifolium reprens', 'Trifolium medium'), 'Trifolium repens', data.d$Planta)
 
 #is it just one species in Gorbea? .... conflit with Ulex Ulex europaeus in flower count p5s6 
-data.d$Planta <- ifelse(data.f$Planta %in% c('Ulex sp.'), 'Ulex sp.', data.f$Planta)
+data.d$Planta <- ifelse(data.d$Planta %in% c('Ulex sp.'), 'Ulex sp.', data.d$Planta)
 
 #unknown? might be Hutchinsia sp. according to a field note
 #View(data.d[data.d$Planta == 'Unknown White Specie',]) 
+data.d$Planta <- ifelse(data.d$Planta %in% c('"Hutsinsia alta"'), 'Hutchinsia sp', data.d$Planta)
 
 #same species? Vaccinium myrtillus
 #View(data.d[data.d$Planta == 'Vaccinium sp.',]) 
