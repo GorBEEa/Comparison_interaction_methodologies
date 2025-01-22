@@ -1,44 +1,111 @@
-##Script for obtaining two clean lists of genera from both methodologies for completeness comparison
+#Script for comparing ALL taxa from ALL GorBEEa interaction transects with taxa included in reference sequence databases
+#Also analyzes results of metabarcoding against ALL taxa from ALL GorBEEa interaction transects
+
+#import interaction taxa ----
+all.int.taxa <- read_csv(here("Data/int_taxa_list.csv")) #these are all of the plant taxa from all interactions in Gorbeia
+colnames(all.int.taxa) <- c("taxa")
 
 
-#import interaction taxa
-int_taxa_list <- read.csv("Data/int_taxa_list.csv")
-int_taxa_df <-as.data.frame(int_taxa_list)
-colnames(int_taxa_df) <- c("taxa")
 
+#clean plant species names -----
+#throw every data cleaning script we have at it and hope it works
+#you will get lots of warnings about a missing Sitio column -ignore
 
-#import metabarcoding taxa
-bell_taxa_hits <- read.csv("Data/bell_taxa_hits.csv")
-bell_taxa_hits <- bell_taxa_hits[,-1] #get rid of useless column
-bell_taxa_hits <- filter(bell_taxa_hits, bell_taxa_hits[,3] >= 1) #filter out 0 detection hits 
-bell_taxa_df <- as.data.frame(bell_taxa_hits[,-3]) #get rid of counts column
-bell_taxa_df$taxa <- paste(bell_taxa_df$Genus, bell_taxa_df$Species)
-bell_taxa <- as.data.frame(bell_taxa_df[,-c(1,2)])
-colnames(bell_taxa) <-c("taxa")
-
-#clean plant species names
-source("C:/Users/christian.gostout/R/Comparison_interaction_methodologies/Scripts/transectos250_plantas_disp_check.R") #cleans species names
-source("C:/Users/christian.gostout/R/Comparison_interaction_methodologies/Scripts/transect250_genera_check.R")
-int_taxa_df <- data.d2 #cleaned output df
+source(here("Scripts/transectos250_plantas_disp_check.R")) #cleans species names
+source(here("Scripts/transect250_genera_check.R"))
+source(here("Scripts/BP_flower_w_interactions_cleaning_2023.R"))
+all.int.taxa.clean <- data.d2 #cleaned output df
+all.int.taxa.clean <- all.int.taxa.clean %>% distinct(Planta) 
 #write.table(int_taxa_df, "Data/output/gorbeia_interaction_plants.txt")
 
+
+
+#import metabarcoding taxa -----
+
+#chunk from outdated data and outdated method of extracting data of interest
+#bell_taxa_all <- read_csv(here("Data/bell_taxa_hits.csv"))
+#bell_taxa_all <- bell_taxa_all[,-1] #get rid of useless column
+#bell_taxa_all$taxa <- paste(bell_taxa_all$Genus, bell_taxa_all$Species) #make a taxa column with genus and species name
+#bell_taxa_hits <- filter(bell_taxa_all, bell_taxa_all[,3] >= 1) #filter out 0 detection hits 
+#bell_genus_hits <- bell_taxa_hits[,1] #isolate genus (for later use)
+#bell_taxa_hits$taxa <- paste(bell_taxa_hits$Genus, bell_taxa_hits$Species) #make a taxa column with genus and species name
+#bell_taxa <- as.data.frame(bell_taxa_hits[,-c(1,2,3)]) #isolate the list of taxa
+#colnames(bell_taxa) <-c("taxa")
+#output of this chunk: a list of the taxa identified to species level by using the bell seq db in dada2 with the metabarcoding seqs
+
+
+
+# check presence of interaction taxa in metabarcoding results and sequence database ------
+#for now we are not doing this at species level
+
 #check how many times each species from interactions appears in the results from metabarcoding
-cp_int_taxa <- int_taxa_df
-cp_int_taxa$in_bell <- as.integer(int_taxa_df$Planta %in% bell_taxa$taxa)
-
-
-#for confirming specifics: 
-#bell_taxa %>% filter(grepl('Ranunculus', taxa))
+#int_taxa_check <- all.int.taxa.clean
+#int_taxa_check$in_bell <- as.integer(all.int.taxa.clean$Planta %in% bell_taxa$taxa)
 
 ##Try with entire Bell db list
-seq_db_vec <- read_lines("Data/bell_db_taxa.txt")
-seq_db_df <- data.frame(taxa = seq_db_vec)
-colnames(seq_db_df) <- c("taxa")
-cp_int_taxa$in_seq_db <- as.integer(int_taxa_df$Planta %in% seq_db_df$taxa)
-colnames(cp_int_taxa) <- c("Plant", "Occurrence_in_mb_results","occurrence_in_ref_database")
-#write.csv(cp_int_taxa, "Data/output/ref_seq_database_check.csv")
-view(cp_int_taxa)
+#seq_db_vec <- read_lines("Data/genus_species_list.txt")
+#seq_db_df <- data.frame(taxa = seq_db_vec)
+#colnames(seq_db_df) <- c("taxa")
+  
+#See which interaction taxa are in the metabarcoding results and the database taxa list
+#int_taxa_check$in_seq_db <- as.integer(all.int.taxa.clean$Planta %in% seq_db_df$taxa)
+#colnames(int_taxa_check) <- c("Plant", "Occurrence_in_mb_results","occurrence_in_ref_database")
+#write.csv(int_taxa_check, "Data/output/ref_seq_database_check.csv")
+#head(int_taxa_check)
 
 
-#Any missing taxa: 1)check if it makes sense, 2)check if it is in bell fasta
+
+# check presence of interaction genera in mb results and seq database -----
+
+
+#Load list of genera extracted from sequence database
+genus_seq_db_vec <- read_lines("Data/belldb_genus_list.txt") #list of genera CSG created from database fasta in bash
+genus_seq_db_df <- data.frame(genus = genus_seq_db_vec)
+colnames(genus_seq_db_df) <- c("genus")
+
+#generate list of genera from interactions
+int_genera_check <- all.int.taxa.clean
+int_genera_check$genus <- word(all.int.taxa.clean$Planta, 1)
+int_genera_check <- data.frame(genus = int_genera_check$genus)
+
+#check if interaction genera are included in db genera
+int_genera_check$in_seq_db <- as.integer(int_genera_check$genus %in% genus_seq_db_df$genus)
+colnames(int_genera_check) <- c("genus", "occurrence_in_ref_database")
+
+#check if interaction genera are included in metabarcoding genera results using Bell db
+int_genera_check$in_bell <- as.integer(int_genera_check$genus %in% genus.hits.23$genus) 
+#genus.hits.23 must have already been generated by metabarcoding_data.R 
+
+colnames(int_genera_check) <- c("Plant","occurrence_in_ref_database", "Occurrence_in_mb_results")
+
+int_genera_check
+
+
+#check if interaction genera are included in metabarcoding genera results using UNITE
+
+#unite.genus.hits <- read_csv(here("Data/UNITE_genus_hits.csv"))
+#colnames(unite.genus.hits) <- c("tax","count")
+#unite.genus.hits$genus <- sapply(strsplit(as.character(unite.genus.hits$tax), "__"), `[`, 2)
+#unite.genus.hits <- unite.genus.hits[,-1]
+
+#int_genera_check$in_unite <- as.integer(int_genera_check$Plant %in% unite.genus.hits$genus)
+
+#colnames(int_genera_check) <- c("Plant","occurrence_in_ref_database", "Occurrence_in_mb_results", "in_unite_results")
+#head(int_genera_check) or write a csv (done)
+
+
+
+
+
+
+#manual check now that things are more organized -----
+
+#useful search commands for confirming specifics: 
+#int_taxa_check %>% filter(occurrence_in_ref_database == 0)
+#seq_db_df %>% filter(grepl('Ranunculus', taxa))
+
+int_genera_check %>% filter(occurrence_in_ref_database == 0)
+#genus_seq_db_df %>%  filter(grepl('', genus))
+
+#Any missing taxa: 1)check if it makes sense, 2)go back and check if it is in db fasta
 

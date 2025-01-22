@@ -2,9 +2,8 @@
 #Working with abundance plants
 ###########################
 
-data.d2 <- int_taxa_df
-#View(data.d2)
-colnames(data.d2)
+data.d2 <- all.int.taxa
+
 names(data.d2)[1] <- paste("Planta")
 unique(data.d2[c("Planta")])
 
