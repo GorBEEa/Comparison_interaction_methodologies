@@ -31,7 +31,7 @@ title.bpasc.int <- expression(paste("Total ", italic("B. pascuorum"), " interact
 cap.bpasc.int <- expression(paste(bold("Figure X. "), "From April to June, 2023, we surveyed plant-pollinator interactions of 16 transcets in Gorbea Natural Park. Across the field survey season, the bumblebee species,", italic(" B. pascuorum,"), " interacted with X distinct flower species.The most visited flower species was ", italic("Prunella vulgaris.") ))
 
 #make figure
-Figure.X <- ggplot(data = df.bpasc.int, aes(Planta)) + geom_bar() + 
+fig.x <- ggplot(data = df.bpasc.int, aes(Planta)) + geom_bar() + 
   labs(x = "Floral species", y = "Interaction count 2023 Season", title = title.bpasc.int, caption = cap.bpasc.int) + 
   theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust = 1, size = 12),plot.title = element_text(hjust=0.5))
 
@@ -50,7 +50,7 @@ topflor_df <- data.frame(Species = names(topflor), interactions = as.integer(top
 #make figure.y
 title.topflor.int <- expression(paste("Top floral species for ", italic("B. pascuorum"), " interactions (2023) ")) #new plot, give it a title
 
-Fig.Y <- ggplot(topflor_df, aes(x = Species, y = interactions)) + geom_bar(stat = "identity") +
+fig.y <- ggplot(topflor_df, aes(x = Species, y = interactions)) + geom_bar(stat = "identity") +
   labs(x = "Floral species", y = "Interaction count 2023 Season", title = title.topflor.int) +
   theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust = 1, size = 12),plot.title = element_text(hjust=0.5))
 
@@ -67,15 +67,3 @@ title.int.genus <- expression(paste("Total ", italic("B. pascuorum"), " flower i
 fig.z <- ggplot(data = df.int.genus, aes(Genus)) + geom_bar() + 
   labs(x = "Floral genus", y = "Interaction count 2023 Season", title = title.int.genus) +
   theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust = 1, size = 12),plot.title = element_text(hjust=0.5))
-
-#I beleive I can now bring in metabarcoding data for comparison
-#barcoding data downloaded from cluster
-
-#upload metabarcoding data and reformat into friendly df
-metab.genus.hits <- read.csv("Data/genus_hits.csv")
-df.metab <- data.frame(metab.genus.hits)
-colnames(df.metab) <- c("tax","count")
-df.metab$genus <- sapply(strsplit(as.character(df.metab$tax), "__"), `[`, 2)
-df.metab.genus <- df.metab[,-1]
-
-#next step is to visualize this. The data are in distinct format from the obs data 
