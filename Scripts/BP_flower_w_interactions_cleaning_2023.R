@@ -265,6 +265,7 @@ data.f$Planta <- ifelse(data.f$Planta %in% c('Scorzonera sp.'), 'Scorzonera humi
 #s14p6 check to see if it can be narrowed down to species
 data.f$Planta <- ifelse(data.f$Planta %in% c('Scrophularia sp.'), 'Scrophularia alpestris', data.f$Planta) #alpestris
 data.f$Planta <- ifelse(data.f$Planta %in% c('Scrophularia sp.2'), 'SI (Scrophularia cf. blanca)', data.f$Planta) #blanca maybe Teucrium scorodonia
+#Asked Poza - he's not sure
 data.f$Planta <- ifelse(data.f$Planta %in% c('Scrophularia sp.3'), 'Scrophularia alpestris', data.f$Planta) #alpestris
 
 #View(data.f[data.f$Planta == 'Sedum sp.',])

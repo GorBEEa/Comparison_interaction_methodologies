@@ -1,4 +1,4 @@
-#Analyzing metabarcoding data by Bombus factors (Period, Site, Size/age, etc.)
+#Script for manipulating and processing 2023 B. pascuorum ITS2 plant metabarcoding data
 
 library(readr)
 library(here)
@@ -34,7 +34,12 @@ bp.asv.genus.2023 <- bp.asv.tax.2023 %>%
 
 #condense two of these to have genera names assigned to asvs in samples
 bp.plant.asvNs.w.genus.2023 <- right_join(bp.asv.counts.2023,bp.asv.genus.2023, by = "asv_id")
-bp.plant.asvNs.w.genus.2023 %>% relocate(genus, .after = asv_id) #this + use head() just to make sure it worked
+bp.plant.asvNs.w.genus.2023 %>% relocate(genus, .after = asv_id) #this is just to look and make sure it worked
+binary.plant.asvNs.w.genus.2023 <- bp.plant.asvNs.w.genus.2023 %>% 
+  relocate(genus, .after = asv_id) %>% 
+  mutate(across(GBP23010301M_ITS_P48:last_col(), ~ifelse(. > 0, 1, 0))) %>% 
+  mutate(indiv.w.signal = rowSums(across(GBP23010301M_ITS_P48:GBP23041104M_ITS_P48))) %>% 
+  relocate(indiv.w.signal, .after = genus)
 
 #transpose to be able to combine with other BP data
 bp.plant.asvgn.wide.2023 <- bp.plant.asvNs.w.genus.2023 %>%
@@ -45,6 +50,10 @@ bp.plant.asvgn.wide.2023 <- bp.plant.asvNs.w.genus.2023 %>%
 
 #combine all
 bp23.genomic.specs <- right_join(bp.2023, bp.plant.asvgn.wide.2023, by = "sample")
+bp23.genomic.specs <- bp23.genomic.specs %>%  
+  filter(type != "negative") %>% #only sample data
+  mutate(period = str_extract(period, "\\d+"), period = as.integer(period)) %>% 
+  mutate(site = str_extract(site, "\\d+"), site = as.integer(site))
 #21.01.2025 the 2023 bp data are missing intertegular length
 
 
@@ -53,7 +62,8 @@ bp23.genomic.specs <- right_join(bp.2023, bp.plant.asvgn.wide.2023, by = "sample
 
 #get total number of genera by sample column
 genera <- bp23.genomic.specs %>%
-  select(where(is.numeric,-c(year,quant_reading))) %>%
+  select(where(is.numeric)) %>%
+  select(-c(year,quant_reading)) %>% 
   names()
 
 bp23.genomic.analys <- bp23.genomic.specs %>% 
@@ -62,16 +72,36 @@ bp23.genomic.analys <- bp23.genomic.specs %>%
   ungroup() %>% 
   relocate(gen_diversity, .after = quant_reading)
 
-#get number of genera detected by period, should be replicable for site if needed
+bp23.genomic.binary <- bp23.genomic.analys %>% 
+  mutate(across(Abelmoschus:last_col(), ~ifelse(. > 0, 1, 0))) %>% 
+  mutate(genera.by.indiv = rowSums(across(Abelmoschus:last_col()))) %>% 
+  relocate(genera.by.indiv, .after = gen_diversity ) #looks like I already did this, but the results are different.....
+  
+
+#get number of genera detected by period
 bp23.genomic.periods <- bp23.genomic.analys %>% 
-  pivot_longer(cols = all_of(genera), names_to = "genus", values_to = "count") %>% #easier with re-tranposed data
-  filter(count > 0) %>% #filter for detected genera
+  pivot_longer(cols = Abelmoschus:last_col(), names_to = "genus", values_to = "count") %>%
+  filter(count > 0) %>% 
   group_by(period, genus) %>% 
-  slice(1) %>%  #COUNT ONLY 1 DETECTION PER PERIOD
+  slice(1) %>%  # Count only 1 detection per period
   group_by(period) %>% 
   summarise(n_samples = n_distinct(sample),
-            n_genera_detected = n_distinct(genus))
+            n.genera = n_distinct(genus),
+            .groups = 'drop')
   
+
+#get number of genera detected by site
+bp23.genomic.sites <- bp23.genomic.analys %>% 
+       pivot_longer(cols = Abelmoschus:last_col(), names_to = "genus", values_to = "count") %>%
+       filter(count > 0) %>% 
+       group_by(site, genus) %>% 
+       slice(1) %>%  # Count only 1 detection per site
+       group_by(site) %>% 
+       summarise(n_samples = n_distinct(sample),
+                 n.genera = n_distinct(genus),
+                 .groups = 'drop')
+
+
 
 #extract genus hits from here
 
@@ -83,6 +113,7 @@ genus.hits.23 <- bp.plant.asvNs.w.genus.2023 %>%
   filter(if_any(where(is.numeric), ~. > 0)) %>% #should already be the difinitive list, but if any genera still have 0 detections, remove them
   ungroup %>% 
   select(genus) #create just a list of the genera
+
 
 
   

@@ -62,8 +62,16 @@ fig.y <- ggplot(topflor_df, aes(x = Species, y = interactions))+
 #redo all of this just for genus level
 title.int.genus <- expression(paste("Total ", italic("B. pascuorum"), " flower interactions by plant genus 2023 season")) #new plot, give it a title
 
-df.int.genus <- data.frame(genus = sapply(strsplit(as.character(bp.interactions.clean$Planta), " "), `[`, 1))
+bp23.genus.int <- bp.interactions.clean %>% 
+  mutate(genus = sapply(strsplit(as.character(Planta), " "), `[`, 1)) %>% 
+  relocate(genus, .after = Planta) %>% 
+  filter(genus != "SI") %>% 
+  rename(period = Periodo) %>% 
+  rename(site = Sitio)
+  
 
+df.int.genus <- data.frame(genus = sapply(strsplit(as.character(bp.interactions.clean$Planta), " "), `[`, 1))
+df.int.genus <- df.int.genus %>% filter(genus != "SI")
 
 fig.z <- df.int.genus %>% 
   count(genus) %>% 
@@ -76,15 +84,22 @@ fig.z <- df.int.genus %>%
 
 #analyze BP interactions by periods, later the same can be done using gut data ------
 
-#data
-bp.interactions.clean$flor_genus <- sapply(strsplit(as.character(bp.interactions.clean$Planta), " "), `[`, 1) #add interaction flower genus column
-bp.interactions.clean %>% 
-  mutate(int.point = Sitio/Sitio) #NOT WORKING but maybe not important
-
 #Summarize the number of occurences of the genera by period and site
-gen.ev <- bp.interactions.clean %>% 
-  group_by(Sitio, Periodo) %>% 
-  summarise(n.genera = n_distinct(flor_genus))
+gen.ev <- bp23.genus.int %>% 
+  group_by(site, period) %>% #can call just one of Period or Site also
+  summarise(n.genera = n_distinct(genus))
+
+int.genus.by.period <-  bp23.genus.int %>% 
+  group_by(period) %>% 
+  mutate(period = as.integer(period)) %>% 
+  summarise(n.genera = as.integer(n_distinct(genus)))
+
+int.genus.by.site <-  bp23.genus.int %>% 
+  group_by(site) %>% 
+  mutate(site = as.integer(site)) %>% 
+  summarise(n.genera = n_distinct(genus))
+
+
 
 #try a GLM to see if there is interaction between diversity, period, and site
 genera.mixd.glm <- glm(n.genera ~ Sitio * Periodo, data = gen.ev, family = 'poisson')
