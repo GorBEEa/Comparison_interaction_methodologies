@@ -60,22 +60,21 @@ bp23.genomic.specs <- bp23.genomic.specs %>%
 #manipulate and analyze data ------
 
 
-#get total number of genera by sample column
+#get a list of the genera names detected by metabarcoding
 genera <- bp23.genomic.specs %>%
   select(where(is.numeric)) %>%
-  select(-c(year,quant_reading)) %>% 
+  select(-c(year,quant_reading, period, site)) %>% 
   names()
+#this isn't used for anything anymore, but might be nice to have later
 
-bp23.genomic.analys <- bp23.genomic.specs %>% 
-  rowwise() %>% 
-  mutate(gen_diversity = sum(c_across(all_of(genera)) > 0)) %>% 
-  ungroup() %>% 
-  relocate(gen_diversity, .after = quant_reading)
+
+bp23.genomic.analys <- bp23.genomic.specs #a copy for manipulation
+
 
 bp23.genomic.binary <- bp23.genomic.analys %>% 
-  mutate(across(Abelmoschus:last_col(), ~ifelse(. > 0, 1, 0))) %>% 
+  mutate(across(Abelmoschus:last_col(), ~ifelse(. > 0, 1, 0))) %>% #read count data to presence absence 1s and 0s
   mutate(genera.by.indiv = rowSums(across(Abelmoschus:last_col()))) %>% 
-  relocate(genera.by.indiv, .after = gen_diversity ) #looks like I already did this, but the results are different.....
+  relocate(genera.by.indiv, .after = quant_reading)
   
 
 #get number of genera detected by period

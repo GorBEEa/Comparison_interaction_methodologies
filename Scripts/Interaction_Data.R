@@ -102,7 +102,7 @@ int.genus.by.site <-  bp23.genus.int %>%
 
 
 #try a GLM to see if there is interaction between diversity, period, and site
-genera.mixd.glm <- glm(n.genera ~ Sitio * Periodo, data = gen.ev, family = 'poisson')
+genera.mixd.glm <- glm(n.genera ~ site * period, data = gen.ev, family = 'poisson')
 #summary(genera.mixd.glm)
 #right now nothing looks good because there are very few data only for BP
 #Poisson is an acceptable start for family, us Dharma or model_dashboard 
@@ -112,11 +112,11 @@ genera.mixd.glm <- glm(n.genera ~ Sitio * Periodo, data = gen.ev, family = 'pois
 #Natxo's feedback is that a gaussian approach could also be appropriate
 #but that otherwise this is a valid way of looking at the data
 
-boxplot(n.genera ~ Periodo, data = gen.ev)
+boxplot(n.genera ~ period, data = gen.ev)
 
 #try anova way, e.g.
 dist_gen <- vegdist(gen.ev$n.genera, method = 'bray')
-genova <- betadisper(d = dist_gen, group = gen.ev$Periodo)
+genova <- betadisper(d = dist_gen, group = gen.ev$period)
 genova.out <- anova(genova)
 
 

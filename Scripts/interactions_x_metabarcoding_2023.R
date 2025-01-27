@@ -1,6 +1,9 @@
 #Analyzing interaction and metabarcoding data together 
 #Interaction_Data.R and metabarcoding_data.R should already be sourced
 
+library(vegan)
+library(mvabund)
+
 
 detected.int.genus <- df.int.genus %>% distinct(genus) #Clean list of genera from BP interactions & interaction count
 detected.int.genus$mb.detected <- as.integer(detected.int.genus$genus %in% genus.hits.23$genus) #presence absence comparison
@@ -76,8 +79,40 @@ ggplot(long.gen.by.sites, aes(site, n.genera, fill = method)) +
 
 
 
+#PERMANOVA time --------
+#first an NMDS visual
+
+#simplify factors/data involved
+#can do for data with read counts (bp23.genomic.analys) or presence absence (bp23.genomic.binary)
+#just change these three lines
+
+site <- as.factor(bp23.genomic.binary$site)
+period <- as.factor(bp23.genomic.binary$period)
+gut.flowers <- bp23.genomic.binary %>% select(Abelmoschus:last_col())
+
+
+#NMDS visualization
+dist.gut.flowers <- vegdist(gut.flowers, method = "jaccard") #calc distance between communities for later stat analysis
+gut.flower.mds <- metaMDS(gut.flowers, distance = "jaccard")
+#plot(gut.flower.mds$points, col = site, pch = 16)
+plot(gut.flower.mds$points, col = period, pch = 16)
+
+
+#permanova test (play with ~ variables to understand more)
+permanova.gut.flowers <- adonis2(gut.flowers ~ period*site, permutations = 9999, method = "jaccard")
+summary(permanova.gut.flowers)
+permanova.gut.flowers
 
 
 
-
+# Alternative analysis: many glm -----
+#extracting effect of site or period for each species using multiple glm
+#this might not be possible with our data and my computer
+gut.flowers.spp <- mvabund(
+  bp23.genomic.analys %>% 
+    select(Abelmoschus:last_col())
+  )
+mglm.gut.flowers <- manyglm(gut.flowers.spp ~ bp23.genomic.analys$period, family = "")
+#anova(mglm.gut.flowers, p.uni="adjusted") #this takes a lot of computing power
+#should show deviation and probable significance of effect for each species
 
