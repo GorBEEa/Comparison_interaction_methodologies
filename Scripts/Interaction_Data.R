@@ -100,8 +100,31 @@ int.genus.by.site <-  bp23.genus.int %>%
   summarise(n.genera = n_distinct(genus))
 
 
+#organize interaction data for all in 1 analysis with metabarcoding and flower count data ------
 
-#try a GLM to see if there is interaction between diversity, period, and site
+bp23.int4stats <- bp23.genus.int %>% #isolate the data of interest from all clean BP interaction data
+  select(period, site, genus) 
+bp23.int4stats.wide <- bp23.int4stats %>% #transpose to match the mb data format
+  group_by(period, site, genus) %>% 
+  summarise(count = n(), .groups = "drop") %>% 
+  pivot_wider(
+    id_cols = c(period, site),
+    names_from = genus,
+    values_from = count,
+    values_fill = 0
+  )
+
+bp23.int4stats.wide.binary <- bp23.int4stats.wide %>% #make binary version
+  mutate(across(Lathyrus:last_col(), ~ifelse(. > 0, 1, 0))) %>% 
+  mutate(method = rep("interaction")) %>% #add a methodology identifier for next analysis
+  relocate(method, .after = "site")
+
+
+
+
+
+
+#try a GLM to see if there is interaction between diversity, period, and site -------
 genera.mixd.glm <- glm(n.genera ~ site * period, data = gen.ev, family = 'poisson')
 #summary(genera.mixd.glm)
 #right now nothing looks good because there are very few data only for BP

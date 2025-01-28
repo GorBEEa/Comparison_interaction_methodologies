@@ -73,7 +73,7 @@ bp23.genomic.analys <- bp23.genomic.specs #a copy for manipulation
 
 bp23.genomic.binary <- bp23.genomic.analys %>% 
   mutate(across(Abelmoschus:last_col(), ~ifelse(. > 0, 1, 0))) %>% #read count data to presence absence 1s and 0s
-  mutate(genera.by.indiv = rowSums(across(Abelmoschus:last_col()))) %>% 
+  mutate(genera.by.indiv = rowSums(across(Abelmoschus:last_col()))) %>%  #add a sum of genera for diversity by inv sample
   relocate(genera.by.indiv, .after = quant_reading)
   
 
@@ -114,7 +114,12 @@ genus.hits.23 <- bp.plant.asvNs.w.genus.2023 %>%
   select(genus) #create just a list of the genera
 
 
+#organize metabarcoding data for all in 1 analysis with interaction and flower count data ------
 
+bp23.genomic.binary4stats <- bp23.genomic.binary %>% 
+  select(period, site, Abelmoschus:last_col()) %>% 
+  mutate(method = rep("metabarcoding")) %>% #add a methodology identifier for next analysis
+  relocate(method, .after = "site")
   
 
 

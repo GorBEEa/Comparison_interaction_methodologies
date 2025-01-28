@@ -3,6 +3,9 @@
 
 library(vegan)
 library(mvabund)
+library(easystats)
+library(kableExtra)
+
 
 
 detected.int.genus <- df.int.genus %>% distinct(genus) #Clean list of genera from BP interactions & interaction count
@@ -27,24 +30,31 @@ observed.mb.genus$int.detected <- as.integer(observed.mb.genus$genus %in% df.int
 observed.mb.genus %>% filter(int.detected == 1)
 #All 27 genera observed by interactions were detected by metabarcoding
 
+
+
 #and which detected by metabarcoding were observed in flower counts
 observed.mb.genus$flower.count.detected <- as.integer(observed.mb.genus$genus %in% flower.count.genera$flower_genus)
 observed.mb.genus %>% filter(flower.count.detected == 1)
 #Of the 160 genera detected by metabarcoding, only 63 were even observed in the transects
 
 
-
-
+cp.flower.count.genera <- flower.count.genera
+cp.flower.count.genera$in.mb <- as.integer(flower.count.genera$flower_genus %in% genus.hits.23$genus)
+in.fc.not.mb <- cp.flower.count.genera %>% filter(in.mb == 0)
 
 #Diversity by periods ----- 
+
+method.colors <- c("c_n_genera_flower_count" ="slategrey",
+                   "a_n_genera_interactions" = "lightblue",
+                   "b_n_genera_metabarcoding" = "forestgreen") #set some universal colors for this project
 
 compare.gen.by.periods <- right_join(int.genus.by.period, bp23.genomic.periods, by = "period") %>% 
   right_join(., flower.genus.by.period, by = "period")
 compare.gen.by.periods <- compare.gen.by.periods %>% 
   select(c(period, n.genera.x, n.genera.y, n.flower.count.genera)) %>% 
-  rename(n_genera_metabarcoding = n.genera.y) %>% 
-  rename(n_genera_interactions = n.genera.x) %>% 
-  rename(n_genera_flower_count = n.flower.count.genera)
+  rename(b_n_genera_metabarcoding = n.genera.y) %>% #the abc is for organizing bar on my plot by alphaetical order
+  rename(a_n_genera_interactions = n.genera.x) %>% 
+  rename(c_n_genera_flower_count = n.flower.count.genera)
   
 
 long.gen.by.periods <- compare.gen.by.periods %>% 
@@ -53,7 +63,10 @@ long.gen.by.periods <- compare.gen.by.periods %>%
   rename(n.genera = value)
 
 ggplot(long.gen.by.periods, aes(period, n.genera, fill = method)) +
-  geom_col(position = "Dodge") 
+  geom_col(position = "Dodge") +
+  scale_x_continuous(breaks = 1:6, labels = 1:6) +
+  scale_fill_manual(values = method.colors) +
+  theme(axis.ticks.x = element_blank())
 
 
 
@@ -63,9 +76,10 @@ ggplot(long.gen.by.periods, aes(period, n.genera, fill = method)) +
 compare.gen.by.sites <- right_join(int.genus.by.site, bp23.genomic.sites, by = "site") %>% 
   right_join(., flower.genus.by.site, by = "site")
 compare.gen.by.sites <- compare.gen.by.sites %>% 
-  rename(mb_detections = n.genera.y) %>% 
-  rename(int_detections = n.genera.x) %>% 
-  select(c(site, int_detections, mb_detections, n.flower.count.genera))
+  rename(b_n_genera_metabarcoding = n.genera.y) %>% 
+  rename(a_n_genera_interactions = n.genera.x) %>% 
+  rename(c_n_genera_flower_count = n.flower.count.genera) %>% 
+  select(c(site, b_n_genera_metabarcoding, a_n_genera_interactions, c_n_genera_flower_count))
 
 long.gen.by.sites <- compare.gen.by.sites %>% 
   pivot_longer(!site) %>% 
@@ -73,9 +87,13 @@ long.gen.by.sites <- compare.gen.by.sites %>%
   rename(n.genera = value)
 
 ggplot(long.gen.by.sites, aes(site, n.genera, fill = method)) +
-  geom_col(position = "Dodge")
+  geom_col(position = "Dodge") +
+  scale_x_continuous(breaks = 1:16, labels = 1:16) +
+  scale_fill_manual(values = method.colors) +
+  theme(axis.ticks.x = element_blank())
 
 #ok these analyses are interesting for context at least
+#could later go deeper and look at diversity by period across sites
 
 
 
@@ -99,10 +117,9 @@ plot(gut.flower.mds$points, col = period, pch = 16)
 
 
 #permanova test (play with ~ variables to understand more)
-permanova.gut.flowers <- adonis2(gut.flowers ~ period*site, permutations = 9999, method = "jaccard")
+permanova.gut.flowers <- adonis2(gut.flowers ~ period*site, permutations = 9999, method = "jaccard", by = "terms")
 summary(permanova.gut.flowers)
 permanova.gut.flowers
-
 
 
 # Alternative analysis: many glm -----
@@ -115,4 +132,43 @@ gut.flowers.spp <- mvabund(
 mglm.gut.flowers <- manyglm(gut.flowers.spp ~ bp23.genomic.analys$period, family = "")
 #anova(mglm.gut.flowers, p.uni="adjusted") #this takes a lot of computing power
 #should show deviation and probable significance of effect for each species
+
+
+
+#statistical analysis of methodologies ------
+
+#bring together binary presence absence data from interactions and metabarcoding into one table
+
+bp23.all.binary <- full_join(bp23.int4stats.wide.binary, bp23.genomic.binary4stats) %>% 
+  full_join(.,bp23.fc4stats.wide.binary) %>% 
+  replace(is.na(bp23.all.binary), 0)
+
+#simplify factors/data involved
+#can do for data with read counts (bp23.genomic.analys) or presence absence (bp23.genomic.binary)
+#just change these three lines
+
+site <- as.factor(bp23.all.binary$site)
+period <- as.factor(bp23.all.binary$period)
+methodology <- as.factor(bp23.all.binary$method)
+all.flowers <- bp23.all.binary %>% 
+  select(!c(site, period, method)) %>% 
+  replace(is.na(all.flowers), 0)
+
+#NMDS visualiztion
+dist.all.flowers <- vegdist(all.flowers, method = "bray") #calc distance between communities for later stat analysis
+all.flower.mds <- metaMDS(all.flowers, distance = "bray")
+#plot(gut.flower.mds$points, col = site, pch = 16)
+plot(all.flower.mds$points, col = method.colors[as.numeric(method)], pch = 16)
+legend("topleft", legend = levels(method), col = method.colors, pch = 16, title = "Methodology")
+
+#analysis
+permanova.all.data <- adonis2(all.flowers ~ site*period*methodology, permutations = 9999, method = "bray", by = "terms")
+
+permanova.all.data %>% kbl(caption =
+                             "this is my caption. it is unfortunate that I have to write it here, but oh well." 
+                           ) %>% 
+  kable_minimal(full_width = F, html_font = "Cambria")
+
+
+
 
