@@ -35,10 +35,6 @@ fig.x <- ggplot(data = bp.interactions.clean, aes(Planta)) + geom_bar() +
   labs(x = "Floral species", y = "Interaction count 2023 Season", title = title.bpasc.int, caption = cap.bpasc.int) + 
   theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust = 1, size = 12),plot.title = element_text(hjust=0.5))
 
-#after several hours I still have no idea how to make a caption wrap acceptably to the figure size
-#obviously that figure is overwhelming
-
-
 
 
 # Top observed floral interactions ----- 

@@ -47,4 +47,3 @@ bp23.fc4stats.wide.binary <- bp23.fc4stats.wide %>% #make binary version
   mutate(method = rep("count")) %>% #add a methodology identifier for next analysis
   relocate(method, .after = "site")
 
-

@@ -207,7 +207,8 @@ ggplot(nmds_points, aes(x = NMDS1, y = NMDS2, color = Methodology)) +
 
 
 #statistical analysis
-permanova.all.data <- adonis2(all.flowers ~ site*period*methodology, permutations = 9999, method = "bray", by = "terms")
+#silenced to run script faster
+#permanova.all.data <- adonis2(all.flowers ~ site*period*methodology, permutations = 9999, method = "bray", by = "terms")
 
 permanova.all.data %>% kbl(caption =
                              "this is my caption!" 

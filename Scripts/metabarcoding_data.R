@@ -8,6 +8,8 @@ library(tidyselect)
 library(easystats)
 library(visreg)
 library(vegan)
+library(viridis)
+library(report)
 
 
 #Load Data -----
@@ -59,23 +61,35 @@ bp23.genomic.specs <- bp23.genomic.specs %>%
 
 #manipulate and analyze data ------
 
+#extract genus hits from here
 
-#get a list of the genera names detected by metabarcoding
-genera <- bp23.genomic.specs %>%
-  select(where(is.numeric)) %>%
-  select(-c(year,quant_reading, period, site)) %>% 
-  names()
-#this isn't used for anything anymore, but might be nice to have later
+genus.hits.23 <- bp.plant.asvNs.w.genus.2023 %>%
+  select(!asv_id) %>% #simplify working data
+  group_by(genus) %>% 
+  summarise(across(where(is.numeric), sum)) %>% #here we already see that 160 genera were detected in 2023
+  rowwise() %>% 
+  filter(if_any(where(is.numeric), ~. > 0)) %>% #should already be the difinitive list, but if any genera still have 0 detections, remove them
+  ungroup %>% 
+  select(genus) #create just a list of the genera
 
 
 bp23.genomic.analys <- bp23.genomic.specs #a copy for manipulation
+bp23.genomic.analys$sample <- str_split_fixed(bp23.genomic.analys$sample, "_", 2)[,1] #remove sequencing plate labels
+bp23.genomic.analys <- left_join(bp23.genomic.analys, bp23.size, by = "sample")
+bp23.genomic.analys <- bp23.genomic.analys %>% relocate(intertegular_dist_mm, .after = quant_reading) %>% 
+  relocate(abdomen_length_mm, .after = intertegular_dist_mm) %>% 
+  relocate(total_length_mm, .after = abdomen_length_mm)
+#NOTE: NAs exist for bombus measurements
+#use df %>% na.replace(0) if needed
 
 
 bp23.genomic.binary <- bp23.genomic.analys %>% 
   mutate(across(Abelmoschus:last_col(), ~ifelse(. > 0, 1, 0))) %>% #read count data to presence absence 1s and 0s
   mutate(genera.by.indiv = rowSums(across(Abelmoschus:last_col()))) %>%  #add a sum of genera for diversity by inv sample
   relocate(genera.by.indiv, .after = quant_reading)
-  
+
+
+#Analyses by period, site, bombus size, etc. ----
 
 #get number of genera detected by period
 bp23.genomic.periods <- bp23.genomic.analys %>% 
@@ -102,16 +116,33 @@ bp23.genomic.sites <- bp23.genomic.analys %>%
 
 
 
-#extract genus hits from here
+#plant DNA diversity by bombus size (using intertegular distance)
+ggplot(data = bp23.genomic.binary, aes(period, genera.by.indiv, size = intertegular_dist_mm)) +
+  geom_point(alpha = 0.6, color = "skyblue4") +
+  theme(legend.key.size = unit(1, 'cm')) +
+  scale_x_continuous(breaks = 1:6, labels = 1:6) +
+  scale_size_continuous(range = c(1, 6)) +
+  labs(x = "Period",
+       y = "Detected plant genera",
+       size = "Intertegular Distance")
 
-genus.hits.23 <- bp.plant.asvNs.w.genus.2023 %>%
-  select(!asv_id) %>% #simplify working data
-  group_by(genus) %>% 
-  summarise(across(where(is.numeric), sum)) %>% #here we already see that 160 genera were detected in 2023
-  rowwise() %>% 
-  filter(if_any(where(is.numeric), ~. > 0)) %>% #should already be the difinitive list, but if any genera still have 0 detections, remove them
-  ungroup %>% 
-  select(genus) #create just a list of the genera
+#This isn't as informative as I had hoped
+
+ggplot(data = bp23.genomic.binary, aes(intertegular_dist_mm, genera.by.indiv)) +
+  geom_point(alpha = 0.6, color = "skyblue4") +
+  geom_smooth(method = "lm")
+
+#model.diversity.x.size <- lm(genera.by.indiv ~ intertegular_dist_mm, data = bp23.genomic.binary)
+#summary(model.diversity.x.size) #in this model a bee with intertegular of 0 would have
+#37 plant genera in its gut. nah. Center.
+
+c.bp23.genomic.binary <-  bp23.genomic.binary %>% mutate(c_intertegular_dist_mm = intertegular_dist_mm - 4.91) #4.91 is the mean intertegular distance for 2023
+c.model.diversity.x.size <- lm(genera.by.indiv ~ c_intertegular_dist_mm, data = c.bp23.genomic.binary)
+report(c.model.diversity.x.size) #intercept corresponding to an int_dist of 4.91 in reality
+#relationship weak but significant, but is the model worthy?
+check_model(c.model.diversity.x.size) #Looks decent, but maybe there are other factors...
+
+
 
 
 #organize metabarcoding data for all in 1 analysis with interaction and flower count data ------
