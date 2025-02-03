@@ -31,7 +31,6 @@ observed.mb.genus %>% filter(int.detected == 1)
 #All 27 genera observed by interactions were detected by metabarcoding
 
 
-
 #and which detected by metabarcoding were observed in flower counts
 observed.mb.genus$flower.count.detected <- as.integer(observed.mb.genus$genus %in% flower.count.genera$flower_genus)
 observed.mb.genus %>% filter(flower.count.detected == 1)
@@ -41,6 +40,8 @@ observed.mb.genus %>% filter(flower.count.detected == 1)
 cp.flower.count.genera <- flower.count.genera
 cp.flower.count.genera$in.mb <- as.integer(flower.count.genera$flower_genus %in% genus.hits.23$genus)
 in.fc.not.mb <- cp.flower.count.genera %>% filter(in.mb == 0)
+
+
 
 #Diversity by periods ----- 
 
@@ -143,7 +144,7 @@ gut.flowers.spp <- mvabund(
 
 
 
-#statistical analysis of methodologies ------
+#Statistical analysis of methodologies ------
 
 #bring together binary presence absence data from interactions and metabarcoding into one table
 
@@ -163,13 +164,17 @@ all.flowers <- bp23.all.binary %>%
 all.flowers <- all.flowers %>% replace(is.na(all.flowers), 0)
 
 #NMDS visualiztion
+
+#prepare NMDS data
 dist.all.flowers <- vegdist(all.flowers, method = "bray") #calc distance between communities for later stat analysis
 all.flower.mds <- metaMDS(all.flowers, distance = "bray")
-#plot(gut.flower.mds$points, col = site, pch = 16)
-plot(all.flower.mds$points, col = method.colors[as.numeric(methodology)], pch = 16)
-legend("topleft", legend = levels(methodology), col = method.colors, pch = 16, title = "Methodology")
 
-#in ggplot2
+#Quick plot option
+#plot(all.flower.mds$points, col = method.colors[as.numeric(methodology)], pch = 16)
+#legend("topleft", legend = levels(methodology), col = method.colors, pch = 16, title = "Methodology")
+
+#Nice plot option - used in EcoFlor poster
+
 nmds_points <- as.data.frame(all.flower.mds$points)
 colnames(nmds_points) <- c("NMDS1", "NMDS2")
 nmds_points$Methodology <- methodology
@@ -206,14 +211,14 @@ ggplot(nmds_points, aes(x = NMDS1, y = NMDS2, color = Methodology)) +
   )
 
 
-#statistical analysis
+#statistical analysis using PERMANOVA
 #silenced to run script faster
 #permanova.all.data <- adonis2(all.flowers ~ site*period*methodology, permutations = 9999, method = "bray", by = "terms")
 
-permanova.all.data %>% kbl(caption =
-                             "this is my caption!" 
-                           ) %>% 
-  kable_minimal(full_width = F, html_font = "Cambria")
+#permanova.all.data %>% kbl(caption =
+ #                            "this is my caption!" 
+  #                         ) %>% 
+  #kable_minimal(full_width = F, html_font = "Cambria")
 
 
 
@@ -222,7 +227,9 @@ permanova.all.data %>% kbl(caption =
 
 
 
-#Poster figure ------
+#Figure: metabarcoding results and co-occurence in other methods ------
+#figure used in EcoFlor poster
+
 detects.by.genus <- as.data.frame(colSums(bp23.genomic.binary[12:171])) %>% 
   rownames_to_column(var = "genus")
 
@@ -264,3 +271,6 @@ fig.poster <- ggplot(top.detects.comparison, aes(x = reorder(genus, -n.sample.de
   ggtitle(fig.poster.title) 
 
 fig.poster
+
+
+

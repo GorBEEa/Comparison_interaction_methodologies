@@ -10,6 +10,7 @@ library(visreg)
 library(vegan)
 library(viridis)
 library(report)
+library(DHARMa)
 
 
 #Load Data -----
@@ -27,6 +28,8 @@ bp.asv.tax.2023 <- bp.asv.tax.2023 %>%
   rename(genus = Genus)
 bp.asv.genus.2023 <- bp.asv.tax.2023 %>% 
     select(asv_id,genus)
+
+bp23.size <- read_csv(here("Data/2023_bombus_size_data.csv"))
 
 #for unite or other db results where the tax lvel is written as k__,p__ ....
 #bp.asv.genus.2023 <- bp.asv.tax.2023 %>% 
@@ -117,20 +120,22 @@ bp23.genomic.sites <- bp23.genomic.analys %>%
 
 
 #plant DNA diversity by bombus size (using intertegular distance)
-ggplot(data = bp23.genomic.binary, aes(period, genera.by.indiv, size = intertegular_dist_mm)) +
+fig.diversity.pd.intglr <- ggplot(data = bp23.genomic.binary, aes(period, genera.by.indiv, size = intertegular_dist_mm)) +
   geom_point(alpha = 0.6, color = "skyblue4") +
   theme(legend.key.size = unit(1, 'cm')) +
   scale_x_continuous(breaks = 1:6, labels = 1:6) +
   scale_size_continuous(range = c(1, 6)) +
   labs(x = "Period",
        y = "Detected plant genera",
-       size = "Intertegular Distance")
+       size = "Intertegular Distance 
+       (mm)")
 
 #This isn't as informative as I had hoped
 
-ggplot(data = bp23.genomic.binary, aes(intertegular_dist_mm, genera.by.indiv)) +
+fig.diversity.x.intglr <- ggplot(data = bp23.genomic.binary, aes(intertegular_dist_mm, genera.by.indiv)) +
   geom_point(alpha = 0.6, color = "skyblue4") +
-  geom_smooth(method = "lm")
+  geom_smooth(method = "lm", color = "forestgreen") +
+  theme_classic()
 
 #model.diversity.x.size <- lm(genera.by.indiv ~ intertegular_dist_mm, data = bp23.genomic.binary)
 #summary(model.diversity.x.size) #in this model a bee with intertegular of 0 would have
@@ -141,7 +146,7 @@ c.model.diversity.x.size <- lm(genera.by.indiv ~ c_intertegular_dist_mm, data = 
 report(c.model.diversity.x.size) #intercept corresponding to an int_dist of 4.91 in reality
 #relationship weak but significant, but is the model worthy?
 check_model(c.model.diversity.x.size) #Looks decent, but maybe there are other factors...
-
+DHARMa::testResiduals(c.model.diversity.x.size)
 
 
 
