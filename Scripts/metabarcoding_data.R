@@ -59,7 +59,7 @@ bp23.genomic.specs <- bp23.genomic.specs %>%
   filter(type != "negative") %>% #only sample data
   mutate(period = str_extract(period, "\\d+"), period = as.integer(period)) %>% 
   mutate(site = str_extract(site, "\\d+"), site = as.integer(site))
-#21.01.2025 the 2023 bp data are missing intertegular length
+#this dataset does not contain Bombus size, see bp23.genomic.analys below
 
 
 #manipulate and analyze data ------
@@ -94,6 +94,10 @@ bp23.genomic.binary <- bp23.genomic.analys %>%
 
 #Analyses by period, site, bombus size, etc. ----
 
+
+
+#Analysis by period -----
+
 #get number of genera detected by period
 bp23.genomic.periods <- bp23.genomic.analys %>% 
   pivot_longer(cols = Abelmoschus:last_col(), names_to = "genus", values_to = "count") %>%
@@ -105,6 +109,71 @@ bp23.genomic.periods <- bp23.genomic.analys %>%
             n.genera = n_distinct(genus),
             .groups = 'drop')
   
+#is there a significant diference in genera by period detected by stats?
+boxplot(genera.by.indiv ~ period, data = bp23.genomic.binary)
+dist_alphadiv <- vegdist(bp23.genomic.binary$genera.by.indiv, method = 'bray')
+disp_anova_a_period <- betadisper(d = dist_alphadiv, group = bp23.genomic.binary$period)
+anova_a_period <- anova(disp_anova_a_period)
+#report(anova_a_period)
+#looks like the answer is no, but composition yes could change between periods right? 
+#(ie. LJ's figure from ecoflor poster)
+#explore with permanova
+
+
+#simplify factors/data involved
+site <- as.factor(bp23.all.binary$site)
+period <- as.factor(bp23.all.binary$period)
+all.plants <- bp23.all.binary %>% 
+  select(!c(site, period, method))  
+all.plants <- all.plants %>% replace(is.na(all.plants), 0)
+
+#prepare NMDS data
+dist.all.plants <- vegdist(all.plants, method = "bray") #calc distance between communities for later stat analysis
+all.plant.mds <- metaMDS(all.plants, distance = "bray")
+
+a_period_nmds_points <- as.data.frame(all.plant.mds$points)
+colnames(a_period_nmds_points) <- c("NMDS1", "NMDS2")
+a_period_nmds_points$period <- period
+
+#prep polgons
+polygon_data <- a_period_nmds_points %>%
+       group_by(period) %>%
+       slice(chull(NMDS1, NMDS2))
+
+#NMDS plot
+expression(paste("NMDS visualization of plant DNA diversity by period"))
+
+fig.NMDS.gutplant.period <- ggplot(nmds_points, aes(x = NMDS1, y = NMDS2, color = period)) +
+       geom_polygon(data = polygon_data, 
+                                       aes(fill = period, color = NULL), 
+                                       alpha = 0.2, 
+                                       show.legend = FALSE) +
+       geom_point(size = 3) +
+  theme_classic() +  
+       labs(
+             title = NMDS.title,
+             x = "NMDS1",
+             y = "NMDS2",
+             color = "period"
+         ) +
+       theme(plot.title = element_text(hjust=0.5),
+                         legend.position = c(0.13, 0.85)
+                   ) +
+  scale_color_viridis_d() +
+  scale_fill_viridis_d(alpha = 0.2)
+
+#permanova test of this comparison
+permanova.alpha.periods <- adonis2(all.plants ~ period, permutations = 9999, method = "bray", by = "terms")
+permanova.alpha.periods %>% 
+  kbl(caption = "PERMANOVA analysis of temporal effects on observed plant DNA diversity from Bombus gut extracts") %>% 
+  kable_minimal(full_width = F, html_font = "Cambria")
+
+#weak but significant change across periods
+
+
+
+
+#Analysis by site -----
 
 #get number of genera detected by site
 bp23.genomic.sites <- bp23.genomic.analys %>% 
@@ -116,6 +185,11 @@ bp23.genomic.sites <- bp23.genomic.analys %>%
        summarise(n_samples = n_distinct(sample),
                  n.genera = n_distinct(genus),
                  .groups = 'drop')
+
+
+
+
+
 
 
 
@@ -139,7 +213,7 @@ fig.diversity.x.intglr <- ggplot(data = bp23.genomic.binary, aes(intertegular_di
 
 #model.diversity.x.size <- lm(genera.by.indiv ~ intertegular_dist_mm, data = bp23.genomic.binary)
 #summary(model.diversity.x.size) #in this model a bee with intertegular of 0 would have
-#37 plant genera in its gut. nah. Center.
+#37 plant genera in its gut. Biologically doesn't make sense - center data
 
 c.bp23.genomic.binary <-  bp23.genomic.binary %>% mutate(c_intertegular_dist_mm = intertegular_dist_mm - 4.91) #4.91 is the mean intertegular distance for 2023
 c.model.diversity.x.size <- lm(genera.by.indiv ~ c_intertegular_dist_mm, data = c.bp23.genomic.binary)

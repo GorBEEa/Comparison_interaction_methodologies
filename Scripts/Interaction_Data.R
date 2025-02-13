@@ -124,14 +124,14 @@ bp23.int4stats.wide.binary <- bp23.int4stats.wide %>% #make binary version
 genera.mixd.glm <- glm(n.genera ~ site * period, data = gen.ev, family = 'poisson')
 #summary(genera.mixd.glm)
 #right now nothing looks good because there are very few data only for BP
-#Poisson is an acceptable start for family, us Dharma or model_dashboard 
+#Poisson is an acceptable start for family, us DHarma or model_dashboard 
 #to check residuals and see if model should be adjusted
 
 
 #Natxo's feedback is that a gaussian approach could also be appropriate
 #but that otherwise this is a valid way of looking at the data
 
-boxplot(n.genera ~ period, data = gen.ev)
+fig.s <- boxplot(n.genera ~ period, data = gen.ev)
 
 #try anova way, e.g.
 dist_gen <- vegdist(gen.ev$n.genera, method = 'bray')

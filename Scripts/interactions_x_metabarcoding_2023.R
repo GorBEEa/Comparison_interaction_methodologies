@@ -156,8 +156,9 @@ bp23.all.binary <- full_join(bp23.int4stats.wide.binary, bp23.genomic.binary4sta
 #can do for data with read counts (bp23.genomic.analys) or presence absence (bp23.genomic.binary)
 #just change these three lines
 
-site <- as.factor(bp23.all.binary$site)
-period <- as.factor(bp23.all.binary$period)
+#silenced lines moved to metabarcoding_data.R
+#site <- as.factor(bp23.all.binary$site)
+#period <- as.factor(bp23.all.binary$period)
 methodology <- as.factor(bp23.all.binary$method)
 all.flowers <- bp23.all.binary %>% 
   select(!c(site, period, method))  
@@ -215,10 +216,10 @@ ggplot(nmds_points, aes(x = NMDS1, y = NMDS2, color = Methodology)) +
 #silenced to run script faster
 #permanova.all.data <- adonis2(all.flowers ~ site*period*methodology, permutations = 9999, method = "bray", by = "terms")
 
-#permanova.all.data %>% kbl(caption =
- #                            "this is my caption!" 
-  #                         ) %>% 
-  #kable_minimal(full_width = F, html_font = "Cambria")
+permanova.all.data %>% 
+  kbl(caption = "PERMANOVA analysis of spatiotemporal effects on observed plant diversity across three field survey methodologies:
+      Bombus gut DNA content, Interaction transects, and Floral diversity") %>% 
+  kable_minimal(full_width = F, html_font = "Cambria")
 
 
 
