@@ -34,13 +34,13 @@ observed.mb.genus %>% filter(int.detected == 1)
 #and which detected by metabarcoding were observed in flower counts
 observed.mb.genus$flower.count.detected <- as.integer(observed.mb.genus$genus %in% flower.count.genera$flower_genus)
 observed.mb.genus %>% filter(flower.count.detected == 1)
-#Of the 160 genera detected by metabarcoding, only 63 were even observed in the transects
+#Of the 160 genera detected by metabarcoding, only 69 were even observed in the transects
 
-
+#inverse of above - how many flower count genera were not in metabarcoding results?
 cp.flower.count.genera <- flower.count.genera
 cp.flower.count.genera$in.mb <- as.integer(flower.count.genera$flower_genus %in% genus.hits.23$genus)
 in.fc.not.mb <- cp.flower.count.genera %>% filter(in.mb == 0)
-
+#48 unique genera
 
 
 #Diversity by periods ----- 
@@ -231,12 +231,12 @@ permanova.all.data %>%
 #Figure: metabarcoding results and co-occurence in other methods ------
 #figure used in EcoFlor poster
 
-detects.by.genus <- as.data.frame(colSums(bp23.genomic.binary[12:171])) %>% 
-  rownames_to_column(var = "genus")
+detects.by.genus <- as.data.frame(colSums(bp23.genomic.binary[15:185])) %>% 
+  rownames_to_column(var = "genus") %>% 
+  rename(n.sample.detections = "colSums(bp23.genomic.binary[15:185])")
 
 detects.comparison <- right_join(detects.by.genus,observed.mb.genus, by = "genus") 
 detects.comparison <- detects.comparison[-161,] %>% 
-  rename(n.sample.detections = "colSums(bp23.genomic.binary[12:171])") %>% 
   mutate(detected.fc.int = int.detected + flower.count.detected)
 detects.comparison <- detects.comparison[order(detects.comparison$n.sample.detections, decreasing = TRUE) , ] %>% 
   mutate(color_group = case_when(
@@ -247,8 +247,12 @@ detects.comparison <- detects.comparison[order(detects.comparison$n.sample.detec
   ))
 
 #select top occurrences
-top.detects.comparison <- detects.comparison[1:31 ,]
-top.detects.comparison <- top.detects.comparison %>% filter(genus != "Symphytum")
+top.detects.comparison <- detects.comparison[1:34 ,]
+top.detects.comparison <- top.detects.comparison %>% #remove mis-IDs or contaminants
+  filter(genus != "Dioscorea") %>% 
+  filter(genus != "Leptospermum") %>% 
+  filter(genus != "Spondias") %>% 
+  filter(genus != "Pleuropterus")
 
 #plot
 fig.poster.title <- expression(paste("Top plant genera detected in", italic(" B. pascuorum "), "genetic sampling 2023"))
@@ -260,9 +264,9 @@ fig.poster <- ggplot(top.detects.comparison, aes(x = reorder(genus, -n.sample.de
                                "Flower Only" = "skyblue2",
                                "Neither" = "grey80"),
                     labels = c(
-                      "Both" = "Interactions + diversity survey",
+                      "Both" = "Interactions + floral resource survey",
                       "Int Only" = "Interactions only",
-                      "Flower Only" = "Diversity survey only",
+                      "Flower Only" = "Floral resource survey only",
                       "Neither" = "Metabarcoding only")) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         plot.title = element_text(hjust=0.5),

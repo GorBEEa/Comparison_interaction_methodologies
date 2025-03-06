@@ -19,10 +19,10 @@ library(DHARMa)
 bp.2023 <- read_tsv(here("Data/2023_BP_metab_sample_info.tsv")) #bp sample info
 bp.2023 <- bp.2023 %>% rename(sample = sample_name)
 
-bp.asv.counts.2023 <- read_tsv(here("Data/2023_plantv2_bell_ASVs_counts.tsv")) #asv counts
+bp.asv.counts.2023 <- read_tsv(here("Data/2023_plant_GorBEEa_ASVs_counts.tsv")) #asv counts
 bp.asv.counts.2023 <- bp.asv.counts.2023 %>% rename(asv_id = ...1)
 
-bp.asv.tax.2023 <- read_tsv(here("Data/2023_plantv2_bell_ASVs_taxonomy.tsv")) #taxa associated with asvs
+bp.asv.tax.2023 <- read_tsv(here("Data/2023_plant_GorBEEa_ASVs_taxonomy.tsv")) #taxa associated with asvs
 bp.asv.tax.2023 <- bp.asv.tax.2023 %>% 
   rename(asv_id = ...1) %>% 
   rename(genus = Genus)
@@ -43,7 +43,7 @@ bp.plant.asvNs.w.genus.2023 %>% relocate(genus, .after = asv_id) #this is just t
 binary.plant.asvNs.w.genus.2023 <- bp.plant.asvNs.w.genus.2023 %>% 
   relocate(genus, .after = asv_id) %>% 
   mutate(across(GBP23010301M_ITS_P48:last_col(), ~ifelse(. > 0, 1, 0))) %>% 
-  mutate(indiv.w.signal = rowSums(across(GBP23010301M_ITS_P48:GBP23041104M_ITS_P48))) %>% 
+  mutate(indiv.w.signal = rowSums(across(GBP23010301M_ITS_P48:GBP23061405M_ITS_P48))) %>% 
   relocate(indiv.w.signal, .after = genus)
 
 #transpose to be able to combine with other BP data
@@ -120,7 +120,7 @@ anova_a_period <- anova(disp_anova_a_period)
 #explore with permanova
 
 
-#simplify factors/data involved
+#simplify factors/data involved THIS SHOULD BE IN INTERACTIONS x METABARCODING (bp23.all.binary is from there)
 site <- as.factor(bp23.all.binary$site)
 period <- as.factor(bp23.all.binary$period)
 all.plants <- bp23.all.binary %>% 
