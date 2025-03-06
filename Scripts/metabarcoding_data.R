@@ -11,23 +11,43 @@ library(vegan)
 library(viridis)
 library(report)
 library(DHARMa)
+library(phyloseq) ; packageVersion("phyloseq")
 
 
 #Load Data -----
 #For now we are going to work with Bell db analyzed results @ genus level
 
-bp.2023 <- read_tsv(here("Data/2023_BP_metab_sample_info.tsv")) #bp sample info
-bp.2023 <- bp.2023 %>% rename(sample = sample_name)
+# Original load data flow directly from dada2 CSVs: ------
 
-bp.asv.counts.2023 <- read_tsv(here("Data/2023_plant_GorBEEa_ASVs_counts.tsv")) #asv counts
-bp.asv.counts.2023 <- bp.asv.counts.2023 %>% rename(asv_id = ...1)
+#bp.2023 <- read_tsv(here("Data/2023_BP_metab_sample_info.tsv")) #bp sample info
+#bp.2023 <- bp.2023 %>% rename(sample = sample_name)
 
-bp.asv.tax.2023 <- read_tsv(here("Data/2023_plant_GorBEEa_ASVs_taxonomy.tsv")) #taxa associated with asvs
-bp.asv.tax.2023 <- bp.asv.tax.2023 %>% 
-  rename(asv_id = ...1) %>% 
-  rename(genus = Genus)
-bp.asv.genus.2023 <- bp.asv.tax.2023 %>% 
-    select(asv_id,genus)
+#bp.asv.counts.2023 <- read_tsv(here("Data/2023_plant_GorBEEa_ASVs_counts.tsv")) #asv counts
+#bp.asv.counts.2023 <- bp.asv.counts.2023 %>% rename(asv_id = ...1)
+
+#bp.asv.tax.2023 <- read_tsv(here("Data/2023_plant_GorBEEa_ASVs_taxonomy.tsv")) #taxa associated with asvs
+#bp.asv.tax.2023 <- bp.asv.tax.2023 %>% 
+ # rename(asv_id = ...1) %>% 
+  #rename(genus = Genus)
+#bp.asv.genus.2023 <- bp.asv.tax.2023 %>% 
+ #   select(asv_id,genus)
+
+#Working with data cleaned with decontam
+
+plant.decontam.05 <- readRDS(here("Data/gbp23.plant.decontam.0.5.RDS"))
+
+count_tab.cl <- otu_table(plant.decontam.05)
+#count_tab.cl <- as.data.frame(plant.decontam.05) #can't? do this?
+
+sample_data_tab.cl <- sample_data(plant.decontam.05)
+sample_data_tab.cl <- as.data.frame(sample_data_tab.cl)
+samples <- rownames(sample_data_tab.cl)
+bp.2023 <- sample_data_tab.cl %>% mutate(sample_name = samples)
+
+tax_table.cl <- tax_table(plant.decontam.05)
+
+
+
 
 bp23.size <- read_csv(here("Data/2023_bombus_size_data.csv"))
 
@@ -67,7 +87,7 @@ bp23.genomic.specs <- bp23.genomic.specs %>%
 #extract genus hits from here
 
 genus.hits.23 <- bp.plant.asvNs.w.genus.2023 %>%
-  select(!asv_id) %>% #simplify working data
+  #select(!asv_id) %>% #simplify working data
   group_by(genus) %>% 
   summarise(across(where(is.numeric), sum)) %>% #here we already see that 160 genera were detected in 2023
   rowwise() %>% 

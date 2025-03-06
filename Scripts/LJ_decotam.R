@@ -7,13 +7,14 @@ library(phyloseq) ; packageVersion("phyloseq")
 library(ggplot2); packageVersion("ggplot2")
 
 # Load data
-count_tab <- read.table("Data/2023_plantv2_bell_ASVs_counts.tsv", header=T, row.names=1,
+count_tab <- read.table(here("Data/2023_plant_GorBEEa_ASVs_counts.tsv"), header=T, row.names=1,
                         check.names=F, sep="\t")
 
-tax_tab <- as.matrix(read.table("Data/2023_plantv2_bell_ASVs_taxonomy.tsv", header=T,
+tax_tab <- as.matrix(read.table(here("Data/2023_plant_GorBEEa_ASVs_taxonomy.tsv"), header=T,
                                 row.names=1, check.names=F, sep="\t"))
 
-sample_info_tab <- read.delim("Data/2023_BP_metab_sample_info.tsv", header=T, row.names=1, check.names=F, sep="\t")
+sample_info_tab <- read.delim(here("Data/2023_BP_metab_sample_info.tsv"),
+                                   header=T, row.names=1, check.names=F, sep="\t")
 
 # Setting the color column to be of type "character", which helps later
 sample_info_tab$color_p <- as.character(sample_info_tab$color_p)
@@ -47,7 +48,7 @@ df$Index <- seq(nrow(df))
 plot <- ggplot(data=df, aes(x=Index, y=LibrarySize, color=type)) + 
   geom_point() +
   geom_hline(yintercept = max_negative, linetype = "dashed", color = "black")
-ggsave("results/library_size_plot.pdf", plot = plot, device = "pdf", width = 8, height = 6, units = "in")
+ggsave(here("results/library_size_plot.pdf", plot = plot, device = "pdf", width = 8, height = 6, units = "in"))
 plot
 
 ###########################################################################################################################
@@ -57,16 +58,16 @@ plot
 
 # Identify Contaminants - Frequency 
 # LJ --> I think is not doing correctly. not with read frequency, is has to be done with DNA concentration
+#our quant_read values are actually read frequencies
 
-#contamdf.freq <- isContaminant(physeq, method="frequency", conc="quant_reading")
+#contamdf.freq <- isContaminant(physeq_pruned, method="frequency", conc="quant_reading")
 #head(contamdf.freq)
 #table(contamdf.freq$contaminant)
 #head(which(contamdf.freq$contaminant))
 
-#plot_frequency(physeq, taxa_names(physeq)[c(1,6)], conc="quant_reading") + 
-#xlab("DNA Concentration (PicoGreen fluorescent intensity)")
+#plot_frequency(physeq_pruned, taxa_names(physeq)[c(1,6)], conc="quant_reading") + 
+#  xlab("DNA Concentration (PicoGreen fluorescent intensity)")
 ##########################################################################################################################
-
 
 ## 1.b) Identify Contaminants - Prevalence      ####
 
@@ -111,16 +112,17 @@ for (threshold in names(results)) {
 }
 
 # Check each threshold individually:
-Th <- 0.05 # Replace by your value
+Th <- 0.5 # Replace by your value
 results[[as.character(Th)]]$contaminant_table
 results[[as.character(Th)]]$contaminant_ids
 head(results[[as.character(Th)]]$dataframe, n = 20)
 
 # Run with your selected threshold value
-contamdf.prev <- isContaminant(physeq, method="prevalence", neg="is.neg", threshold=0.01)
+contamdf.prev <- isContaminant(physeq, method="prevalence", neg="is.neg", threshold=0.5)
 table(contamdf.prev$contaminant)
 head(contamdf.prev, n=20)
 head(which(contamdf.prev$contaminant))
+contamdf.prev %>% filter(contaminant == "TRUE")
 
 # Make phyloseq object of presence-absence in negative controls and true samples
 physeq.pa <- transform_sample_counts(physeq, function(abund) 1*(abund>0))
@@ -153,5 +155,25 @@ table(sample_data(ps.nocont)$type)
 table(sample_data(ps.gbp23.plant)$type)
 
 # Save the ps.gbp23 object to an RDS file
-saveRDS(ps.gbp23.plant, file = "Data/ps.gbp23.plant.RDS")
+saveRDS(ps.gbp23.plant, file = here("Data/gbp23.plant.decontam.0.5.RDS"))
+
+
+
+
+
+#See which contaminant ASVs are related to which taxa ------------------------------------------
+
+# contaminants_ID<- _your_contamdf_ID_ %>% filter(contaminant == "TRUE")
+#asv_genus_pairs <-bp.plant.asvNs.w.genus.2023 %>% select(c(asv_id, genus))
+#asv_ids <- rownames(contaminants_ID)
+#contaminants_ID <- contaminants_ID %>% mutate(asv_id = asv_ids)
+#asv_taxa_contaminants_ID <- left_join(contaminants_ID,asv_genus_pairs, by = "asv_id")
+
+contamdf.prev
+contaminants <- contamdf.prev %>% filter(contaminant == "TRUE")
+asv_genus_pairs <-bp.plant.asvNs.w.genus.2023 %>% select(c(asv_id, genus))
+asv_ids <- rownames(contaminants)
+contaminants <- contaminants %>% mutate(asv_id = asv_ids)
+asv_taxa_contaminants <- left_join(contaminants,asv_genus_pairs, by = "asv_id")
+
 
