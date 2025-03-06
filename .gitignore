@@ -1,3 +1,7 @@
+# Ignore temporary and system files
+*.tmp
+.DS_Store
+
 .Rproj.user
 .Rhistory
 .RData
