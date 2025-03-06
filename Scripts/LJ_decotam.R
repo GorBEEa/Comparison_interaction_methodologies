@@ -144,14 +144,14 @@ ps.cont <- prune_taxa(contamdf.prev$contaminant, physeq)
 ## 1.d) Remove negative controls from phyloseq object     ####
 
 # Filter out "negative" samples based on the "type" variable in sample_data
-ps.gbp23 <- prune_samples(sample_data(ps.nocont)$type == "sample", ps.nocont)
+ps.gbp23.plant <- prune_samples(sample_data(ps.nocont)$type == "sample", ps.nocont)
 # Verify the number of samples and variables in the new object
-ps.gbp23
+ps.gbp23.plant
 # Check the original sample types
 table(sample_data(ps.nocont)$type)
 # Check the filtered sample types
-table(sample_data(ps.gbp23)$type)
+table(sample_data(ps.gbp23.plant)$type)
 
 # Save the ps.gbp23 object to an RDS file
-saveRDS(ps.gbp23, file = "Data/ps.gbp23.RDS")
+saveRDS(ps.gbp23.plant, file = "Data/ps.gbp23.plant.RDS")
 
