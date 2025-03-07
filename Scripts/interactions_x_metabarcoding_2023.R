@@ -231,9 +231,9 @@ permanova.all.data %>%
 #Figure: metabarcoding results and co-occurence in other methods ------
 #figure used in EcoFlor poster
 
-detects.by.genus <- as.data.frame(colSums(bp23.genomic.binary[15:185])) %>% 
+detects.by.genus <- as.data.frame(colSums(bp23.genomic.binary[16:186])) %>% #THR COLUMNS SELECTED HERE ARE IMPORTANT FOR THE RESULTS YOU SEE. Make sure that they include all taxa
   rownames_to_column(var = "genus") %>% 
-  rename(n.sample.detections = "colSums(bp23.genomic.binary[15:185])")
+  rename(n.sample.detections = "colSums(bp23.genomic.binary[16:186])")
 
 detects.comparison <- right_join(detects.by.genus,observed.mb.genus, by = "genus") 
 detects.comparison <- detects.comparison[-161,] %>% 
@@ -247,12 +247,11 @@ detects.comparison <- detects.comparison[order(detects.comparison$n.sample.detec
   ))
 
 #select top occurrences
-top.detects.comparison <- detects.comparison[1:34 ,]
-top.detects.comparison <- top.detects.comparison %>% #remove mis-IDs or contaminants
-  filter(genus != "Dioscorea") %>% 
-  filter(genus != "Leptospermum") %>% 
-  filter(genus != "Spondias") %>% 
-  filter(genus != "Pleuropterus")
+top.detects.comparison <- detects.comparison[1:30 ,]
+top.detects.comparison <- top.detects.comparison #%>% #remove mis-IDs? 
+ # filter(genus != "Dioscorea") %>% 
+ # filter(genus != "Spondias") %>% 
+  #filter(genus != "Pleuropterus")
 
 #plot
 fig.poster.title <- expression(paste("Top plant genera detected in", italic(" B. pascuorum "), "genetic sampling 2023"))

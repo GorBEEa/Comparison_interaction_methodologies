@@ -30,22 +30,32 @@ library(phyloseq) ; packageVersion("phyloseq")
  # rename(asv_id = ...1) %>% 
   #rename(genus = Genus)
 #bp.asv.genus.2023 <- bp.asv.tax.2023 %>% 
- #   select(asv_id,genus)
+    #select(asv_id,genus)
 
 #Working with data cleaned with decontam
 
-plant.decontam.05 <- readRDS(here("Data/gbp23.plant.decontam.0.5.RDS"))
+plant.decontam.05 <- readRDS(here("Data/gbp23.plant.decontam.0.5.RDS")) #all data in phyloseq format from strict decontam filter (th = 0.5)
+plant.decontam.01 <- readRDS(here("Data/gbp23.plant.decontam.0.1.RDS")) #all data in phyloseq format from less strict decontam filter (th = 0.1)
 
-count_tab.cl <- otu_table(plant.decontam.05)
-#count_tab.cl <- as.data.frame(plant.decontam.05) #can't? do this?
+#split into dataframes used in this analysis
 
-sample_data_tab.cl <- sample_data(plant.decontam.05)
+bp.asv.counts.2023 <- as.data.frame(otu_table(plant.decontam.01))
+asvs <- rownames(bp.asv.counts.2023)
+bp.asv.counts.2023 <- bp.asv.counts.2023 %>% mutate(asv_id = asvs) %>% relocate(asv_id)
+
+sample_data_tab.cl <- sample_data(plant.decontam.01)
 sample_data_tab.cl <- as.data.frame(sample_data_tab.cl)
 samples <- rownames(sample_data_tab.cl)
-bp.2023 <- sample_data_tab.cl %>% mutate(sample_name = samples)
+bp.2023 <- data.frame(sample = samples, sample_data_tab.cl, stringsAsFactors = FALSE)
 
-tax_table.cl <- tax_table(plant.decontam.05)
-
+tax_table.cl <- as.data.frame(tax_table(plant.decontam.01))
+asvs2 <- rownames(tax_table.cl)
+bp.asv.tax.2023 <- tax_table.cl%>% 
+  rename(genus = Genus) %>% 
+  mutate(asv_id = asvs2) %>% 
+  relocate(asv_id)
+bp.asv.genus.2023 <- bp.asv.tax.2023 %>% 
+  select(asv_id,genus)
 
 
 
