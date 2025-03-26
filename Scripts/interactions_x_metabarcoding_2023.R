@@ -106,22 +106,24 @@ ggplot(long.gen.by.sites, aes(site, n.genera, fill = method)) +
 
 
 
-#PERMANOVA time --------
-#first an NMDS visual
+#Statistical analyses between presence absence matrices --------
 
-#simplify factors/data involved
+#This appears to be an analysis just of metabarcoding data and is maybe also done in the corresponding script
+
+
 #can do for data with read counts (bp23.genomic.analys) or presence absence (bp23.genomic.binary)
 #just change these three lines
-
-site <- as.factor(bp23.genomic.binary$site)
-period <- as.factor(bp23.genomic.binary$period)
-gut.flowers <- bp23.genomic.binary %>% select(Abelmoschus:last_col())
+#simplify factors/data involved
+stat.clean.bp23.genomic.binary <- bp23.genomic.binary[rowSums(bp23.genomic.binary[, 16:ncol(bp23.genomic.binary)], na.rm = TRUE) > 0, ]
+site <- as.factor(stat.clean.bp23.genomic.binary$site)
+period <- as.factor(stat.clean.bp23.genomic.binary$period)
+gut.flowers <- stat.clean.bp23.genomic.binary %>% select(Abelmoschus:last_col())
 
 
 #NMDS visualization
-dist.gut.flowers <- vegdist(gut.flowers, method = "jaccard") #calc distance between communities for later stat analysis
-gut.flower.mds <- metaMDS(gut.flowers, distance = "jaccard")
-#plot(gut.flower.mds$points, col = site, pch = 16)
+dist.gut.flowers <- vegdist(gut.flowers, method = "raup", binary = TRUE) #calc distance between communities for later stat analysis
+gut.flower.mds <- metaMDS(gut.flowers, distance = "raup", binary = TRUE)
+plot(gut.flower.mds$points, col = site, pch = 16)
 plot(gut.flower.mds$points, col = period, pch = 16)
 
 
@@ -150,31 +152,51 @@ gut.flowers.spp <- mvabund(
 
 bp23.all.binary <- full_join(bp23.int4stats.wide.binary, bp23.genomic.binary4stats) %>% 
   full_join(.,bp23.fc4stats.wide.binary) 
-#bp23.all.binary <- replace(is.na(bp23.all.binary), 0) #this isn't working well. You have to create bp23.all.binary and then recreate with this part
 
-#simplify factors/data involved
-#can do for data with read counts (bp23.genomic.analys) or presence absence (bp23.genomic.binary)
-#just change these three lines
+#This part gets messy....
 
-#silenced lines moved to metabarcoding_data.R
-#site <- as.factor(bp23.all.binary$site)
-#period <- as.factor(bp23.all.binary$period)
-methodology <- as.factor(bp23.all.binary$method)
-all.flowers <- bp23.all.binary %>% 
-  select(!c(site, period, method))  
-all.flowers <- all.flowers %>% replace(is.na(all.flowers), 0)
+#vegan outputs do not like a few of the "samples" that have no species detections at all
+#make a new version of all of the binary data that is "cleaned" of these lines
+#but first see what they are/what they mean
+
+#clean out zero sum columns in binary data for statistical analyses
+#for.stats.bp23.all.binary <- bp23.all.binary #a copy for cleaning
+clean4stats.bp23.all.binary <- bp23.all.binary #another copy for alternative cleaning
+#clean4stats.bp23.all.binary <- for.stats.bp23.all.binary[rowSums(for.stats.bp23.all.binary[, 4:ncol(for.stats.bp23.all.binary)], na.rm = TRUE) > 0, ] #keeps only the rows that have greater than 0 sums in binary presence absence
+clean4stats.bp23.all.binary <- clean4stats.bp23.all.binary %>% select(!"NA") #remove NA column
+
+
+#simplify factors for nMDS 
+site <- as.factor(clean4stats.bp23.all.binary$site)
+period <- as.factor(clean4stats.bp23.all.binary$period)
+methodology <- as.factor(clean4stats.bp23.all.binary$method)
+all.plants <- clean4stats.bp23.all.binary %>% 
+  select(!c(site, period, method))
+#which(rowSums(all.plants) == 0) #there are two rows with 0 ASVs - sequencing failure 114, and 163
+all.plants.clean <- all.plants %>% 
+  replace(is.na(all.plants), 0) %>%
+  filter(rowSums(.) != 0)
+#which(rowSums(all.plants) == 0) #there are two rows with 0 ASVs - sequencing failure 114, and 163
+
+
 
 #NMDS visualiztion
-
 #prepare NMDS data
-dist.all.flowers <- vegdist(all.flowers, method = "bray") #calc distance between communities for later stat analysis
-all.flower.mds <- metaMDS(all.flowers, distance = "bray")
+
+dist.all.plants <- vegdist(all.plants.clean, method = "raup") #calc distance between communities for later stat analysis
+all.plant.mds <- metaMDS(all.plants.clean, distance = "raup") #STRESS PROBLEM
+
+nmds_points <- as.data.frame(all.plant.mds$points)
+colnames(nmds_points) <- c("NMDS1", "NMDS2")
+nmds_points$method <- methodology
 
 #Quick plot option
-#plot(all.flower.mds$points, col = method.colors[as.numeric(methodology)], pch = 16)
+plot(nmds_points, col = method.colors[as.numeric(methodology)], pch = 16)
 #legend("topleft", legend = levels(methodology), col = method.colors, pch = 16, title = "Methodology")
 
-#Nice plot option - used in EcoFlor poster
+
+
+#Nice plot option - used in EcoFlor poster... when
 
 nmds_points <- as.data.frame(all.flower.mds$points)
 colnames(nmds_points) <- c("NMDS1", "NMDS2")

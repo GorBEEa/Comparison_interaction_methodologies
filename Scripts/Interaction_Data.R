@@ -31,7 +31,7 @@ title.bpasc.int <- expression(paste("Total ", italic("B. pascuorum"), " interact
 cap.bpasc.int <- expression(paste(bold("Figure X. "), "From April to June, 2023, we surveyed plant-pollinator interactions of 16 transcets in Gorbea Natural Park. Across the field survey season, the bumblebee species,", italic(" B. pascuorum,"), " interacted with X distinct flower species.The most visited flower species was ", italic("Prunella vulgaris.") ))
 
 #make figure
-fig.x <- ggplot(data = bp.interactions.clean, aes(Planta)) + geom_bar() + 
+fig.x <- ggplot(data = bp.interactions.clean, aes(x = reorder(Planta, -table(Planta)[Planta]))) + geom_bar() + 
   labs(x = "Floral species", y = "Interaction count 2023 Season", title = title.bpasc.int, caption = cap.bpasc.int) + 
   theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust = 1, size = 12),plot.title = element_text(hjust=0.5))
 

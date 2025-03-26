@@ -57,9 +57,12 @@ all.int.taxa.clean <- all.int.taxa.clean %>% distinct(Planta)
 
 # check presence of interaction genera in mb results and seq database -----
 
+#Load list of species extracted from sequence database
+taxa_seq_db_vec <- read_lines("Data/sequence_database_trial_data/bell_db_taxa.txt") #list of taxa CSG created from database fasta in bash
+taxa_seq_db_df <-data.frame(species = taxa_seq_db_vec)
 
 #Load list of genera extracted from sequence database
-genus_seq_db_vec <- read_lines("Data/belldb_genus_list.txt") #list of genera CSG created from database fasta in bash
+genus_seq_db_vec <- read_lines("Data/sequence_database_trial_data/belldb_genus_list.txt") #list of genera CSG created from database fasta in bash
 genus_seq_db_df <- data.frame(genus = genus_seq_db_vec)
 colnames(genus_seq_db_df) <- c("genus")
 
