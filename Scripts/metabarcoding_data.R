@@ -163,6 +163,9 @@ anova_a_period <- anova(disp_anova_a_period)
 #could explore with permanova/NMDS:
 
 
+
+
+
 #Analysis by site -----
 
 #get number of genera detected by site
@@ -176,6 +179,50 @@ bp23.genomic.sites <- bp23.genomic.analys %>%
                  n.genera = n_distinct(genus),
                  .groups = 'drop')
 
+
+
+
+#Analysis by period and site using various stat methods 
+#Analyses of metabarcoding community data by site/period using nMDS, PERMANOVA, manyGLM  --------
+
+#This appears to be an analysis just of metabarcoding data and is maybe also done in the corresponding script
+
+
+#can do for data with read counts (bp23.genomic.analys) or presence absence (bp23.genomic.binary)
+#just change these three lines
+#simplify factors/data involved
+stat.clean.bp23.genomic.binary <- bp23.genomic.binary[rowSums(bp23.genomic.binary[, 16:ncol(bp23.genomic.binary)], na.rm = TRUE) > 0, ]
+site <- as.factor(stat.clean.bp23.genomic.binary$site)
+period <- as.factor(stat.clean.bp23.genomic.binary$period)
+gut.plants <- stat.clean.bp23.genomic.binary %>%
+  select(Abelmoschus:last_col()) 
+
+#There is a problematic sample that makes an outlier point because it only has read counts for the ASV of Iberis. Take it out.
+gut.plants <- gut.plants[-c(39),]
+gut.plants <- gut.plants %>% 
+  select(!Iberis)
+
+#NMDS visualization
+dist.gut.plants <- vegdist(gut.plants, method = "raup", binary = TRUE) #calc distance between communities for later stat analysis
+gut.plants.mds <- metaMDS(gut.plants, distance = "raup", binary = TRUE)
+plot(gut.plants.mds$points, col = site, pch = 16, main = "Plant taxa in GBP23 gut DNA visualized by site")
+plot(gut.plants.mds$points, col = period, pch = 16, main = "Plant taxa in GBP23 gut DNA visualized by period")
+
+
+#permanova test (play with ~ variables to understand more)
+permanova.gut.plants <- adonis2(gut.plants ~ period*site, permutations = 9999, method = "jaccard", by = "terms")
+summary(permanova.gut.plants)
+permanova.gut.plantss
+
+
+# Alternative analysis: many glm 
+#extracting effect of site or period for each species using multiple glm
+#CSG: did this in sevilla as a test of using our data with mult glm, would have to revise to do anything with this
+
+#gut.plants.spp <- mvabund(gut.plants)
+#mglm.gut.flowers <- manyglm(gut.flowers.spp ~ bp23.genomic.analys$period, family = "")
+#anova(mglm.gut.flowers, p.uni="adjusted") #this takes a lot of computing power
+#should show deviation and probable significance of effect for each species
 
 
 
@@ -211,15 +258,6 @@ report(c.model.diversity.x.size) #intercept corresponding to an int_dist of 4.91
 check_model(c.model.diversity.x.size) #Looks decent, but maybe there are other factors...
 DHARMa::testResiduals(c.model.diversity.x.size)
 
-
-
-#organize metabarcoding data for all in 1 analysis with interaction and flower count data ------
-
-#following code moved up
-#bp23.genomic.binary4stats <- bp23.genomic.binary %>% 
- # select(period, site, Abelmoschus:last_col()) %>% 
- # mutate(method = rep("metabarcoding")) %>% #add a methodology identifier for next analysis
-  #relocate(method, .after = "site")
   
 
 

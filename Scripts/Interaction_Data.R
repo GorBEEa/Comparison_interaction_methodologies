@@ -21,7 +21,7 @@ bp.interactions.2023 <- Interaction_transect %>% filter(Polinizador == "Bombus p
 
 
 #clean plant species names -----
-source(here("Scripts/BP_flower_w_interactions_cleaning_2023.R"))
+source(here("Scripts/plant_taxa_names_cleaning/BP_flower_w_interactions_cleaning_2023.R"))
 #You should now see bp.interactions.clean in environment
 
 

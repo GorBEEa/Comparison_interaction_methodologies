@@ -11,9 +11,9 @@ colnames(all.int.taxa) <- c("taxa")
 #throw every data cleaning script we have at it and hope it works
 #you will get lots of warnings about a missing Sitio column -ignore
 
-source(here("Scripts/transectos250_plantas_disp_check.R")) #cleans species names
-source(here("Scripts/transect250_genera_check.R"))
-source(here("Scripts/BP_flower_w_interactions_cleaning_2023.R"))
+source(here("Scripts/plant_taxa_names_cleaning/transectos250_plantas_disp_check.R")) #cleans species names
+source(here("Scripts/plant_taxa_names_cleaning/transect250_genera_check.R"))
+source(here("Scripts/plant_taxa_names_cleaning/BP_flower_w_interactions_cleaning_2023.R"))
 all.int.taxa.clean <- data.d2 #cleaned output df
 all.int.taxa.clean <- all.int.taxa.clean %>% distinct(Planta) 
 #write.table(int_taxa_df, "Data/output/gorbeia_interaction_plants.txt")
