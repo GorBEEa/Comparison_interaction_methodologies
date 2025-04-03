@@ -1,13 +1,15 @@
 #Script for manipulating and processing 2023 B. pascuorum ITS2 plant metabarcoding data
 
-library(readr)
-library(here)
-library(tidyverse)
-library(tidyr)
-library(tidyselect)
-library(easystats)
-library(visreg)
-library(vegan)
+#unblock these packages if not running after interaction_data (Recommended to run first)
+#library(readr)
+#library(here)
+#library(tidyverse)
+#library(tidyr)
+#library(tidyselect)
+#library(easystats)
+#library(visreg)
+#library(vegan)
+
 library(viridis)
 library(report)
 library(DHARMa)

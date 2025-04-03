@@ -1,7 +1,18 @@
-#Analyzing interaction and metabarcoding data together 
-#Interaction_Data.R and metabarcoding_data.R should already be sourced
+#Analyzing interaction methodologies and floral diversity data together 
+#Interaction_Data.R, flower_count_data.R, and metabarcoding_data.R should already be sourced
+#(In that order)
 
-library(vegan)
+
+#unblock these packages if not running after _data.R scripts
+#library(readr)
+#library(here)
+#library(tidyverse)
+#library(tidyr)
+#library(tidyselect)
+#library(easystats)
+#library(visreg)
+#library(vegan)
+
 library(mvabund)
 library(easystats)
 library(kableExtra)

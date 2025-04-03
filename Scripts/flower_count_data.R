@@ -1,10 +1,11 @@
 #Script for manipulating and processing 2023 interaction transcet flower count data
 
-library(readr)
-library(here)
-library(tidyverse)
-library(tidyr)
-library(tidyselect)
+#unblock these packages if not running after interaction_data (Recommended to run first)
+#library(readr)
+#library(here)
+#library(tidyverse)
+#library(tidyr)
+#library(tidyselect)
 
 #Load Data -----
 
