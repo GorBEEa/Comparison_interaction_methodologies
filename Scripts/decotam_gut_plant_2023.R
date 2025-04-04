@@ -7,13 +7,13 @@ library(phyloseq) ; packageVersion("phyloseq")
 library(ggplot2); packageVersion("ggplot2")
 
 # Load data
-count_tab <- read.table(here("Data/2023_plant_GorBEEa_ASVs_counts.tsv"), header=T, row.names=1,
+count_tab <- read.table(here("Data/dada2_outputs/long_2023_plant_GorBEEa_ASVs_counts.tsv"), header=T, row.names=1,
                         check.names=F, sep="\t")
 
-tax_tab <- as.matrix(read.table(here("Data/2023_plant_GorBEEa_ASVs_taxonomy.tsv"), header=T,
+tax_tab <- as.matrix(read.table(here("Data/dada2_outputs/long_2023_plant_GorBEEa_ASVs_taxonomy.tsv"), header=T,
                                 row.names=1, check.names=F, sep="\t"))
 
-sample_info_tab <- read.delim(here("Data/2023_BP_metab_sample_info.tsv"),
+sample_info_tab <- read.delim(here("Data/dada2_outputs/long_2023_BP_metab_sample_info.tsv"),
                                    header=T, row.names=1, check.names=F, sep="\t")
 
 # Setting the color column to be of type "character", which helps later
@@ -155,7 +155,7 @@ table(sample_data(ps.nocont)$type)
 table(sample_data(ps.gbp23.plant)$type)
 
 # Save the ps.gbp23 object to an RDS file
-saveRDS(ps.gbp23.plant, file = here("Data/gbp23.plant.decontam.0.5.RDS"))
+saveRDS(ps.gbp23.plant, file = here("Data/long.gbp23.plant.decontam.0.5.RDS"))
 
 
 
@@ -171,7 +171,7 @@ saveRDS(ps.gbp23.plant, file = here("Data/gbp23.plant.decontam.0.5.RDS"))
 
 contamdf.prev
 contaminants <- contamdf.prev %>% filter(contaminant == "TRUE")
-asv_genus_pairs <-bp.plant.asvNs.w.genus.2023 %>% select(c(asv_id, genus))
+asv_genus_pairs <-bp.plant.asvNs.w.genus.2023 %>% select(c(asv_id, genus)) #!!! CHECK THIS: bp.plant.asvNs.w.genus.2023 is from metabarcoding data and in theory created using the data from the RDS that THIS script creates (this is backwards?)
 asv_ids <- rownames(contaminants)
 contaminants <- contaminants %>% mutate(asv_id = asv_ids)
 asv_taxa_contaminants <- left_join(contaminants,asv_genus_pairs, by = "asv_id")

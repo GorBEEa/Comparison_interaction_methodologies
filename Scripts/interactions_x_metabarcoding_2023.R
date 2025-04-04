@@ -44,14 +44,16 @@ observed.mb.genus %>% filter(int.detected == 1)
 
 #and which detected by metabarcoding were observed in flower counts
 observed.mb.genus$flower.count.detected <- as.integer(observed.mb.genus$genus %in% flower.count.genera$flower_genus)
-observed.mb.genus %>% filter(flower.count.detected == 1)
-#Of the 160 genera detected by metabarcoding, only 69 were even observed in the transects
+paste("Of the", nrow(genus.hits.23),"taxa detected by metabarcoding,", 
+      nrow(observed.mb.genus %>% filter(flower.count.detected == 1)),
+      "were even observed in the flower counts")
 
 #inverse of above - how many flower count genera were not in metabarcoding results?
 cp.flower.count.genera <- flower.count.genera
 cp.flower.count.genera$in.mb <- as.integer(flower.count.genera$flower_genus %in% genus.hits.23$genus)
 in.fc.not.mb <- cp.flower.count.genera %>% filter(in.mb == 0)
-#48 unique genera
+paste("Of the", nrow(flower.count.genera),"taxa detected in flower counts,", nrow(in.fc.not.mb),
+      "were even observed in metabarcoding results")
 
 
 #Diversity by periods ----- 
@@ -134,7 +136,7 @@ clean4stats.bp23.all.binary <- bp23.all.binary #another copy for alternative cle
 #clean4stats.bp23.all.binary <- for.stats.bp23.all.binary[rowSums(for.stats.bp23.all.binary[, 4:ncol(for.stats.bp23.all.binary)], na.rm = TRUE) > 0, ] #keeps only the rows that have greater than 0 sums in binary presence absence
 
 
-clean4stats.bp23.all.binary <- clean4stats.bp23.all.binary[-c(8,73),] #this sample causes nMDS issues as an outlier
+clean4stats.bp23.all.binary <- clean4stats.bp23.all.binary[-c(8,73),] #these samples causes (caused?) nMDS issues as an outlier
 clean4stats.bp23.all.binary <- clean4stats.bp23.all.binary %>% 
   select(!c(Iberis,"NA")) #remove Iberis, which was only in problem sample, and NA column
 clean4stats.bp23.all.binary <- clean4stats.bp23.all.binary %>% 
@@ -223,12 +225,12 @@ permanova.all.data %>%
 #Figure: metabarcoding results and co-occurence in other methods ------
 #figure used in EcoFlor poster
 
-detects.by.genus <- as.data.frame(colSums(bp23.genomic.binary[16:186])) %>% #THR COLUMNS SELECTED HERE ARE IMPORTANT FOR THE RESULTS YOU SEE. Make sure that they include all taxa
+detects.by.genus <- as.data.frame(colSums(bp23.genomic.binary[16:136])) %>% #THR COLUMNS SELECTED HERE ARE IMPORTANT FOR THE RESULTS YOU SEE. Make sure that they include all taxa
   rownames_to_column(var = "genus") %>% 
-  rename(n.sample.detections = "colSums(bp23.genomic.binary[16:186])")
+  rename(n.sample.detections = "colSums(bp23.genomic.binary[16:136])")
 
 detects.comparison <- right_join(detects.by.genus,observed.mb.genus, by = "genus") 
-detects.comparison <- detects.comparison[-161,] %>% 
+detects.comparison <- detects.comparison[-120,] %>% #last row is an NA
   mutate(detected.fc.int = int.detected + flower.count.detected)
 detects.comparison <- detects.comparison[order(detects.comparison$n.sample.detections, decreasing = TRUE) , ] %>% 
   mutate(color_group = case_when(
@@ -239,11 +241,10 @@ detects.comparison <- detects.comparison[order(detects.comparison$n.sample.detec
   ))
 
 #select top occurrences
-top.detects.comparison <- detects.comparison[1:30 ,]
-top.detects.comparison <- top.detects.comparison #%>% #remove mis-IDs? 
- # filter(genus != "Dioscorea") %>% 
- # filter(genus != "Spondias") %>% 
-  #filter(genus != "Pleuropterus")
+top.detects.comparison <- detects.comparison[1:32,] #two false IDs below are removed, so 1:32 instead of 1:30
+top.detects.comparison <- top.detects.comparison %>% 
+ filter(genus != "Dioscorea") %>% 
+ filter(genus != "Spondias")
 
 #plot
 fig.poster.title <- expression(paste("Top plant genera detected in", italic(" B. pascuorum "), "genetic sampling 2023"))
@@ -263,7 +264,7 @@ fig.poster <- ggplot(top.detects.comparison, aes(x = reorder(genus, -n.sample.de
         plot.title = element_text(hjust=0.5),
         legend.position = c(1, 1),
         legend.justification = c(1, 1)) +
-  labs(x = "Plant Genus", y = "Positive Detections in Gut Samples", fill = "Detection Type") +
+  labs(x = "Plant Genus", y = "Positive Detections in Gut Samples", fill = "Detection Method Overlap") +
   ggtitle(fig.poster.title) 
 
 fig.poster

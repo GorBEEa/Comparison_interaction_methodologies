@@ -36,21 +36,23 @@ library(phyloseq) ; packageVersion("phyloseq")
 
 #Working with data cleaned with decontam
 
-plant.decontam.05 <- readRDS(here("Data/gbp23.plant.decontam.0.5.RDS")) #all data in phyloseq format from strict decontam filter (th = 0.5)
-plant.decontam.01 <- readRDS(here("Data/gbp23.plant.decontam.0.1.RDS")) #all data in phyloseq format from less strict decontam filter (th = 0.1)
+plant.decontam0.5 <- readRDS(here("Data/gbp23.plant.decontam.0.5.RDS")) #all data in phyloseq format from strict decontam filter (th = 0.5)
+plant.decontam0.1 <- readRDS(here("Data/gbp23.plant.decontam.0.1.RDS")) #all data in phyloseq format from less strict decontam filter (th = 0.1)
+long.plant.decontam0.5 <- readRDS(here("Data/long.gbp23.plant.decontam.0.5.RDS")) #all data from ITS2 specific dada2 analysis in phyloseq format from strict decontam filter (th = 0.5)
+
 
 #split into dataframes used in this analysis
 
-bp.asv.counts.2023 <- as.data.frame(otu_table(plant.decontam.01))
+bp.asv.counts.2023 <- as.data.frame(otu_table(long.plant.decontam0.5))
 asvs <- rownames(bp.asv.counts.2023)
 bp.asv.counts.2023 <- bp.asv.counts.2023 %>% mutate(asv_id = asvs) %>% relocate(asv_id)
 
-sample_data_tab.cl <- sample_data(plant.decontam.01)
+sample_data_tab.cl <- sample_data(long.plant.decontam0.5)
 sample_data_tab.cl <- as.data.frame(sample_data_tab.cl)
 samples <- rownames(sample_data_tab.cl)
 bp.2023 <- data.frame(sample = samples, sample_data_tab.cl, stringsAsFactors = FALSE)
 
-tax_table.cl <- as.data.frame(tax_table(plant.decontam.01))
+tax_table.cl <- as.data.frame(tax_table(long.plant.decontam0.5))
 asvs2 <- rownames(tax_table.cl)
 bp.asv.tax.2023 <- tax_table.cl%>% 
   rename(genus = Genus) %>% 
@@ -60,6 +62,7 @@ bp.asv.genus.2023 <- bp.asv.tax.2023 %>%
   select(asv_id,genus)
 
 
+#add intertegular distances to data 
 
 bp23.size <- read_csv(here("Data/2023_bombus_size_data.csv")) #this has values for samples that were not in metabarcoding
 bp23.size <- bp23.size %>% filter(sample != is.na(sample)) #clean up
@@ -107,6 +110,7 @@ genus.hits.23 <- bp.plant.asvNs.w.genus.2023 %>%
   filter(if_any(where(is.numeric), ~. > 0)) %>% #should already be the difinitive list, but if any genera still have 0 detections, remove them
   ungroup %>% 
   select(genus) #create just a list of the genera
+paste("Metabarcoding detected", nrow(genus.hits.23),"plant genera across all of the 2023 gut samples")
 
 
 bp23.genomic.analys <- bp23.genomic.specs #a copy for manipulation
@@ -125,6 +129,31 @@ bp23.genomic.binary <- bp23.genomic.analys %>%
   mutate(across(Abelmoschus:last_col(), ~ifelse(. > 0, 1, 0))) %>% #read count data to presence absence 1s and 0s
   mutate(genera.by.indiv = rowSums(across(Abelmoschus:last_col()))) %>%  #add a sum of genera for diversity by inv sample
   relocate(genera.by.indiv, .after = quant_reading)
+
+
+#Quickly visualize MB results
+mb.genus.detections <- as.data.frame(colSums(bp23.genomic.binary[16:136])) %>% #THR COLUMNS SELECTED HERE ARE IMPORTANT FOR THE RESULTS YOU SEE. Make sure that they include all taxa
+  rownames_to_column(var = "genus") %>% 
+  rename(n.sample.detections = "colSums(bp23.genomic.binary[16:136])")
+mb.genus.detections <- mb.genus.detections[order(mb.genus.detections$n.sample.detections, decreasing = TRUE) , ]
+mb.genus.detections <- mb.genus.detections[-4, ] #NA row
+top.mb.genus.detections <- mb.genus.detections[1:34,]
+top.mb.genus.detections <- top.mb.genus.detections %>% 
+  filter(genus != "Dioscorea") %>% 
+  filter(genus != "Spondias") %>% 
+  filter(genus != "Leptospermum")
+  
+
+fig.mb.title <- expression(paste("Top plant genera detected in", italic(" B. pascuorum "), "genetic sampling 2023"))
+ggplot(top.mb.genus.detections, aes(x = reorder(genus, -n.sample.detections)
+                                                 , y = n.sample.detections)) +
+  geom_col(alpha = 0.7) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.title = element_text(hjust=0.5)) +
+  labs(x = "Plant Genus", y = "Positive Detections in Gut Samples") +
+  ggtitle(fig.mb.title) 
+
+
 
 c.bp23.genomic.binary <-  bp23.genomic.binary %>% mutate(c_intertegular_dist_mm = intertegular_dist_mm - 4.91) #4.91 is the mean intertegular distance for 2023
 
