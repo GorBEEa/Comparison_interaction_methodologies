@@ -18,8 +18,10 @@ library(easystats)
 library(kableExtra)
 
 
+#Overlap in methodology communities ----------
 
-detected.int.genus <- df.int.genus %>% distinct(genus) #Clean list of genera from BP interactions & interaction count
+#Quick visual check of which interaction transect species were detected by gut metabarcoding 
+detected.int.genus <- df.int.genus %>% distinct(genus) #Clean list of genera (27) from BP interactions
 detected.int.genus$mb.detected <- as.integer(detected.int.genus$genus %in% genus.hits.23$genus) #presence absence comparison
 int.genus.occur.md.detect <- full_join(detected.int.genus, df.int.genus %>% count(genus)) #table with total interaction counts for 2023 by genus (n) and their binary value for detection y/n with mb
 
@@ -30,30 +32,29 @@ fig.zz <- int.genus.occur.md.detect %>%
   labs(x = "Floral genus", y = "Interaction count 2023 Season", title = title.int.genus) +
   theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust = 1, size = 12),plot.title = element_text(hjust=0.5)) + 
   scale_fill_manual(values = c("0" = "grey", "1" = "lightblue"), name = "Detected by ITS2 Metabarcoding", labels = c("No", "Yes"))
- #because there are no cases where mb did not detect a genus, the legend is confused and thinks that
-
-
+#because there are no cases where mb did not detect a genus, the legend is confused and thinks that
+#result: all 27 interaction taxa were observed by MB
 
 
 #Inverse analysis of above - which genera observed in metabarcoding were observed in interactions -----
 observed.mb.genus <- genus.hits.23
 observed.mb.genus$int.detected <- as.integer(observed.mb.genus$genus %in% df.int.genus$genus)
 observed.mb.genus %>% filter(int.detected == 1)
-#All 27 genera observed by interactions were detected by metabarcoding
+#result: Interactions did not detect any species beyond those detected by metabarcoding
 
 
-#and which detected by metabarcoding were observed in flower counts
+#which detected by metabarcoding were observed in flower counts?
 observed.mb.genus$flower.count.detected <- as.integer(observed.mb.genus$genus %in% flower.count.genera$flower_genus)
 paste("Of the", nrow(genus.hits.23),"taxa detected by metabarcoding,", 
       nrow(observed.mb.genus %>% filter(flower.count.detected == 1)),
-      "were even observed in the flower counts")
+      "were observed in the flower counts")
 
 #inverse of above - how many flower count genera were not in metabarcoding results?
 cp.flower.count.genera <- flower.count.genera
 cp.flower.count.genera$in.mb <- as.integer(flower.count.genera$flower_genus %in% genus.hits.23$genus)
 in.fc.not.mb <- cp.flower.count.genera %>% filter(in.mb == 0)
 paste("Of the", nrow(flower.count.genera),"taxa detected in flower counts,", nrow(in.fc.not.mb),
-      "were even observed in metabarcoding results")
+      "were unique to this survey")
 
 
 #Diversity by periods ----- 

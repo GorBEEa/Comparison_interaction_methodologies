@@ -54,8 +54,9 @@ fig.y <- ggplot(topflor_df, aes(x = Species, y = interactions))+
 
 #interactions by genus -----
 
-# As of now, using UNITE for gut DNA metabarcoding, it looks like genus is the best I can get for taxonomic specificity
-#redo all of this just for genus level
+# with metabarcoding it looks like everything ahs to be done at genus level
+# redo all of this just for genus level
+
 title.int.genus <- expression(paste("Total ", italic("B. pascuorum"), " flower interactions by plant genus 2023 season")) #new plot, give it a title
 
 bp23.genus.int <- bp.interactions.clean %>% 

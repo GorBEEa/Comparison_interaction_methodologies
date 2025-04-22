@@ -216,11 +216,9 @@ bp23.genomic.sites <- bp23.genomic.analys %>%
 #Analysis by period and site using various stat methods 
 #Analyses of metabarcoding community data by site/period using nMDS, PERMANOVA, manyGLM  --------
 
-#This appears to be an analysis just of metabarcoding data and is maybe also done in the corresponding script
-
 
 #can do for data with read counts (bp23.genomic.analys) or presence absence (bp23.genomic.binary)
-#just change these three lines
+#just change these lines
 #simplify factors/data involved
 stat.clean.bp23.genomic.binary <- bp23.genomic.binary[rowSums(bp23.genomic.binary[, 16:ncol(bp23.genomic.binary)], na.rm = TRUE) > 0, ]
 site <- as.factor(stat.clean.bp23.genomic.binary$site)
