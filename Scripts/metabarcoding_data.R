@@ -43,16 +43,16 @@ long.plant.decontam0.5 <- readRDS(here("Data/long.gbp23.plant.decontam.0.5.RDS")
 
 #split into dataframes used in this analysis
 
-bp.asv.counts.2023 <- as.data.frame(otu_table(long.plant.decontam0.5))
+bp.asv.counts.2023 <- as.data.frame(otu_table(plant.decontam0.5))
 asvs <- rownames(bp.asv.counts.2023)
 bp.asv.counts.2023 <- bp.asv.counts.2023 %>% mutate(asv_id = asvs) %>% relocate(asv_id)
 
-sample_data_tab.cl <- sample_data(long.plant.decontam0.5)
+sample_data_tab.cl <- sample_data(plant.decontam0.5)
 sample_data_tab.cl <- as.data.frame(sample_data_tab.cl)
 samples <- rownames(sample_data_tab.cl)
 bp.2023 <- data.frame(sample = samples, sample_data_tab.cl, stringsAsFactors = FALSE)
 
-tax_table.cl <- as.data.frame(tax_table(long.plant.decontam0.5))
+tax_table.cl <- as.data.frame(tax_table(plant.decontam0.5))
 asvs2 <- rownames(tax_table.cl)
 bp.asv.tax.2023 <- tax_table.cl%>% 
   rename(genus = Genus) %>% 
@@ -111,7 +111,8 @@ genus.hits.23 <- bp.plant.asvNs.w.genus.2023 %>%
   ungroup %>% 
   select(genus) #create just a list of the genera
 paste("Metabarcoding detected", nrow(genus.hits.23),"plant genera across all of the 2023 gut samples")
-
+#REMOVE from final MB genera count:
+#filter(genus != c("Dioscorea","Spondias","Leptospermum","Triticum")
 
 bp23.genomic.analys <- bp23.genomic.specs #a copy for manipulation
 bp23.genomic.analys$sample <- str_split_fixed(bp23.genomic.analys$sample, "_", 2)[,1] #remove sequencing plate labels
