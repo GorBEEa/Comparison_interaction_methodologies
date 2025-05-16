@@ -16,23 +16,15 @@
 library(mvabund)
 library(easystats)
 library(kableExtra)
+library(ggvenn)
 
 
 #Overlap in methodology communities ----------
 
-#Quick visual check of which interaction transect species were detected by gut metabarcoding 
+#Which interaction transect species were detected by gut metabarcoding 
 detected.int.genus <- df.int.genus %>% distinct(genus) #Clean list of genera (27) from BP interactions
 detected.int.genus$mb.detected <- as.integer(detected.int.genus$genus %in% genus.hits.23$genus) #presence absence comparison
-int.genus.occur.md.detect <- full_join(detected.int.genus, df.int.genus %>% count(genus)) #table with total interaction counts for 2023 by genus (n) and their binary value for detection y/n with mb
-
-fig.zz <- int.genus.occur.md.detect %>% 
-  arrange(n) %>% 
-  ggplot(aes(x = reorder(genus, -n), y = n, fill = factor(mb.detected))) + 
-  geom_bar(stat = "identity") + 
-  labs(x = "Floral genus", y = "Interaction count 2023 Season", title = title.int.genus) +
-  theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust = 1, size = 12),plot.title = element_text(hjust=0.5)) + 
-  scale_fill_manual(values = c("0" = "grey", "1" = "lightblue"), name = "Detected by ITS2 Metabarcoding", labels = c("No", "Yes"))
-#because there are no cases where mb did not detect a genus, the legend is confused and thinks that
+int.genus.occur.mb.detect <- full_join(detected.int.genus, df.int.genus %>% count(genus)) #table with total interaction counts for 2023 by genus (n) and their binary value for detection y/n with mb
 #result: all 27 interaction taxa were observed by MB
 
 
@@ -56,6 +48,14 @@ in.fc.not.mb <- cp.flower.count.genera %>% filter(in.mb == 0)
 paste("Of the", nrow(flower.count.genera),"taxa detected in flower counts,", nrow(in.fc.not.mb),
       "were unique to this survey")
 
+#Venn diagram visualization of detection overlap
+#just add another part to the list once we have pollen
+taxa.all.methodologies <- list("Gut Metabarcoding" = genus.hits.23$genus, "Interactions" = detected.int.genus$genus, "Flower Count" = flower.count.genera$flower_genus)
+ggvenn::ggvenn(taxa.all.methodologies,
+               show_percentage = FALSE,
+               fill_color = c("forestgreen","lightblue","slategrey"),
+               stroke_size = 0.5,
+               set_name_size = 4)
 
 #Diversity by periods ----- 
 
@@ -122,7 +122,7 @@ ggplot(long.gen.by.sites, aes(site, n.genera, fill = method)) +
 
 #bring together binary presence absence data from interactions and metabarcoding into one table
 
-bp23.all.binary <- full_join(bp23.int4stats.wide.binary, bp23.genomic.binary4stats) %>% 
+bp23.all.binary <- full_join(bp23.int4stats.wide.binary, bp23.genomic.binary4stats.xday) %>% 
   full_join(.,bp23.fc4stats.wide.binary) 
 
 #This part gets messy....
@@ -131,24 +131,20 @@ bp23.all.binary <- full_join(bp23.int4stats.wide.binary, bp23.genomic.binary4sta
 #make a new version of all of the binary data that is "cleaned" of these lines
 #but first see what they are/what they mean
 
-#clean out zero sum columns in binary data for statistical analyses
-#for.stats.bp23.all.binary <- bp23.all.binary #a copy for cleaning
-clean4stats.bp23.all.binary <- bp23.all.binary #another copy for alternative cleaning
-#clean4stats.bp23.all.binary <- for.stats.bp23.all.binary[rowSums(for.stats.bp23.all.binary[, 4:ncol(for.stats.bp23.all.binary)], na.rm = TRUE) > 0, ] #keeps only the rows that have greater than 0 sums in binary presence absence
+#clean out zero sum columns in binary data for statistical analyses. This is also done later, so redundant
+#clean4stats.bp23.all.binary <- bp23.all.binary[rowSums(bp23.all.binary[, 4:ncol(bp23.all.binary)], na.rm = TRUE) > 0, ] #keeps only the rows that have greater than 0 sums in binary presence absence
+#currently not necessary with day aggregated MB data
 
-
-clean4stats.bp23.all.binary <- clean4stats.bp23.all.binary[-c(8,73),] #these samples causes (caused?) nMDS issues as an outlier
-clean4stats.bp23.all.binary <- clean4stats.bp23.all.binary %>% 
-  select(!c(Iberis,"NA")) #remove Iberis, which was only in problem sample, and NA column
-clean4stats.bp23.all.binary <- clean4stats.bp23.all.binary %>% 
-  replace(is.na(clean4stats.bp23.all.binary), 0) %>% 
-  filter(rowSums(pick(4:221)) != 0)
+#clean4stats.bp23.all.binary <- bp23.all.binary %>% select(!Iberis) #may need to do this, Iberis was only in problem sample
+clean4stats.bp23.all.binary <- bp23.all.binary %>% 
+  replace(is.na(bp23.all.binary), 0) %>% 
+  filter(rowSums(pick(4:ncol(bp23.all.binary))) != 0) #currently doesn't change anything
 
 #simplify factors for nMDS 
 site.all <- as.factor(clean4stats.bp23.all.binary$site)
 period.all <- as.factor(clean4stats.bp23.all.binary$period)
 methodology <- as.factor(clean4stats.bp23.all.binary$method)
-#length(factor) #to count/check factor lengths (should ll be the same and same as row # in clean4stats.bp23.all.binary and all.plants)
+#length(factor) #to count/check factor lengths (should all be the same and same as row # in clean4stats.bp23.all.binary and all.plants)
 all.plants <- clean4stats.bp23.all.binary %>% 
   select(!c(site, period, method))
 
@@ -159,33 +155,26 @@ dist.all.plants <- vegdist(all.plants, method = "raup") #calc distance between c
 all.plant.mds <- metaMDS(all.plants, distance = "raup") 
 
 #Quick plot option
-plot(all.plant.mds$points, col = methodology, pch = 16)
-#legend("topleft", legend = levels(methodology), col = method.colors, pch = 16, title = "Methodology")
+plot(all.plant.mds$points, col = method.colors, pch = 16)
+legend("topleft", legend = levels(methodology), col = method.colors, pch = 16, title = "Methodology")
+#that outlier point is from interactions, P2S14
 
 
-
-
-
-
-#cool, this works again up to here. Nice plot option not changed yet. First I will change to aggregate Bombus data by day
-
-#Nice plot option - used in EcoFlor poster... when
-
-nmds_points <- as.data.frame(all.flower.mds$points)
-colnames(nmds_points) <- c("NMDS1", "NMDS2")
-nmds_points$Methodology <- methodology
+#Nice plot option - used in EcoFlor poster
+nmds_points <- as.data.frame(all.plant.mds$points)
+nmds_points$methodology <- methodology
 method.colors2 <- c("count" ="slategrey",
                     "interaction" = "lightblue",
                     "metabarcoding" = "forestgreen")
 
 polygon_data <- nmds_points %>%
-  group_by(Methodology) %>%
-  slice(chull(NMDS1, NMDS2))
+  group_by(methodology) %>%
+  slice(chull(MDS1, MDS2))
 
-NMDS.title <- expression(paste("NMDS visualization of community composition by methodology"))
-ggplot(nmds_points, aes(x = NMDS1, y = NMDS2, color = Methodology)) +
+NMDS.title <- expression(paste("NMDS visualization of network composition by methodology"))
+NMDS.method.comparisons <- ggplot(nmds_points, aes(x = MDS1, y = MDS2, color = methodology)) +
   geom_polygon(data = polygon_data, 
-               aes(fill = Methodology, color = NULL), 
+               aes(fill = methodology, color = NULL), 
                alpha = 0.2, 
                show.legend = FALSE) +
   geom_point(size = 3) + 
@@ -208,15 +197,14 @@ ggplot(nmds_points, aes(x = NMDS1, y = NMDS2, color = Methodology)) +
 
 
 #statistical analysis using PERMANOVA
-#silenced to run script faster
-#permanova.all.data <- adonis2(all.flowers ~ site*period*methodology, permutations = 9999, method = "bray", by = "terms")
+permanova.all.data <- adonis2(all.plants ~ site.all*period.all*methodology, permutations = 9999, method = "raup")
 
 permanova.all.data %>% 
   kbl(caption = "PERMANOVA analysis of spatiotemporal effects on observed plant diversity across three field survey methodologies:
       Bombus gut DNA content, Interaction transects, and Floral diversity") %>% 
   kable_minimal(full_width = F, html_font = "Cambria")
 
-
+#This looks weird
 
 
 
@@ -225,13 +213,13 @@ permanova.all.data %>%
 
 #Figure: metabarcoding results and co-occurence in other methods ------
 #figure used in EcoFlor poster
+#should this use the detections by samples and not by days? I think so... here we want resolution and we don't need it to match for comparison
 
-detects.by.genus <- as.data.frame(colSums(bp23.genomic.binary[16:136])) %>% #THR COLUMNS SELECTED HERE ARE IMPORTANT FOR THE RESULTS YOU SEE. Make sure that they include all taxa
+detects.by.genus <- as.data.frame(colSums(bp23.genomic.binary[16:ncol(bp23.genomic.binary)])) %>% #THR COLUMNS SELECTED HERE ARE IMPORTANT FOR THE RESULTS YOU SEE. Make sure that they include all taxa
   rownames_to_column(var = "genus") %>% 
-  rename(n.sample.detections = "colSums(bp23.genomic.binary[16:136])")
+  rename(n.sample.detections = "colSums(bp23.genomic.binary[16:ncol(bp23.genomic.binary)])")
 
-detects.comparison <- right_join(detects.by.genus,observed.mb.genus, by = "genus") 
-detects.comparison <- detects.comparison[-120,] %>% #last row is an NA
+detects.comparison <- right_join(detects.by.genus,observed.mb.genus, by = "genus") %>% 
   mutate(detected.fc.int = int.detected + flower.count.detected)
 detects.comparison <- detects.comparison[order(detects.comparison$n.sample.detections, decreasing = TRUE) , ] %>% 
   mutate(color_group = case_when(
@@ -240,12 +228,12 @@ detects.comparison <- detects.comparison[order(detects.comparison$n.sample.detec
     detected.fc.int == 1 & flower.count.detected == 1 ~ "Flower Only",
     detected.fc.int == 0 ~ "Neither"
   ))
+#this system depends on the fact that any interaction observed will have included a plant species already documented in the flower count. Which should always be the case.
+
 
 #select top occurrences
-top.detects.comparison <- detects.comparison[1:32,] #two false IDs below are removed, so 1:32 instead of 1:30
-top.detects.comparison <- top.detects.comparison %>% 
- filter(genus != "Dioscorea") %>% 
- filter(genus != "Spondias")
+top.detects.comparison <- detects.comparison[1:30,] #30 is a detailed but not overwhelming number for visualization
+#contaminant/misidentified species should have been removed in metabarcoding_data after importing said data
 
 #plot
 fig.poster.title <- expression(paste("Top plant genera detected in", italic(" B. pascuorum "), "genetic sampling 2023"))

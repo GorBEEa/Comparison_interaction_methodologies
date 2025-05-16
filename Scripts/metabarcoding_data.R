@@ -40,6 +40,7 @@ plant.decontam0.5 <- readRDS(here("Data/gbp23.plant.decontam.0.5.RDS")) #all dat
 plant.decontam0.1 <- readRDS(here("Data/gbp23.plant.decontam.0.1.RDS")) #all data in phyloseq format from less strict decontam filter (th = 0.1)
 long.plant.decontam0.5 <- readRDS(here("Data/long.gbp23.plant.decontam.0.5.RDS")) #all data from ITS2 specific dada2 analysis in phyloseq format from strict decontam filter (th = 0.5)
 
+known.misIDs <- c("Dioscorea", "Spondias", "Glycine", "Gingidia") #add more?
 
 #split into dataframes used in this analysis
 
@@ -75,12 +76,13 @@ bp23.size <- bp23.size %>% filter(sample != is.na(sample)) #clean up
 
 #condense two of these to have genera names assigned to asvs in samples
 bp.plant.asvNs.w.genus.2023 <- right_join(bp.asv.counts.2023,bp.asv.genus.2023, by = "asv_id")
-bp.plant.asvNs.w.genus.2023 %>% relocate(genus, .after = asv_id) #this is just to look and make sure it worked
+bp.plant.asvNs.w.genus.2023 <- bp.plant.asvNs.w.genus.2023 %>% relocate(genus, .after = asv_id) %>%  #this is just to look and make sure it worked
+  filter(!genus %in% known.misIDs)
 binary.plant.asvNs.w.genus.2023 <- bp.plant.asvNs.w.genus.2023 %>% 
   relocate(genus, .after = asv_id) %>% 
   mutate(across(GBP23010301M_ITS_P48:last_col(), ~ifelse(. > 0, 1, 0))) %>% 
   mutate(indiv.w.signal = rowSums(across(GBP23010301M_ITS_P48:GBP23061405M_ITS_P48))) %>% 
-  relocate(indiv.w.signal, .after = genus)
+  relocate(indiv.w.signal, .after = genus) 
 
 #transpose to be able to combine with other BP data
 bp.plant.asvgn.wide.2023 <- bp.plant.asvNs.w.genus.2023 %>%
@@ -94,13 +96,16 @@ bp23.genomic.specs <- right_join(bp.2023, bp.plant.asvgn.wide.2023, by = "sample
 bp23.genomic.specs <- bp23.genomic.specs %>%  
   filter(type != "negative") %>% #only sample data
   mutate(period = str_extract(period, "\\d+"), period = as.integer(period)) %>% 
-  mutate(site = str_extract(site, "\\d+"), site = as.integer(site))
+  mutate(site = str_extract(site, "\\d+"), site = as.integer(site)) %>% 
+  select(-last_col()) #Check that this is removing the NA column and not something important
 #this dataset does not contain Bombus size, see bp23.genomic.analys below
 
 
 #manipulate and analyze data ------
 
-#extract genus hits from here
+#extract genus hits from here. 
+#Go through this list with Brais and Xabi and remove obvious remaining taxa that should be cleaned
+#include them above in known.misIDs
 
 genus.hits.23 <- bp.plant.asvNs.w.genus.2023 %>%
   #select(!asv_id) %>% #simplify working data
@@ -109,10 +114,12 @@ genus.hits.23 <- bp.plant.asvNs.w.genus.2023 %>%
   rowwise() %>% 
   filter(if_any(where(is.numeric), ~. > 0)) %>% #should already be the difinitive list, but if any genera still have 0 detections, remove them
   ungroup %>% 
-  select(genus) #create just a list of the genera
+  select(genus) %>%  #create just a list of the genera
+  filter(genus != "NA")
+
 paste("Metabarcoding detected", nrow(genus.hits.23),"plant genera across all of the 2023 gut samples")
-#REMOVE from final MB genera count:
-#filter(genus != c("Dioscorea","Spondias","Leptospermum","Triticum")
+
+
 
 bp23.genomic.analys <- bp23.genomic.specs #a copy for manipulation
 bp23.genomic.analys$sample <- str_split_fixed(bp23.genomic.analys$sample, "_", 2)[,1] #remove sequencing plate labels
@@ -124,6 +131,13 @@ bp23.genomic.analys <- bp23.genomic.analys %>% relocate(intertegular_dist_mm, .a
 #NOTE: NAs exist for bombus measurements
 #use df %>% na.replace(0) if needed
 
+bp23.genomic.xday <- bp23.genomic.analys %>%
+  group_by(period, site) %>%
+  summarise(across(Abelmoschus:last_col(), sum), .groups = "drop") %>% 
+  mutate(day = paste0("P", period, "S", site)) %>% 
+  relocate(day)
+  
+
 #make binary versions of 2023 data
 
 bp23.genomic.binary <- bp23.genomic.analys %>% 
@@ -131,20 +145,19 @@ bp23.genomic.binary <- bp23.genomic.analys %>%
   mutate(genera.by.indiv = rowSums(across(Abelmoschus:last_col()))) %>%  #add a sum of genera for diversity by inv sample
   relocate(genera.by.indiv, .after = quant_reading)
 
+bp23.genomic.xday.binary <- bp23.genomic.xday %>% 
+  mutate(across(Abelmoschus:last_col(), ~ifelse(. > 0, 1, 0))) %>% #read count data to presence absence 1s and 0s
+  mutate(genera.xday = rowSums(across(Abelmoschus:last_col()))) %>%  #add a sum of genera for diversity by inv sample
+  relocate(genera.xday, .after = site)
 
-#Quickly visualize MB results
-mb.genus.detections <- as.data.frame(colSums(bp23.genomic.binary[16:136])) %>% #THR COLUMNS SELECTED HERE ARE IMPORTANT FOR THE RESULTS YOU SEE. Make sure that they include all taxa
+#Quickly visualize MB results by SAMPLES
+mb.genus.detections <- as.data.frame(colSums(bp23.genomic.binary[16:ncol(bp23.genomic.binary)])) %>% #THR COLUMNS SELECTED HERE ARE IMPORTANT FOR THE RESULTS YOU SEE. Make sure that they include all taxa
   rownames_to_column(var = "genus") %>% 
-  rename(n.sample.detections = "colSums(bp23.genomic.binary[16:136])")
+  rename(n.sample.detections = "colSums(bp23.genomic.binary[16:ncol(bp23.genomic.binary)])")
 mb.genus.detections <- mb.genus.detections[order(mb.genus.detections$n.sample.detections, decreasing = TRUE) , ]
-mb.genus.detections <- mb.genus.detections[-4, ] #NA row
-top.mb.genus.detections <- mb.genus.detections[1:34,]
-top.mb.genus.detections <- top.mb.genus.detections %>% 
-  filter(genus != "Dioscorea") %>% 
-  filter(genus != "Spondias") %>% 
-  filter(genus != "Leptospermum")
-  
+top.mb.genus.detections <- mb.genus.detections[1:30,]
 
+  
 fig.mb.title <- expression(paste("Top plant genera detected in", italic(" B. pascuorum "), "genetic sampling 2023"))
 ggplot(top.mb.genus.detections, aes(x = reorder(genus, -n.sample.detections)
                                                  , y = n.sample.detections)) +
@@ -153,6 +166,24 @@ ggplot(top.mb.genus.detections, aes(x = reorder(genus, -n.sample.detections)
         plot.title = element_text(hjust=0.5)) +
   labs(x = "Plant Genus", y = "Positive Detections in Gut Samples") +
   ggtitle(fig.mb.title) 
+
+#Quickly visualize MB results by SAMPLING DAYS
+mb.genus.detections.xday <- as.data.frame(colSums(bp23.genomic.xday.binary[5:ncol(bp23.genomic.xday.binary)])) %>% 
+  rownames_to_column(var = "genus") %>% 
+  rename(n.day.detections = "colSums(bp23.genomic.xday.binary[5:ncol(bp23.genomic.xday.binary)])")
+mb.genus.detections.xday <- mb.genus.detections.xday[order(mb.genus.detections.xday$n.day.detections, decreasing = TRUE) , ]
+top.mb.genus.detections.xday <- mb.genus.detections.xday[1:32,]
+top.mb.genus.detections.xday <- top.mb.genus.detections.xday %>% 
+  filter(genus != "Dioscorea") %>% 
+  filter(genus != "Spondias") %>% 
+  filter(genus != "Pleuropterus")
+
+fig.mb.days.title <- expression(paste("Top plant genera detected in", italic(" B. pascuorum "), "genetic sampling 2023 (sampling days aggregated)"))
+ggplot(top.mb.genus.detections.xday, aes(x = reorder(genus, -n.day.detections), y = n.day.detections)) +
+  geom_col(alpha = 0.7) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), plot.title = element_text(hjust=0.5)) +
+  labs(x = "Plant Genus", y = "Positive metabarcoding detection days") +
+  ggtitle(fig.mb.days.title)
 
 
 
@@ -165,8 +196,10 @@ bp23.genomic.binary4stats <- bp23.genomic.binary %>%
   mutate(method = rep("metabarcoding")) %>% #add a methodology identifier for next analysis
   relocate(method, .after = "site")
 
-
-
+bp23.genomic.binary4stats.xday <- bp23.genomic.xday.binary %>% 
+  select(-c(day, genera.xday)) %>%
+  mutate(method = rep("metabarcoding")) %>%
+  relocate(method, .after = "site")
 
 
 #Analyses by period, site, bombus size, etc. ----
@@ -193,7 +226,7 @@ anova_a_period <- anova(disp_anova_a_period)
 #looks like the answer is no, but composition yes could change between periods right? 
 #(ie. LJ's figure from ecoflor poster)
 #could explore with permanova/NMDS:
-
+#I repeated this for samples grouped by day and there is no change to the conclusion
 
 
 
