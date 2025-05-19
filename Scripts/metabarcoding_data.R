@@ -62,6 +62,14 @@ bp.asv.tax.2023 <- tax_table.cl%>%
 bp.asv.genus.2023 <- bp.asv.tax.2023 %>% 
   select(asv_id,genus)
 
+#Look for genera that only correspond to one ASV. These could be contaminants/misidentified sequences
+#These can be confirmed by BLASTing the ASV sequence
+ASVs.per.Genus <- as.data.frame(table(bp.asv.genus.2023$genus))
+single.ASVs <- ASVs.per.Genus %>% 
+  filter(Freq == 1) %>% 
+  rename(genus = Var1)
+single.ASVs <- left_join(single.ASVs, bp.asv.genus.2023, by = 'genus')
+
 
 #add intertegular distances to data 
 
