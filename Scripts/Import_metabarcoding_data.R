@@ -1,10 +1,10 @@
 ## Script for importing taxonomic assignation data from dada2
-# data must be downloaded from cluster, which has R bioconductor
+# data must be downloaded from cluster
 # they can be found in dada2_plant_**ANALISIS_ID**/data/dada2/03_taxonomy/**ID**/**ID**_tax_assignation.rds"
 # download to project Data/dada2_outputs
 
 library(here)
-library(phyloseq) #needs to be done in bioconductor
+library(phyloseq) 
 
 
 #import data output from dada2 to R

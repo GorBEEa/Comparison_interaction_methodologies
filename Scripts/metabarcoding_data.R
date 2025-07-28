@@ -39,6 +39,7 @@ library(phyloseq) ; packageVersion("phyloseq")
 plant.decontam0.5 <- readRDS(here("Data/gbp23.plant.decontam.0.5.RDS")) #all data in phyloseq format from strict decontam filter (th = 0.5)
 plant.decontam0.1 <- readRDS(here("Data/gbp23.plant.decontam.0.1.RDS")) #all data in phyloseq format from less strict decontam filter (th = 0.1)
 long.plant.decontam0.5 <- readRDS(here("Data/long.gbp23.plant.decontam.0.5.RDS")) #all data from ITS2 specific dada2 analysis in phyloseq format from strict decontam filter (th = 0.5)
+pollen.decontam0.5 <- readRDS(here("Data/pollen23.24.decontam.0.5.RDS")) #all data in phyloseq format from 20234 and 2024 Pollen sequence data
 
 known.misIDs <- c("Dioscorea", "Spondias", "Glycine", "Gingidia",
                   "Asparagus", "Broussonetia", "Cicer", "Dracophyllum", "Gaylussacia",
@@ -205,12 +206,12 @@ c.bp23.genomic.binary <-  bp23.genomic.binary %>% mutate(c_intertegular_dist_mm 
 
 bp23.genomic.binary4stats <- bp23.genomic.binary %>% 
   select(period, site, Abelmoschus:last_col()) %>% 
-  mutate(method = rep("metabarcoding")) %>% #add a methodology identifier for next analysis
+  mutate(method = rep("gut.metabarcoding")) %>% #add a methodology identifier for next analysis
   relocate(method, .after = "site")
 
 bp23.genomic.binary4stats.xday <- bp23.genomic.xday.binary %>% 
   select(-c(day, genera.xday)) %>%
-  mutate(method = rep("metabarcoding")) %>%
+  mutate(method = rep("gut.metabarcoding")) %>%
   relocate(method, .after = "site")
 
 

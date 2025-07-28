@@ -2,20 +2,20 @@
 
 
 # Load libraries
-library(dplyr)
 library(decontam); packageVersion("decontam")
 library(phyloseq) ; packageVersion("phyloseq")
 library(ggplot2); packageVersion("ggplot2")
 
 # Load data
-count_tab <- read.table(here("Data/dada2_outputs/2023_plant_GorBEEa_ASVs_counts.tsv"), header=T, row.names=1,
+count_tab <- read.table(here("Data/dada2_outputs/2023_24_pollen_GorBEEa_ASVs_counts.tsv"), header=T, row.names=1,
                         check.names=F, sep="\t")
 
-tax_tab <- as.matrix(read.table(here("Data/dada2_outputs/2023_plant_GorBEEa_ASVs_taxonomy.tsv"), header=T,
+tax_tab <- as.matrix(read.table(here("Data/dada2_outputs/2023_24_pollen_GorBEEa_ASVs_taxonomy.tsv"), header=T,
                                 row.names=1, check.names=F, sep="\t"))
 
-sample_info_tab <- read.delim(here("Data/dada2_outputs/2023_BP_metab_sample_info.tsv"),
-                                   header=T, row.names=1, check.names=F, sep="\t")
+sample_info_tab <- read.delim(here("Data/dada2_outputs/2023_24_pollen_GorBEEa_sample_info.tsv"),
+                              header=T, row.names=1, check.names=F, sep="\t")
+sample_info_tab$type[rownames(sample_info_tab) != "PBLANKP0101I_ITS"] <- "sample" #a correction. for some reason they all read as a negative control in type
 
 # Setting the color column to be of type "character", which helps later
 sample_info_tab$color_p <- as.character(sample_info_tab$color_p)
@@ -147,16 +147,16 @@ ps.cont <- prune_taxa(contamdf.prev$contaminant, physeq)
 ## 1.d) Remove negative controls from phyloseq object     ####
 
 # Filter out "negative" samples based on the "type" variable in sample_data
-ps.gbp23.plant <- prune_samples(sample_data(ps.nocont)$type == "sample", ps.nocont)
+ps.pollen23.24 <- prune_samples(sample_data(ps.nocont)$type == "sample", ps.nocont)
 # Verify the number of samples and variables in the new object
-ps.gbp23.plant
+ps.pollen23.24
 # Check the original sample types
 table(sample_data(ps.nocont)$type)
 # Check the filtered sample types
-table(sample_data(ps.gbp23.plant)$type)
+table(sample_data(ps.pollen23.24)$type)
 
 # Save the ps.gbp23 object to an RDS file
-saveRDS(ps.gbp23.plant, file = here("Data/long.gbp23.plant.decontam.0.5.RDS"))
+saveRDS(ps.pollen23.24, file = here("Data/pollen23.24.decontam.0.5.RDS"))
 
 
 
