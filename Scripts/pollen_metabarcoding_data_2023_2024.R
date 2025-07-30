@@ -67,6 +67,9 @@ poln.single.ASVs <- left_join(poln.single.ASVs, poln.asv.genus.2023.24, by = 'ge
 poln.asvNs.w.genus.2023.24 <- right_join(poln.asv.counts.2023.24,poln.asv.genus.2023.24, by = "asv_id")
 poln.asvNs.w.genus.2023.24 <- poln.asvNs.w.genus.2023.24 %>% relocate(genus, .after = asv_id) %>%  #this is just to look and make sure it worked
   filter(!genus %in% known.misIDs)
+#Just 2023
+poln.asvNs.w.genus.2023 <- poln.asvNs.w.genus.2023.24 %>% select(asv_id, genus, starts_with("Y23"))
+
 #create a binary version of the above table
 #basically a genus occurence table organized by samples
 binary.poln.asvNs.w.genus.2023.24 <- poln.asvNs.w.genus.2023.24 %>% 
@@ -114,37 +117,52 @@ poln.genus.hits.23.24 <- poln.asvNs.w.genus.2023.24 %>%
 
 paste("Metabarcoding detected", nrow(poln.genus.hits.23.24),"plant genera across all of the 2023 and 2024 corbicular pollen samples")
 
+#Just 2023
+poln.genus.hits.2023 <- poln.asvNs.w.genus.2023 %>%
+  #select(-starts_with("Y24")) %>% #only 2023
+  group_by(genus) %>% 
+  summarise(across(where(is.numeric), sum)) %>% #here we already see that 160 genera were detected in 2023
+  rowwise() %>% 
+  filter(if_any(where(is.numeric), ~. > 0)) %>% #should already be the difinitive list, but if any genera still have 0 detections, remove them
+  ungroup %>% 
+  select(genus) %>%  #create just a list of the genera
+  filter(genus != "NA")
+
+paste("Metabarcoding detected", nrow(poln.genus.hits.2023),"plant genera across all of the 2023 corbicular pollen samples")
+
+
+#From here I am going to only work with 2023 samples---------------------------
 
 
 #Aggregate by sampling days
-poln.genomic.xday <- poln23.24.genomic.specs %>%
+poln.genomic.xday.2023 <- poln.2023.genomic.specs %>%
   group_by(period, site) %>%
   summarise(across(Achillea:last_col(), sum), .groups = "drop") %>% 
   mutate(day = paste0("P", period, "S", site)) %>% 
   relocate(day)
 
 
-#make binary versions of 2023-2024 data
+#make binary versions of 2023 data
 
-poln.genomic.binary.23.24 <- poln23.24.genomic.specs %>% 
+poln.genomic.binary.2023 <- poln.2023.genomic.specs %>% 
   mutate(across(Achillea:last_col(), ~ifelse(. > 0, 1, 0))) %>% #read count data to presence absence 1s and 0s
   mutate(genera.by.indiv = rowSums(across(Achillea:last_col()))) %>%  #add a sum of genera for diversity by inv sample
   relocate(genera.by.indiv, .after = quant_reading)
 
-poln.23.24.genomic.xday.binary <- poln.genomic.xday %>% 
+poln.2023.genomic.xday.binary <- poln.genomic.xday.2023 %>% 
   mutate(across(Achillea:last_col(), ~ifelse(. > 0, 1, 0))) %>% #read count data to presence absence 1s and 0s
   mutate(genera.xday = rowSums(across(Achillea:last_col()))) %>%  #add a sum of genera for diversity by inv sample
   relocate(genera.xday, .after = site)
 
 #Quickly visualize MB results by poln.samples
-poln.mb.genus.detections <- as.data.frame(colSums(poln.genomic.binary.23.24[13:ncol(poln.genomic.binary.23.24)])) %>% #THR COLUMNS SELECTED HERE ARE IMPORTANT FOR THE RESULTS YOU SEE. Make sure that they include all taxa
+poln.mb.genus.detections <- as.data.frame(colSums(poln.genomic.binary.2023[13:ncol(poln.genomic.binary.2023)])) %>% #THR COLUMNS SELECTED HERE ARE IMPORTANT FOR THE RESULTS YOU SEE. Make sure that they include all taxa
   rownames_to_column(var = "genus") %>% 
-  rename(n.sample.detections = "colSums(poln.genomic.binary.23.24[13:ncol(poln.genomic.binary.23.24)])")
+  rename(n.sample.detections = "colSums(poln.genomic.binary.2023[13:ncol(poln.genomic.binary.2023)])")
 poln.mb.genus.detections <- poln.mb.genus.detections[order(poln.mb.genus.detections$n.sample.detections, decreasing = TRUE) , ]
 top.poln.mb.genus.detections <- poln.mb.genus.detections[1:30,]
 
 
-poln.fig.mb.title <- expression(paste("Top plant genera detected by metabarcoding in", italic(" B. pascuorum "), "corbicular pollen samples 2023-2024"))
+poln.fig.mb.title <- expression(paste("Top plant genera detected by metabarcoding in", italic(" B. pascuorum "), "corbicular pollen samples 2023"))
 ggplot(top.poln.mb.genus.detections, aes(x = reorder(genus, -n.sample.detections)
                                     , y = n.sample.detections)) +
   geom_col(alpha = 0.7) +
@@ -154,14 +172,14 @@ ggplot(top.poln.mb.genus.detections, aes(x = reorder(genus, -n.sample.detections
   ggtitle(poln.fig.mb.title) 
 
 #Quickly visualize MB results by SAMPLING DAYS
-poln.mb.genus.detections.xday <- as.data.frame(colSums(poln.23.24.genomic.xday.binary[5:ncol(poln.23.24.genomic.xday.binary)])) %>% 
+poln.mb.genus.detections.xday <- as.data.frame(colSums(poln.2023.genomic.xday.binary[5:ncol(poln.2023.genomic.xday.binary)])) %>% 
   rownames_to_column(var = "genus") %>% 
-  rename(n.day.detections = "colSums(poln.23.24.genomic.xday.binary[5:ncol(poln.23.24.genomic.xday.binary)])")
+  rename(n.day.detections = "colSums(poln.2023.genomic.xday.binary[5:ncol(poln.2023.genomic.xday.binary)])")
 poln.mb.genus.detections.xday <- poln.mb.genus.detections.xday[order(poln.mb.genus.detections.xday$n.day.detections, decreasing = TRUE) , ]
 top.poln.mb.genus.detections.xday <- poln.mb.genus.detections.xday[1:32,]
 top.poln.mb.genus.detections.xday <- top.poln.mb.genus.detections.xday 
 
-poln.fig.mb.days.title <- expression(paste("Top plant genera detected in", italic(" B. pascuorum "), "genetic sampling 2023-2024 (sampling days aggregated)"))
+poln.fig.mb.days.title <- expression(paste("Top plant genera detected in", italic(" B. pascuorum "), "genetic sampling 2023 (sampling days aggregated)"))
 ggplot(top.poln.mb.genus.detections.xday, aes(x = reorder(genus, -n.day.detections), y = n.day.detections)) +
   geom_col(alpha = 0.7) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1), plot.title = element_text(hjust=0.5)) +
@@ -172,12 +190,12 @@ ggplot(top.poln.mb.genus.detections.xday, aes(x = reorder(genus, -n.day.detectio
 
 #organize metabarcoding data for all in 1 analysis with interaction and flower count data
 
-poln.genomic.binary.23.24.4stats <- poln.genomic.binary.23.24 %>% 
+poln.genomic.binary.2023.4stats <- poln.genomic.binary.2023 %>% 
   select(period, site, Achillea:last_col()) %>% 
   mutate(method = rep("pollen.metabarcoding")) %>% #add a methodology identifier for next analysis
   relocate(method, .after = "site")
 
-poln.genomic.binary.23.24.xday.4stats <- poln.23.24.genomic.xday.binary %>% 
+poln.genomic.binary.2023.xday.4stats <- poln.2023.genomic.xday.binary %>% 
   select(-c(day, genera.xday)) %>%
   mutate(method = rep("pollen.metabarcoding")) %>%
   relocate(method, .after = "site")
@@ -193,8 +211,8 @@ poln.genomic.binary.23.24.xday.4stats <- poln.23.24.genomic.xday.binary %>%
 #Analysis by period -----
 
 #get number of genera detected by period
-bp23.genomic.periods <- bp23.genomic.analys %>% 
-  pivot_longer(cols = Abelmoschus:last_col(), names_to = "genus", values_to = "count") %>%
+poln.2023.genomic.periods <- poln.2023.genomic.specs %>% 
+  pivot_longer(cols = Achillea:last_col(), names_to = "genus", values_to = "count") %>%
   filter(count > 0) %>% 
   group_by(period, genus) %>% 
   slice(1) %>%  # Count only 1 detection per period
@@ -220,14 +238,14 @@ anova_a_period <- anova(disp_anova_a_period)
 #Analysis by site -----
 
 #get number of genera detected by site
-bp23.genomic.sites <- bp23.genomic.analys %>% 
-  pivot_longer(cols = Abelmoschus:last_col(), names_to = "genus", values_to = "count") %>%
+poln23.genomic.sites <- poln.2023.genomic.specs %>% 
+  pivot_longer(cols = Achillea:last_col(), names_to = "genus", values_to = "count") %>%
   filter(count > 0) %>% 
   group_by(site, genus) %>% 
   slice(1) %>%  # Count only 1 detection per site
   group_by(site) %>% 
   summarise(n_poln.samples = n_distinct(sample),
-            n.genera = n_distinct(genus),
+            n.genera.poln = n_distinct(genus),
             .groups = 'drop')
 
 

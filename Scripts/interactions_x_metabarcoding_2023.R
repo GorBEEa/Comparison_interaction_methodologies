@@ -22,38 +22,87 @@ library(ggvenn)
 #Overlap in methodology communities ----------
 
 #Which interaction transect species were detected by gut metabarcoding 
-detected.int.genus <- df.int.genus %>% distinct(genus) #Clean list of genera (27) from BP interactions
-detected.int.genus$mb.detected <- as.integer(detected.int.genus$genus %in% genus.hits.23$genus) #presence absence comparison
-int.genus.occur.mb.detect <- full_join(detected.int.genus, df.int.genus %>% count(genus)) #table with total interaction counts for 2023 by genus (n) and their binary value for detection y/n with mb
+gut.detected.int.genus <- df.int.genus %>% distinct(genus) #Clean list of genera (27) from BP interactions
+gut.detected.int.genus$mb.detected <- as.integer(gut.detected.int.genus$genus %in% genus.hits.23$genus) #presence absence comparison
+int.genus.occur.gut.mb.detect <- full_join(gut.detected.int.genus, df.int.genus %>% count(genus)) #table with total interaction counts for 2023 by genus (n) and their binary value for detection y/n with mb
 #result: all 27 interaction taxa were observed by MB
 
+#Which interaction transect species were detected by pollen metabarcoding 
+poln.detected.int.genus <- df.int.genus %>% distinct(genus) #Clean list of genera (27) from BP interactions
+poln.detected.int.genus$mb.detected <- as.integer(poln.detected.int.genus$genus %in% poln.genus.hits.2023$genus) #presence absence comparison
+poln.genus.occur.gut.mb.detect <- full_join(poln.detected.int.genus, df.int.genus %>% count(genus)) #table with total interaction counts for 2023 by genus (n) and their binary value for detection y/n with mb
+#result: 24 of 27 interaction taxa were observed by MB, missing taxa: Anemone, Jasione, Arabis
 
-#Inverse analysis of above - which genera observed in metabarcoding were observed in interactions -----
+
+#Inverse analysis of above - which genera observed in gut metabarcoding were observed in interactions -----
 observed.mb.genus <- genus.hits.23
 observed.mb.genus$int.detected <- as.integer(observed.mb.genus$genus %in% df.int.genus$genus)
 observed.mb.genus %>% filter(int.detected == 1)
-#result: Interactions did not detect any species beyond those detected by metabarcoding
+#result: Interactions did not detect any species beyond those detected by gut metabarcoding
+
+#Which genera observed in pollen metabarcoding were observed in interactions -----
+observed.pmb.genus <- poln.genus.hits.2023
+observed.pmb.genus$int.detected <- as.integer(observed.pmb.genus$genus %in% df.int.genus$genus)
+observed.pmb.genus %>% filter(int.detected == 1)
+#result: Interactions did not detect any species beyond those detected by pollen metabarcoding
 
 
-#which detected by metabarcoding were observed in flower counts?
+#which detected by gut metabarcoding were observed in flower counts?
 observed.mb.genus$flower.count.detected <- as.integer(observed.mb.genus$genus %in% flower.count.genera$flower_genus)
-paste("Of the", nrow(genus.hits.23),"taxa detected by metabarcoding,", 
+paste("Of the", nrow(genus.hits.23),"taxa detected by gut metabarcoding,", 
       nrow(observed.mb.genus %>% filter(flower.count.detected == 1)),
       "were observed in the flower counts")
 
-#inverse of above - how many flower count genera were not in metabarcoding results?
+#which detected by pollen metabarcoding were observed in flower counts?
+observed.pmb.genus$flower.count.detected <- as.integer(observed.pmb.genus$genus %in% flower.count.genera$flower_genus)
+paste("Of the", nrow(poln.genus.hits.2023),"taxa detected by pollen metabarcoding,", 
+      nrow(observed.mb.genus %>% filter(flower.count.detected == 1)),
+      "were observed in the flower counts")
+
+#inverse of above - how many flower count genera were not in gut metabarcoding results?
 cp.flower.count.genera <- flower.count.genera
 cp.flower.count.genera$in.mb <- as.integer(flower.count.genera$flower_genus %in% genus.hits.23$genus)
-in.fc.not.mb <- cp.flower.count.genera %>% filter(in.mb == 0)
+in.fc.not.gmb <- cp.flower.count.genera %>% filter(in.mb == 0)
+paste("Of the", nrow(flower.count.genera),"taxa detected in flower counts,", nrow(in.fc.not.gmb),
+      "were unique to this survey when compared with gut metabarcoding")
+
+#How many flower count genera were not in pollen metabarcoding results?
+cp.flower.count.genera$in.pmb <- as.integer(flower.count.genera$flower_genus %in% poln.genus.hits.2023$genus)
+in.fc.not.pmb <- cp.flower.count.genera %>% filter(in.pmb == 0)
+paste("Of the", nrow(flower.count.genera),"taxa detected in flower counts,", nrow(in.fc.not.pmb),
+      "were unique to this survey when compared with pollen metabarcoding")
+
+#How many flower count genera were not in any metabarcoding results?
+in.fc.not.mb <- cp.flower.count.genera %>% filter(in.mb == 0 & in.pmb == 0)
 paste("Of the", nrow(flower.count.genera),"taxa detected in flower counts,", nrow(in.fc.not.mb),
-      "were unique to this survey")
+      "were unique to this survey when compared with pollen metabarcoding")
+
+
+#Which taxa observed in gut metabarcoding were undetected by pollen metabarcoding?
+observed.mb.genus$pmb.detected <- as.integer(observed.mb.genus$genus %in% poln.genus.hits.2023$genus)
+in.gmb.not.pmb <-  observed.mb.genus %>% filter(pmb.detected == 0)
+paste("Of the", nrow(genus.hits.23),"taxa detected in gut metabarcoding,", nrow(in.gmb.not.pmb),
+      "were uniquely detected when compared with pollen metabarcoding")
+
+#Inverse of above - Which taxa observed in pollen metabarcoding were undetected by gut metabarcoding?
+observed.pmb.genus$gmb.detected <- as.integer(poln.genus.hits.2023$genus %in% observed.mb.genus$genus)
+in.pmb.not.gmb <-  observed.pmb.genus %>% filter(gmb.detected == 0)
+paste("Of the", nrow(poln.genus.hits.2023),"taxa detected in gut metabarcoding,", nrow(in.pmb.not.gmb),
+      "were uniquely detected when compared with gut metabarcoding")
+
+
 
 #Venn diagram visualization of detection overlap
 #just add another part to the list once we have pollen
-taxa.all.methodologies <- list("Gut Metabarcoding" = genus.hits.23$genus, "Interactions" = detected.int.genus$genus, "Flower Count" = flower.count.genera$flower_genus)
+taxa.all.methodologies <- list(
+  "Gut Metabarcoding\nN = 148" = genus.hits.23$genus,
+  "Interactions\nN = 27" = gut.detected.int.genus$genus, #this works to give the correct N, but it's sketchy. There is probably a better way
+  "Flower Count\nN = 117" = flower.count.genera$flower_genus,
+  "Pollen Metabarcoding\nN = 130" = poln.genus.hits.2023$genus)
+
 ggvenn::ggvenn(taxa.all.methodologies,
                show_percentage = FALSE,
-               fill_color = c("forestgreen","lightblue","slategrey"),
+               fill_color = c("forestgreen","lightblue","slategrey","goldenrod1"),
                stroke_size = 0.5,
                set_name_size = 4)
 
@@ -61,15 +110,19 @@ ggvenn::ggvenn(taxa.all.methodologies,
 
 method.colors <- c("c_n_genera_flower_count" ="slategrey",
                    "a_n_genera_interactions" = "lightblue",
-                   "b_n_genera_metabarcoding" = "forestgreen") #set some universal colors for this project
+                   "b_n_genera_gut_metabarcoding" = "forestgreen",
+                   "d_n_genera_pollen_metabarcoding" = "goldenrod1") #set some universal colors for this project
 
 compare.gen.by.periods <- right_join(int.genus.by.period, bp23.genomic.periods, by = "period") %>% 
-  right_join(., flower.genus.by.period, by = "period")
+  right_join(., flower.genus.by.period, by = "period") %>% 
+  right_join(., poln.2023.genomic.periods, by = "period") 
+  
 compare.gen.by.periods <- compare.gen.by.periods %>% 
-  select(c(period, n.genera.x, n.genera.y, n.flower.count.genera)) %>% 
-  rename(b_n_genera_metabarcoding = n.genera.y) %>% #the abc is for organizing bar on my plot by alphaetical order
+  select(c(period, n.genera.x, n.genera.y, n.flower.count.genera, n.genera)) %>% 
+  rename(b_n_genera_gut_metabarcoding = n.genera.y) %>% #the abc is for organizing bar on my plot by alphaetical order
   rename(a_n_genera_interactions = n.genera.x) %>% 
-  rename(c_n_genera_flower_count = n.flower.count.genera)
+  rename(c_n_genera_flower_count = n.flower.count.genera) %>% 
+  rename(d_n_genera_pollen_metabarcoding = n.genera) 
   
 
 long.gen.by.periods <- compare.gen.by.periods %>% 
@@ -89,12 +142,15 @@ ggplot(long.gen.by.periods, aes(period, n.genera, fill = method)) +
 #Diversity by site -----
 
 compare.gen.by.sites <- right_join(int.genus.by.site, bp23.genomic.sites, by = "site") %>% 
-  right_join(., flower.genus.by.site, by = "site")
+  right_join(., flower.genus.by.site, by = "site") %>% 
+  right_join(., poln23.genomic.sites, by = "site") 
+
 compare.gen.by.sites <- compare.gen.by.sites %>% 
-  rename(b_n_genera_metabarcoding = n.genera.y) %>% 
+  rename(b_n_genera_gut_metabarcoding = n.genera.y) %>% 
   rename(a_n_genera_interactions = n.genera.x) %>% 
   rename(c_n_genera_flower_count = n.flower.count.genera) %>% 
-  select(c(site, b_n_genera_metabarcoding, a_n_genera_interactions, c_n_genera_flower_count))
+  rename(d_n_genera_pollen_metabarcoding = n.genera.poln) %>% 
+  select(c(site, b_n_genera_gut_metabarcoding, a_n_genera_interactions, c_n_genera_flower_count, d_n_genera_pollen_metabarcoding))
 
 long.gen.by.sites <- compare.gen.by.sites %>% 
   pivot_longer(!site) %>% 
@@ -106,6 +162,7 @@ ggplot(long.gen.by.sites, aes(site, n.genera, fill = method)) +
   scale_x_continuous(breaks = 1:16, labels = 1:16) +
   scale_fill_manual(values = method.colors) +
   theme(axis.ticks.x = element_blank())
+#looks like sites missing pollen samples hav just been omitted from the analysis in general, coiuld fix but not a priority
 
 #ok these analyses are interesting for context at least
 #could later go deeper and look at diversity by period across sites
@@ -123,36 +180,70 @@ ggplot(long.gen.by.sites, aes(site, n.genera, fill = method)) +
 #bring together binary presence absence data from interactions and metabarcoding into one table
 
 bp23.all.binary <- full_join(bp23.int4stats.wide.binary, bp23.genomic.binary4stats.xday) %>% 
-  full_join(.,bp23.fc4stats.wide.binary) 
+  full_join(.,bp23.fc4stats.wide.binary) %>% 
+  full_join(.,poln.genomic.binary.2023.xday.4stats)
 
-#This part gets messy....
+#try the same thing, joining data only by shared sampling days
+n_methods <- n_distinct(bp23.all.binary$method)
+complete_pairs <- bp23.all.binary %>%
+       distinct(period, site, method) %>%
+       group_by(period, site) %>%
+       tally() %>%
+       filter(n == n_methods) %>%
+       select(period, site)
+
+bp23.full.days.binary <- bp23.all.binary %>% 
+  inner_join(complete_pairs, by = c("period", "site"))
+
 
 #vegan outputs do not like a few of the "samples" that have no species detections at all
 #make a new version of all of the binary data that is "cleaned" of these lines
 #but first see what they are/what they mean
 
-#clean out zero sum columns in binary data for statistical analyses. This is also done later, so redundant
-#clean4stats.bp23.all.binary <- bp23.all.binary[rowSums(bp23.all.binary[, 4:ncol(bp23.all.binary)], na.rm = TRUE) > 0, ] #keeps only the rows that have greater than 0 sums in binary presence absence
-#currently not necessary with day aggregated MB data
-
+#clean out zero sum columns and NAs in binary data for statistical analyses. The next two commands do the same and are redundant, but why not do both
+clean4stats.bp23.all.binary <- bp23.all.binary[rowSums(bp23.all.binary[, 4:ncol(bp23.all.binary)], na.rm = TRUE) > 0, ] #keeps only the rows that have greater than 0 sums in binary presence absence
 #clean4stats.bp23.all.binary <- bp23.all.binary %>% select(!Iberis) #may need to do this, Iberis was only in problem sample
 clean4stats.bp23.all.binary <- bp23.all.binary %>% 
   replace(is.na(bp23.all.binary), 0) %>% 
-  filter(rowSums(pick(4:ncol(bp23.all.binary))) != 0) #currently doesn't change anything
+  filter(rowSums(pick(4:ncol(bp23.all.binary))) != 0)
+
+#trial with just shared days
+clean4stats.bp23.full.days.binary <- bp23.full.days.binary %>% 
+  replace(is.na(bp23.full.days.binary), 0) %>% 
+  filter(rowSums(pick(4:ncol(bp23.full.days.binary))) != 0)
+
 
 #simplify factors for nMDS 
 site.all <- as.factor(clean4stats.bp23.all.binary$site)
 period.all <- as.factor(clean4stats.bp23.all.binary$period)
 methodology <- as.factor(clean4stats.bp23.all.binary$method)
 #length(factor) #to count/check factor lengths (should all be the same and same as row # in clean4stats.bp23.all.binary and all.plants)
+
+#trial with just shared days
+site.full <- as.factor(clean4stats.bp23.full.days.binary$site)
+period.full <- as.factor(clean4stats.bp23.full.days.binary$period)
+methodology.full <- as.factor(clean4stats.bp23.full.days.binary$method)
+full.plants <- clean4stats.bp23.full.days.binary %>% select(!c(site, period, method))
+
+
+
 all.plants <- clean4stats.bp23.all.binary %>% 
   select(!c(site, period, method))
 
-#NMDS visualiztion
-#prepare NMDS data
+#NMDS visualization of data ----
+
+#prepare NMDS data with vegan
 
 dist.all.plants <- vegdist(all.plants, method = "raup") #calc distance between communities for later stat analysis
+set.seed(123) #this should make it so that the nmds results are always the same despite permutations
 all.plant.mds <- metaMDS(all.plants, distance = "raup") 
+
+#trial with just shared days
+dist.full.plants <- vegdist(full.plants, method = "raup") #calc distance between communities for later stat analysis
+set.seed(123) #this should make it so that the nmds results are always the same despite permutations
+full.plant.mds <- metaMDS(full.plants, distance = "raup") 
+
+
 
 #Quick plot option
 plot(all.plant.mds$points, col = method.colors, pch = 16)
@@ -165,7 +256,8 @@ nmds_points <- as.data.frame(all.plant.mds$points)
 nmds_points$methodology <- methodology
 method.colors2 <- c("count" ="slategrey",
                     "interaction" = "lightblue",
-                    "metabarcoding" = "forestgreen")
+                    "gut.metabarcoding" = "forestgreen",
+                    "pollen.metabarcoding" = "goldenrod1")
 
 polygon_data <- nmds_points %>%
   group_by(methodology) %>%
@@ -182,7 +274,9 @@ NMDS.method.comparisons <- ggplot(nmds_points, aes(x = MDS1, y = MDS2, color = m
                      labels = c(
                       "count" = "Floral diversity survey",
                       "interaction" = "Interaction observations",
-                      "metabarcoding" = "Metabarcoding detections")) +
+                      "gut.metabarcoding" = "Gut metabarcoding",
+                      "pollen.metabarcoding" = "Pollen metabarcoding")
+                     ) +
   scale_fill_manual(values = method.colors2) +
   theme_classic() +  
   labs(
@@ -192,19 +286,66 @@ NMDS.method.comparisons <- ggplot(nmds_points, aes(x = MDS1, y = MDS2, color = m
     color = "Methodology"
   ) +
   theme(plot.title = element_text(hjust=0.5),
-    legend.position = c(0.13, 0.85)
+    legend.position.inside = c(0.13, 0.85)
   )
 
 
+
+#trial with just shared days
+full.nmds_points <- as.data.frame(full.plant.mds$points)
+full.nmds_points$methodology <- methodology.full
+full.polygon_data <- full.nmds_points %>%
+  group_by(methodology) %>%
+  slice(chull(MDS1, MDS2))
+full.NMDS.title <- expression(paste("NMDS visualization of network composition by methodology for days with samples from all methodologies"))
+full.NMDS.method.comparisons <- ggplot(full.nmds_points, aes(x = MDS1, y = MDS2, color = methodology)) +
+  geom_polygon(data = full.polygon_data, 
+               aes(fill = methodology, color = NULL), 
+               alpha = 0.2, 
+               show.legend = FALSE) +
+  geom_point(size = 3) + 
+  scale_color_manual(values = method.colors2,
+                     labels = c(
+                       "count" = "Floral diversity survey",
+                       "interaction" = "Interaction observations",
+                       "gut.metabarcoding" = "Gut metabarcoding",
+                       "pollen.metabarcoding" = "Pollen metabarcoding")
+  ) +
+  scale_fill_manual(values = method.colors2) +
+  theme_classic() +  
+  labs(
+    title = full.NMDS.title,
+    x = "NMDS1",
+    y = "NMDS2",
+    color = "Methodology"
+  ) +
+  theme(plot.title = element_text(hjust=0.5),
+        legend.position.inside = c(0.13, 0.85)
+  )
+
+
+
 #statistical analysis using PERMANOVA
-permanova.all.data <- adonis2(all.plants ~ site.all*period.all*methodology, permutations = 9999, method = "raup")
+#Are the patterns observed withing NMDS real?
+
+permanova.all.data <- adonis2(all.plants ~ methodology, permutations = 9999, method = "raup", pairwise = TRUE)
 
 permanova.all.data %>% 
-  kbl(caption = "PERMANOVA analysis of spatiotemporal effects on observed plant diversity across three field survey methodologies:
-      Bombus gut DNA content, Interaction transects, and Floral diversity") %>% 
+  kbl(caption = "PERMANOVA analysis of methodology's effect on observed plant diversity across four survey methodologies:
+      Bombus gut DNA content and corbicular pollen DNA content, interaction transects, and floral diversity surveys.") %>% 
   kable_minimal(full_width = F, html_font = "Cambria")
 
-#This looks weird
+#Output probability that F statistic is significant, meaning that the model explains R2 *100% (Model/TotaL FOR sUMoFsQS) of the observed variation (SumOfSqs) between groups 
+
+#second check: are the groups really different in terms of how they are independently dispersed?
+metodology.disp <- betadisper(dist.all.plants, clean4stats.bp23.all.binary$method)
+#metodology.disp #observe average distances to mean between groups, do they look different?
+#interaction definitely looks more dispersed thatn the others, then gut mb
+anova(metodology.disp) #are the differences in dispersal significantly different?
+#looks like yes
+
+
+
 
 
 
