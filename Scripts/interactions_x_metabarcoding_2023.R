@@ -12,9 +12,9 @@
 #library(easystats)
 #library(visreg)
 #library(vegan)
+#library(easystats)
 
 library(mvabund)
-library(easystats)
 library(kableExtra)
 library(ggvenn)
 
@@ -106,6 +106,11 @@ ggvenn::ggvenn(taxa.all.methodologies,
                stroke_size = 0.5,
                set_name_size = 4)
 
+
+
+
+
+
 #Diversity by periods ----- 
 
 method.colors <- c("c_n_genera_flower_count" ="slategrey",
@@ -113,55 +118,28 @@ method.colors <- c("c_n_genera_flower_count" ="slategrey",
                    "b_n_genera_gut_metabarcoding" = "forestgreen",
                    "d_n_genera_pollen_metabarcoding" = "goldenrod1") #set some universal colors for this project
 
-compare.gen.by.periods <- right_join(int.genus.by.period, bp23.genomic.periods, by = "period") %>% 
-  right_join(., flower.genus.by.period, by = "period") %>% 
-  right_join(., poln.2023.genomic.periods, by = "period") 
+#compare.gen.by.periods <- right_join(int.genus.by.period, bp23.genomic.periods, by = "period") %>% right_join(., flower.genus.by.period, by = "period") %>%  right_join(., poln.2023.genomic.periods, by = "period") 
   
-compare.gen.by.periods <- compare.gen.by.periods %>% 
-  select(c(period, n.genera.x, n.genera.y, n.flower.count.genera, n.genera)) %>% 
-  rename(b_n_genera_gut_metabarcoding = n.genera.y) %>% #the abc is for organizing bar on my plot by alphaetical order
-  rename(a_n_genera_interactions = n.genera.x) %>% 
-  rename(c_n_genera_flower_count = n.flower.count.genera) %>% 
-  rename(d_n_genera_pollen_metabarcoding = n.genera) 
+#compare.gen.by.periods <- compare.gen.by.periods %>% select(c(period, n.genera.x, n.genera.y, n.flower.count.genera, n.genera)) %>% rename(b_n_genera_gut_metabarcoding = n.genera.y) %>% #the abc is for organizing bar on my plot by alphaetical order 
+  #rename(a_n_genera_interactions = n.genera.x) %>% rename(c_n_genera_flower_count = n.flower.count.genera) %>% rename(d_n_genera_pollen_metabarcoding = n.genera) 
   
 
-long.gen.by.periods <- compare.gen.by.periods %>% 
-  pivot_longer(!period) %>% 
-  rename(method = name) %>% 
-  rename(n.genera = value)
+# long.gen.by.periods <- compare.gen.by.periods %>% pivot_longer(!period) %>% rename(method = name) %>% rename(n.genera = value)
 
-ggplot(long.gen.by.periods, aes(period, n.genera, fill = method)) +
-  geom_col(position = "Dodge") +
-  scale_x_continuous(breaks = 1:6, labels = 1:6) +
-  scale_fill_manual(values = method.colors) +
-  theme(axis.ticks.x = element_blank())
+# ggplot(long.gen.by.periods, aes(period, n.genera, fill = method)) + geom_col(position = "Dodge") + scale_x_continuous(breaks = 1:6, labels = 1:6) + scale_fill_manual(values = method.colors) + theme(axis.ticks.x = element_blank())
 
 
 
 
 #Diversity by site -----
 
-compare.gen.by.sites <- right_join(int.genus.by.site, bp23.genomic.sites, by = "site") %>% 
-  right_join(., flower.genus.by.site, by = "site") %>% 
-  right_join(., poln23.genomic.sites, by = "site") 
+#compare.gen.by.sites <- right_join(int.genus.by.site, bp23.genomic.sites, by = "site") %>%right_join(., flower.genus.by.site, by = "site") %>% right_join(., poln23.genomic.sites, by = "site") 
 
-compare.gen.by.sites <- compare.gen.by.sites %>% 
-  rename(b_n_genera_gut_metabarcoding = n.genera.y) %>% 
-  rename(a_n_genera_interactions = n.genera.x) %>% 
-  rename(c_n_genera_flower_count = n.flower.count.genera) %>% 
-  rename(d_n_genera_pollen_metabarcoding = n.genera.poln) %>% 
-  select(c(site, b_n_genera_gut_metabarcoding, a_n_genera_interactions, c_n_genera_flower_count, d_n_genera_pollen_metabarcoding))
+#compare.gen.by.sites <- compare.gen.by.sites %>% rename(b_n_genera_gut_metabarcoding = n.genera.y) %>% rename(a_n_genera_interactions = n.genera.x) %>% rename(c_n_genera_flower_count = n.flower.count.genera) %>% rename(d_n_genera_pollen_metabarcoding = n.genera.poln) %>% select(c(site, b_n_genera_gut_metabarcoding, a_n_genera_interactions, c_n_genera_flower_count, d_n_genera_pollen_metabarcoding))
 
-long.gen.by.sites <- compare.gen.by.sites %>% 
-  pivot_longer(!site) %>% 
-  rename(method = name) %>% 
-  rename(n.genera = value)
+#long.gen.by.sites <- compare.gen.by.sites %>% pivot_longer(!site) %>% rename(method = name) %>% rename(n.genera = value)
 
-ggplot(long.gen.by.sites, aes(site, n.genera, fill = method)) +
-  geom_col(position = "Dodge") +
-  scale_x_continuous(breaks = 1:16, labels = 1:16) +
-  scale_fill_manual(values = method.colors) +
-  theme(axis.ticks.x = element_blank())
+#ggplot(long.gen.by.sites, aes(site, n.genera, fill = method)) + geom_col(position = "Dodge") + scale_x_continuous(breaks = 1:16, labels = 1:16) + scale_fill_manual(values = method.colors) + theme(axis.ticks.x = element_blank())
 #looks like sites missing pollen samples hav just been omitted from the analysis in general, coiuld fix but not a priority
 
 #ok these analyses are interesting for context at least
@@ -183,7 +161,7 @@ bp23.all.binary <- full_join(bp23.int4stats.wide.binary, bp23.genomic.binary4sta
   full_join(.,bp23.fc4stats.wide.binary) %>% 
   full_join(.,poln.genomic.binary.2023.xday.4stats)
 
-#try the same thing, joining data only by shared sampling days
+#Same thing, joining data only by shared sampling days
 n_methods <- n_distinct(bp23.all.binary$method)
 complete_pairs <- bp23.all.binary %>%
        distinct(period, site, method) %>%
@@ -196,13 +174,12 @@ bp23.full.days.binary <- bp23.all.binary %>%
   inner_join(complete_pairs, by = c("period", "site"))
 
 
-#vegan outputs do not like a few of the "samples" that have no species detections at all
+#vegan outputs sometimes do not like a few of the "samples" that have no species detections at all
 #make a new version of all of the binary data that is "cleaned" of these lines
 #but first see what they are/what they mean
 
 #clean out zero sum columns and NAs in binary data for statistical analyses. The next two commands do the same and are redundant, but why not do both
 clean4stats.bp23.all.binary <- bp23.all.binary[rowSums(bp23.all.binary[, 4:ncol(bp23.all.binary)], na.rm = TRUE) > 0, ] #keeps only the rows that have greater than 0 sums in binary presence absence
-#clean4stats.bp23.all.binary <- bp23.all.binary %>% select(!Iberis) #may need to do this, Iberis was only in problem sample
 clean4stats.bp23.all.binary <- bp23.all.binary %>% 
   replace(is.na(bp23.all.binary), 0) %>% 
   filter(rowSums(pick(4:ncol(bp23.all.binary))) != 0)
@@ -213,11 +190,15 @@ clean4stats.bp23.full.days.binary <- bp23.full.days.binary %>%
   filter(rowSums(pick(4:ncol(bp23.full.days.binary))) != 0)
 
 
-#simplify factors for nMDS 
+#simplify factors and data for nMDS 
 site.all <- as.factor(clean4stats.bp23.all.binary$site)
 period.all <- as.factor(clean4stats.bp23.all.binary$period)
 methodology <- as.factor(clean4stats.bp23.all.binary$method)
 #length(factor) #to count/check factor lengths (should all be the same and same as row # in clean4stats.bp23.all.binary and all.plants)
+all.plants <- clean4stats.bp23.all.binary %>% 
+  select(!c(site, period, method))
+
+
 
 #trial with just shared days
 site.full <- as.factor(clean4stats.bp23.full.days.binary$site)
@@ -227,8 +208,7 @@ full.plants <- clean4stats.bp23.full.days.binary %>% select(!c(site, period, met
 
 
 
-all.plants <- clean4stats.bp23.all.binary %>% 
-  select(!c(site, period, method))
+
 
 #NMDS visualization of data ----
 

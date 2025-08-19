@@ -215,6 +215,13 @@ bp23.genomic.binary4stats.xday <- bp23.genomic.xday.binary %>%
   relocate(method, .after = "site")
 
 
+
+
+
+
+
+
+
 #Analyses by period, site, bombus size, etc. ----
 
 #Analysis by period -----
@@ -231,10 +238,10 @@ bp23.genomic.periods <- bp23.genomic.analys %>%
             .groups = 'drop')
   
 #is there a significant diference in genera by period detected by stats?
-boxplot(genera.by.indiv ~ period, data = bp23.genomic.binary)
-dist_alphadiv <- vegdist(bp23.genomic.binary$genera.by.indiv, method = 'jaccard') #there may be two rows that sum to zero from the samples with 0 reads
-disp_anova_a_period <- betadisper(d = dist_alphadiv, group = bp23.genomic.binary$period)
-anova_a_period <- anova(disp_anova_a_period)
+#boxplot(genera.by.indiv ~ period, data = bp23.genomic.binary)
+#dist_alphadiv <- vegdist(bp23.genomic.binary$genera.by.indiv, method = 'jaccard') #there may be two rows that sum to zero from the samples with 0 reads
+#disp_anova_a_period <- betadisper(d = dist_alphadiv, group = bp23.genomic.binary$period)
+#anova_a_period <- anova(disp_anova_a_period)
 #report(anova_a_period)
 #looks like the answer is no, but composition yes could change between periods right? 
 #(ie. LJ's figure from ecoflor poster)
@@ -267,28 +274,26 @@ bp23.genomic.sites <- bp23.genomic.analys %>%
 #can do for data with read counts (bp23.genomic.analys) or presence absence (bp23.genomic.binary)
 #just change these lines
 #simplify factors/data involved
-stat.clean.bp23.genomic.binary <- bp23.genomic.binary[rowSums(bp23.genomic.binary[, 16:ncol(bp23.genomic.binary)], na.rm = TRUE) > 0, ]
-site <- as.factor(stat.clean.bp23.genomic.binary$site)
-period <- as.factor(stat.clean.bp23.genomic.binary$period)
-gut.plants <- stat.clean.bp23.genomic.binary %>%
-  select(Abelmoschus:last_col()) 
+#stat.clean.bp23.genomic.binary <- bp23.genomic.binary[rowSums(bp23.genomic.binary[, 16:ncol(bp23.genomic.binary)], na.rm = TRUE) > 0, ]
+#site <- as.factor(stat.clean.bp23.genomic.binary$site)
+#period <- as.factor(stat.clean.bp23.genomic.binary$period)
+#gut.plants <- stat.clean.bp23.genomic.binary %>% select(Abelmoschus:last_col()) 
 
 #There is a problematic sample that makes an outlier point because it only has read counts for the ASV of Iberis. Take it out.
-gut.plants <- gut.plants[-c(39),]
-gut.plants <- gut.plants %>% 
-  select(!Iberis)
+#gut.plants <- gut.plants[-c(39),]
+#gut.plants <- gut.plants %>%  select(!Iberis)
 
 #NMDS visualization
-dist.gut.plants <- vegdist(gut.plants, method = "raup", binary = TRUE) #calc distance between communities for later stat analysis
-gut.plants.mds <- metaMDS(gut.plants, distance = "raup", binary = TRUE)
-plot(gut.plants.mds$points, col = site, pch = 16, main = "Plant taxa in GBP23 gut DNA visualized by site")
-plot(gut.plants.mds$points, col = period, pch = 16, main = "Plant taxa in GBP23 gut DNA visualized by period")
+#dist.gut.plants <- vegdist(gut.plants, method = "raup", binary = TRUE) #calc distance between communities for later stat analysis
+#gut.plants.mds <- metaMDS(gut.plants, distance = "raup", binary = TRUE)
+#plot(gut.plants.mds$points, col = site, pch = 16, main = "Plant taxa in GBP23 gut DNA visualized by site")
+#plot(gut.plants.mds$points, col = period, pch = 16, main = "Plant taxa in GBP23 gut DNA visualized by period")
 
 
 #permanova test (play with ~ variables to understand more)
-permanova.gut.plants <- adonis2(gut.plants ~ period*site, permutations = 9999, method = "jaccard", by = "terms")
-summary(permanova.gut.plants)
-permanova.gut.plantss
+#permanova.gut.plants <- adonis2(gut.plants ~ period*site, permutations = 9999, method = "jaccard", by = "terms")
+#summary(permanova.gut.plants)
+#permanova.gut.plantss
 
 
 # Alternative analysis: many glm 
@@ -305,22 +310,11 @@ permanova.gut.plantss
 #Analysis by bee size ---------
 
 #plant DNA diversity by bombus size (using intertegular distance)
-fig.diversity.pd.intglr <- ggplot(data = bp23.genomic.binary, aes(period, genera.by.indiv, size = intertegular_dist_mm)) +
-  geom_point(alpha = 0.6, color = "skyblue4") +
-  theme(legend.key.size = unit(1, 'cm')) +
-  scale_x_continuous(breaks = 1:6, labels = 1:6) +
-  scale_size_continuous(range = c(1, 6)) +
-  labs(x = "Period",
-       y = "Detected plant genera",
-       size = "Intertegular Distance 
-       (mm)")
+# fig.diversity.pd.intglr <- ggplot(data = bp23.genomic.binary, aes(period, genera.by.indiv, size = intertegular_dist_mm)) +geom_point(alpha = 0.6, color = "skyblue4") + theme(legend.key.size = unit(1, 'cm')) + scale_x_continuous(breaks = 1:6, labels = 1:6) + scale_size_continuous(range = c(1, 6)) + labs(x = "Period", y = "Detected plant genera", size = "Intertegular Distance (mm)")
 
 #This isn't as informative as I had hoped
 
-fig.diversity.x.intglr <- ggplot(data = bp23.genomic.binary, aes(intertegular_dist_mm, genera.by.indiv)) +
-  geom_point(alpha = 0.6, color = "skyblue4") +
-  geom_smooth(method = "lm", color = "forestgreen") +
-  theme_classic()
+#fig.diversity.x.intglr <- ggplot(data = bp23.genomic.binary, aes(intertegular_dist_mm, genera.by.indiv)) + geom_point(alpha = 0.6, color = "skyblue4") + geom_smooth(method = "lm", color = "forestgreen") + theme_classic()
 
 #model.diversity.x.size <- lm(genera.by.indiv ~ intertegular_dist_mm, data = bp23.genomic.binary)
 #summary(model.diversity.x.size) #in this model a bee with intertegular of 0 would have
@@ -328,11 +322,11 @@ fig.diversity.x.intglr <- ggplot(data = bp23.genomic.binary, aes(intertegular_di
 
 #c.bp23.genomic.binary <-  bp23.genomic.binary %>% mutate(c_intertegular_dist_mm = intertegular_dist_mm - 4.91) #4.91 is the mean intertegular distance for 2023
 #above step moved up in code
-c.model.diversity.x.size <- lm(genera.by.indiv ~ c_intertegular_dist_mm, data = c.bp23.genomic.binary)
-report(c.model.diversity.x.size) #intercept corresponding to an int_dist of 4.91 in reality
+#c.model.diversity.x.size <- lm(genera.by.indiv ~ c_intertegular_dist_mm, data = c.bp23.genomic.binary)
+#report(c.model.diversity.x.size) #intercept corresponding to an int_dist of 4.91 in reality
 #relationship weak but significant, but is the model worthy?
-check_model(c.model.diversity.x.size) #Looks decent, but maybe there are other factors...
-DHARMa::testResiduals(c.model.diversity.x.size)
+#check_model(c.model.diversity.x.size) #Looks decent, but maybe there are other factors...
+#DHARMa::testResiduals(c.model.diversity.x.size)
 
   
 
