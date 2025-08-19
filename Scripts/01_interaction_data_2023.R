@@ -117,12 +117,12 @@ bp23.int4stats.wide.binary <- bp23.int4stats.wide %>% #make binary version
   relocate(method, .after = "site")
 
 
-
+save(bp23.int4stats.wide.binary, file = here("Data/gbp23.interaction.data4analysis.RData") )
 
 
 
 #try a GLM to see if there is interaction between diversity, period, and site -------
-genera.mixd.glm <- glm(n.genera ~ site * period, data = gen.ev, family = 'poisson')
+#genera.mixd.glm <- glm(n.genera ~ site * period, data = gen.ev, family = 'poisson')
 #summary(genera.mixd.glm)
 #right now nothing looks good because there are very few data only for BP
 #Poisson is an acceptable start for family, us DHarma or model_dashboard 
@@ -132,11 +132,11 @@ genera.mixd.glm <- glm(n.genera ~ site * period, data = gen.ev, family = 'poisso
 #Natxo's feedback is that a gaussian approach could also be appropriate
 #but that otherwise this is a valid way of looking at the data
 
-fig.s <- boxplot(n.genera ~ period, data = gen.ev)
+#fig.s <- boxplot(n.genera ~ period, data = gen.ev)
 
 #try anova way, e.g.
-dist_gen <- vegdist(gen.ev$n.genera, method = 'bray')
-genova <- betadisper(d = dist_gen, group = gen.ev$period)
-genova.out <- anova(genova)
+#dist_gen <- vegdist(gen.ev$n.genera, method = 'bray')
+#genova <- betadisper(d = dist_gen, group = gen.ev$period)
+#genova.out <- anova(genova)
 
 

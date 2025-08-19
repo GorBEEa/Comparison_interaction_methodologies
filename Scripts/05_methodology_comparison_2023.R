@@ -5,7 +5,7 @@
 
 #unblock these packages if not running after _data.R scripts
 #library(readr)
-#library(here)
+library(here)
 #library(tidyverse)
 #library(tidyr)
 #library(tidyselect)
@@ -156,6 +156,8 @@ method.colors <- c("c_n_genera_flower_count" ="slategrey",
 #Statistical analysis of methodologies ------
 
 #bring together binary presence absence data from interactions and metabarcoding into one table
+
+#load(file = here("Data/gbp23.interaction.data4analysis.RData"))
 
 bp23.all.binary <- full_join(bp23.int4stats.wide.binary, bp23.genomic.binary4stats.xday) %>% 
   full_join(.,bp23.fc4stats.wide.binary) %>% 
