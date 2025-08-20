@@ -22,7 +22,7 @@ flower.count.genera <- flower.count.2023 %>% distinct(flower_genus)
 
 flower.genus.by.period <-  flower.count.2023 %>% 
   group_by(period) %>% 
-  summarise(n.flower.count.genera = as.integer(n_distinct(flower_genus)))
+  summarise(n.genera.fc = as.integer(n_distinct(flower_genus)))
 
 flower.genus.by.site <-  flower.count.2023 %>% 
   group_by(site) %>% 

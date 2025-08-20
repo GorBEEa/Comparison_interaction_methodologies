@@ -89,7 +89,7 @@ gen.ev <- bp23.genus.int %>%
 int.genus.by.period <-  bp23.genus.int %>% 
   group_by(period) %>% 
   mutate(period = as.integer(period)) %>% 
-  summarise(n.genera = as.integer(n_distinct(genus)))
+  summarise(n.genera.int = as.integer(n_distinct(genus)))
 
 int.genus.by.site <-  bp23.genus.int %>% 
   group_by(site) %>% 

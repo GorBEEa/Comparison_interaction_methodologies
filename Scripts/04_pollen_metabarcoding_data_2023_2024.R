@@ -21,16 +21,6 @@
 
 pollen.decontam0.5 <- readRDS(here("Data/pollen23.24.decontam.0.5.RDS")) #all data in phyloseq format from 20234 and 2024 Pollen sequence data
 
-known.misIDs <- c("Dioscorea", "Spondias", "Glycine", "Gingidia",
-                  "Asparagus", "Broussonetia", "Cicer", "Dracophyllum", "Gaylussacia",
-                  "Gossypium", "Hexachlamys", "Macadamia", "Molinia", "Muehlenbeckia",
-                  "Musa", "Olearia", "Petroselinum", "Pimelea", "Pleurophyllum", "Schinus",
-                  "Pseudostellaria", "Secale", "Styphelia","Amana", "Cajanus", "Camellia",
-                  "Cannabis", "Carthamus", "Chrysolepis", "Coptidium","Faidherbia", "Garnotia",
-                  "Gonocytisus", "Heritiera", "Hesperomeles", "Hellenocarum", "Kandelia", "Liriodendron",
-                  "Matsumurella", "Neopallasia", "Nuttallanthus", "Paulownia", "Photinia", "Phytolacca",
-                  "Picnomon", "Rhizophora", "Saccharum", "Sesleriella", "Sophora", "Spartina", "Stauracanthus",
-                  "Suaeda", "Syringa", "Tagetes", "Theobroma", "Vigna", "Zea")
 
 #split into dataframes used in this analysis
 
@@ -225,14 +215,14 @@ poln.2023.genomic.periods <- poln.2023.genomic.specs %>%
   slice(1) %>%  # Count only 1 detection per period
   group_by(period) %>% 
   summarise(n_poln.samples = n_distinct(sample),
-            n.genera = n_distinct(genus),
+            n.genera.pmb = n_distinct(genus),
             .groups = 'drop')
 
 #is there a significant diference in genera by period detected by stats?
-boxplot(genera.by.indiv ~ period, data = poln.genomic.binary.23.24)
-dist_alphadiv <- vegdist(poln.genomic.binary.23.24$genera.by.indiv, method = 'jaccard') #there may be two rows that sum to zero from the poln.samples with 0 reads
-disp_anova_a_period <- betadisper(d = dist_alphadiv, group = poln.genomic.binary.23.24$period)
-anova_a_period <- anova(disp_anova_a_period)
+#boxplot(genera.by.indiv ~ period, data = poln.genomic.binary.23.24)
+#dist_alphadiv <- vegdist(poln.genomic.binary.23.24$genera.by.indiv, method = 'jaccard') #there may be two rows that sum to zero from the poln.samples with 0 reads
+#disp_anova_a_period <- betadisper(d = dist_alphadiv, group = poln.genomic.binary.23.24$period)
+#anova_a_period <- anova(disp_anova_a_period)
 #report(anova_a_period)
 #looks like the answer is no, but composition yes could change between periods right? 
 #(ie. LJ's figure from ecoflor poster)

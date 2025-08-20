@@ -41,12 +41,6 @@ plant.decontam0.1 <- readRDS(here("Data/gbp23.plant.decontam.0.1.RDS")) #all dat
 long.plant.decontam0.5 <- readRDS(here("Data/long.gbp23.plant.decontam.0.5.RDS")) #all data from ITS2 specific dada2 analysis in phyloseq format from strict decontam filter (th = 0.5)
 pollen.decontam0.5 <- readRDS(here("Data/pollen23.24.decontam.0.5.RDS")) #all data in phyloseq format from 20234 and 2024 Pollen sequence data
 
-known.misIDs <- c("Dioscorea", "Spondias", "Glycine", "Gingidia",
-                  "Asparagus", "Broussonetia", "Cicer", "Dracophyllum", "Gaylussacia",
-                  "Gossypium", "Hexachlamys", "Macadamia", "Molinia", "Muehlenbeckia",
-                  "Musa", "Olearia", "Petroselinum", "Pimelea", "Pleurophyllum", "Schinus",
-                 "Pseudostellaria", "Secale", "Styphelia" ) #add more?
-
 #split into dataframes used in this analysis
 
 bp.asv.counts.2023 <- as.data.frame(otu_table(plant.decontam0.5))
@@ -88,9 +82,13 @@ bp23.size <- bp23.size %>% filter(sample != is.na(sample)) #clean up
 
 
 #condense two of these to have genera names assigned to asvs in samples
+
+load(file = here("Data/known.misIDs.RData")) #list of taxa that are either known contaminants or mistakenly identified ASVs
+
 bp.plant.asvNs.w.genus.2023 <- right_join(bp.asv.counts.2023,bp.asv.genus.2023, by = "asv_id")
 bp.plant.asvNs.w.genus.2023 <- bp.plant.asvNs.w.genus.2023 %>% relocate(genus, .after = asv_id) %>%  #this is just to look and make sure it worked
-  filter(!genus %in% known.misIDs)
+  filter(!genus %in% known.misIDs) #remove taxa from the loaded list 
+
 binary.plant.asvNs.w.genus.2023 <- bp.plant.asvNs.w.genus.2023 %>% 
   relocate(genus, .after = asv_id) %>% 
   mutate(across(GBP23010301M_ITS_P48:last_col(), ~ifelse(. > 0, 1, 0))) %>% 
@@ -234,7 +232,7 @@ bp23.genomic.periods <- bp23.genomic.analys %>%
   slice(1) %>%  # Count only 1 detection per period
   group_by(period) %>% 
   summarise(n_samples = n_distinct(sample),
-            n.genera = n_distinct(genus),
+            n.genera.gmb = n_distinct(genus),
             .groups = 'drop')
   
 #is there a significant diference in genera by period detected by stats?

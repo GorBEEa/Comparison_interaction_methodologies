@@ -5,7 +5,7 @@
 
 #unblock these packages if not running after _data.R scripts
 #library(readr)
-library(here)
+#library(here)
 #library(tidyverse)
 #library(tidyr)
 #library(tidyselect)
@@ -113,37 +113,53 @@ ggvenn::ggvenn(taxa.all.methodologies,
 
 #Diversity by periods ----- 
 
-method.colors <- c("c_n_genera_flower_count" ="slategrey",
-                   "a_n_genera_interactions" = "lightblue",
-                   "b_n_genera_gut_metabarcoding" = "forestgreen",
-                   "d_n_genera_pollen_metabarcoding" = "goldenrod1") #set some universal colors for this project
+method.colors <- c("n.genera.int" = "lightblue",
+                   "n.genera.fc" ="slategrey",
+                   "n.genera.pmb" = "goldenrod1",
+                   "n.genera.gmb" = "forestgreen") #set some universal colors for this project
 
-#compare.gen.by.periods <- right_join(int.genus.by.period, bp23.genomic.periods, by = "period") %>% right_join(., flower.genus.by.period, by = "period") %>%  right_join(., poln.2023.genomic.periods, by = "period") 
+compare.gen.by.periods <- right_join(
+  int.genus.by.period, flower.genus.by.period, by = "period") %>% 
+  right_join(., bp23.genomic.periods, by = "period") %>% 
+  right_join(., poln.2023.genomic.periods, by = "period")
   
-#compare.gen.by.periods <- compare.gen.by.periods %>% select(c(period, n.genera.x, n.genera.y, n.flower.count.genera, n.genera)) %>% rename(b_n_genera_gut_metabarcoding = n.genera.y) %>% #the abc is for organizing bar on my plot by alphaetical order 
-  #rename(a_n_genera_interactions = n.genera.x) %>% rename(c_n_genera_flower_count = n.flower.count.genera) %>% rename(d_n_genera_pollen_metabarcoding = n.genera) 
-  
+compare.gen.by.periods <- compare.gen.by.periods %>% 
+  select(c(period, n.genera.int, n.genera.fc, n.genera.pmb, n.genera.gmb))
 
-# long.gen.by.periods <- compare.gen.by.periods %>% pivot_longer(!period) %>% rename(method = name) %>% rename(n.genera = value)
+long.gen.by.periods <- compare.gen.by.periods %>%
+  pivot_longer(!period) %>% rename(method = name) %>% 
+  rename(n.genera = value)
 
-# ggplot(long.gen.by.periods, aes(period, n.genera, fill = method)) + geom_col(position = "Dodge") + scale_x_continuous(breaks = 1:6, labels = 1:6) + scale_fill_manual(values = method.colors) + theme(axis.ticks.x = element_blank())
+long.gen.by.periods$method <- factor(
+  long.gen.by.periods$method, 
+  levels = c("n.genera.int", "n.genera.fc", "n.genera.pmb", "n.genera.gmb")
+)
 
+fig.methods.x.periods <- ggplot(long.gen.by.periods, aes(period, n.genera, fill = method)) + 
+  geom_col(position = "Dodge", alpha = 0.8) + 
+  theme_minimal() + 
+  labs(fill = "Methodology") +
+  xlab("Sampling Period") +
+  ylab("Detected Plant Genera") +
+  scale_x_continuous(breaks = 1:6, labels = 1:6) + 
+  scale_fill_manual(values = method.colors, labels = c(
+    "n.genera.int" = "Interactions Transects",
+    "n.genera.fc" = "Flower Count",
+    "n.genera.pmb" = "Pollen Metabarcoding",
+    "n.genera.gmb" = "Gut Metabarcoding")) +
+  theme(axis.ticks.x = element_blank()) +
+  ggtitle("Detected plant genera by methodology across 2023 field sampling periods")
 
 
 
 #Diversity by site -----
 
 #compare.gen.by.sites <- right_join(int.genus.by.site, bp23.genomic.sites, by = "site") %>%right_join(., flower.genus.by.site, by = "site") %>% right_join(., poln23.genomic.sites, by = "site") 
-
 #compare.gen.by.sites <- compare.gen.by.sites %>% rename(b_n_genera_gut_metabarcoding = n.genera.y) %>% rename(a_n_genera_interactions = n.genera.x) %>% rename(c_n_genera_flower_count = n.flower.count.genera) %>% rename(d_n_genera_pollen_metabarcoding = n.genera.poln) %>% select(c(site, b_n_genera_gut_metabarcoding, a_n_genera_interactions, c_n_genera_flower_count, d_n_genera_pollen_metabarcoding))
-
 #long.gen.by.sites <- compare.gen.by.sites %>% pivot_longer(!site) %>% rename(method = name) %>% rename(n.genera = value)
-
 #ggplot(long.gen.by.sites, aes(site, n.genera, fill = method)) + geom_col(position = "Dodge") + scale_x_continuous(breaks = 1:16, labels = 1:16) + scale_fill_manual(values = method.colors) + theme(axis.ticks.x = element_blank())
 #looks like sites missing pollen samples hav just been omitted from the analysis in general, coiuld fix but not a priority
 
-#ok these analyses are interesting for context at least
-#could later go deeper and look at diversity by period across sites
 
 
 
@@ -216,26 +232,28 @@ full.plants <- clean4stats.bp23.full.days.binary %>% select(!c(site, period, met
 
 #prepare NMDS data with vegan
 
-dist.all.plants <- vegdist(all.plants, method = "raup") #calc distance between communities for later stat analysis
+dist.all.plants <- vegdist(all.plants, method = "raup", binary = TRUE) #calc distance between communities for later stat analysis
 set.seed(123) #this should make it so that the nmds results are always the same despite permutations
 all.plant.mds <- metaMDS(all.plants, distance = "raup") 
 
 #trial with just shared days
-dist.full.plants <- vegdist(full.plants, method = "raup") #calc distance between communities for later stat analysis
+dist.full.plants <- vegdist(full.plants, method = "raup", binary = TRUE) #calc distance between communities for later stat analysis
 set.seed(123) #this should make it so that the nmds results are always the same despite permutations
 full.plant.mds <- metaMDS(full.plants, distance = "raup") 
 
 
 
-#Quick plot option
-plot(all.plant.mds$points, col = method.colors, pch = 16)
-legend("topleft", legend = levels(methodology), col = method.colors, pch = 16, title = "Methodology")
+#Quick plot option - the colors are probably deceiving right now
+#plot(all.plant.mds$points, col = method.colors, pch = 16)
+#legend("topleft", legend = levels(methodology), col = method.colors, pch = 16, title = "Methodology")
 #that outlier point is from interactions, P2S14
 
 
 #Nice plot option - used in EcoFlor poster
 nmds_points <- as.data.frame(all.plant.mds$points)
-nmds_points$methodology <- methodology
+nmds_points <- nmds_points %>% 
+  mutate(methodology = methodology) # %>% 
+  #slice(-8) #if you want to remove the outlier for whatever reason
 method.colors2 <- c("count" ="slategrey",
                     "interaction" = "lightblue",
                     "gut.metabarcoding" = "forestgreen",
@@ -271,6 +289,7 @@ NMDS.method.comparisons <- ggplot(nmds_points, aes(x = MDS1, y = MDS2, color = m
     legend.position.inside = c(0.13, 0.85)
   )
 
+NMDS.method.comparisons
 
 
 #trial with just shared days
@@ -338,6 +357,7 @@ anova(metodology.disp) #are the differences in dispersal significantly different
 #figure used in EcoFlor poster
 #should this use the detections by samples and not by days? I think so... here we want resolution and we don't need it to match for comparison
 
+#maybe I have to do the average detections between MB methods and 
 detects.by.genus <- as.data.frame(colSums(bp23.genomic.binary[16:ncol(bp23.genomic.binary)])) %>% #THR COLUMNS SELECTED HERE ARE IMPORTANT FOR THE RESULTS YOU SEE. Make sure that they include all taxa
   rownames_to_column(var = "genus") %>% 
   rename(n.sample.detections = "colSums(bp23.genomic.binary[16:ncol(bp23.genomic.binary)])")
@@ -349,7 +369,8 @@ detects.comparison <- detects.comparison[order(detects.comparison$n.sample.detec
     detected.fc.int == 2 ~ "Both",
     detected.fc.int == 1 & int.detected == 1 ~ "Int Only",
     detected.fc.int == 1 & flower.count.detected == 1 ~ "Flower Only",
-    detected.fc.int == 0 ~ "Neither"
+    detected.fc.int == 0 ~ "Neither",
+    detected.fc.int == 0 & pmb.detected == 1 ~ "poln Only",
   ))
 #this system depends on the fact that any interaction observed will have included a plant species already documented in the flower count. Which should always be the case.
 
@@ -366,12 +387,14 @@ fig.poster <- ggplot(top.detects.comparison, aes(x = reorder(genus, -n.sample.de
   scale_fill_manual(values = c("Both" = "skyblue4",
                                "Int Only" = "lightblue",
                                "Flower Only" = "skyblue2",
-                               "Neither" = "grey80"),
+                               "Neither" = "grey80",
+                               "poln only" = "forestgreen"),
                     labels = c(
                       "Both" = "Interactions + floral resource survey",
                       "Int Only" = "Interactions only",
                       "Flower Only" = "Floral resource survey only",
-                      "Neither" = "Metabarcoding only")) +
+                      "Neither" = "Gut Metabarcoding only",
+                      "poln only" = "Pollen metabarcoding only")) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         plot.title = element_text(hjust=0.5),
         legend.position = c(1, 1),
