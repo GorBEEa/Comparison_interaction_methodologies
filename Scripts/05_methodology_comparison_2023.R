@@ -220,7 +220,6 @@ all.plants <- clean4stats.bp23.all.binary %>%
   select(!c(site, period, method))
 
 
-
 #trial with just shared days
 site.full <- as.factor(clean4stats.bp23.full.days.binary$site)
 period.full <- as.factor(clean4stats.bp23.full.days.binary$period)
@@ -408,4 +407,9 @@ fig.poster <- ggplot(top.detects.comparison, aes(x = reorder(genus, -n.sample.de
 fig.poster
 
 
+
+
+# ------------
+
+save.image(file = here("Data/05_output.RData"))
 
