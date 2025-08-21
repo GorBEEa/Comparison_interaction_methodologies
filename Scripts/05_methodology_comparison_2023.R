@@ -75,7 +75,7 @@ paste("Of the", nrow(flower.count.genera),"taxa detected in flower counts,", nro
 #How many flower count genera were not in any metabarcoding results?
 in.fc.not.mb <- cp.flower.count.genera %>% filter(in.mb == 0 & in.pmb == 0)
 paste("Of the", nrow(flower.count.genera),"taxa detected in flower counts,", nrow(in.fc.not.mb),
-      "were unique to this survey when compared with pollen metabarcoding")
+      "were unique to this survey when compared with all metabarcoding")
 
 
 #Which taxa observed in gut metabarcoding were undetected by pollen metabarcoding?
@@ -95,10 +95,10 @@ paste("Of the", nrow(poln.genus.hits.2023),"taxa detected in gut metabarcoding,"
 #Venn diagram visualization of detection overlap
 #just add another part to the list once we have pollen
 taxa.all.methodologies <- list(
-  "Gut Metabarcoding\nN = 148" = genus.hits.23$genus,
+  "Gut Metabarcoding\nN = 132" = genus.hits.23$genus,
   "Interactions\nN = 27" = gut.detected.int.genus$genus, #this works to give the correct N, but it's sketchy. There is probably a better way
   "Flower Count\nN = 117" = flower.count.genera$flower_genus,
-  "Pollen Metabarcoding\nN = 130" = poln.genus.hits.2023$genus)
+  "Pollen Metabarcoding\nN = 123" = poln.genus.hits.2023$genus)
 
 ggvenn::ggvenn(taxa.all.methodologies,
                show_percentage = FALSE,
@@ -178,6 +178,8 @@ fig.methods.x.periods <- ggplot(long.gen.by.periods, aes(period, n.genera, fill 
 bp23.all.binary <- full_join(bp23.int4stats.wide.binary, bp23.genomic.binary4stats.xday) %>% 
   full_join(.,bp23.fc4stats.wide.binary) %>% 
   full_join(.,poln.genomic.binary.2023.xday.4stats)
+bp23.all.binary[is.na(bp23.all.binary)] <- 0 #Just do this now, later it's a disaster
+
 
 #Same thing, joining data only by shared sampling days
 n_methods <- n_distinct(bp23.all.binary$method)
@@ -196,11 +198,12 @@ bp23.full.days.binary <- bp23.all.binary %>%
 #make a new version of all of the binary data that is "cleaned" of these lines
 #but first see what they are/what they mean
 
-#clean out zero sum columns and NAs in binary data for statistical analyses. The next two commands do the same and are redundant, but why not do both
+#remove NAs and clean out zero sum rows and columns in binary data for statistical analyses. The next two commands do the same and are redundant, but why not do both
 clean4stats.bp23.all.binary <- bp23.all.binary[rowSums(bp23.all.binary[, 4:ncol(bp23.all.binary)], na.rm = TRUE) > 0, ] #keeps only the rows that have greater than 0 sums in binary presence absence
-clean4stats.bp23.all.binary <- bp23.all.binary %>% 
-  replace(is.na(bp23.all.binary), 0) %>% 
-  filter(rowSums(pick(4:ncol(bp23.all.binary))) != 0)
+clean4stats.bp23.all.binary <- clean4stats.bp23.all.binary %>% 
+  select(1:3, # keep metadata columns unchanged
+         where(~ is.numeric(.) && sum(., na.rm = TRUE) > 0)) #remove 0 sum columns
+#removes Avenella and Mentha
 
 #trial with just shared days
 clean4stats.bp23.full.days.binary <- bp23.full.days.binary %>% 
