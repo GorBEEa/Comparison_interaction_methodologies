@@ -135,6 +135,11 @@ long.gen.by.periods$method <- factor(
   levels = c("n.genera.int", "n.genera.fc", "n.genera.pmb", "n.genera.gmb")
 )
 
+#Means across methodologies by period
+
+mean.taxa.periods <- long.gen.by.periods %>% group_by(period) %>% summarise(mean.genera = mean(n.genera))
+
+
 fig.methods.x.periods <- ggplot(long.gen.by.periods, aes(period, n.genera, fill = method)) + 
   geom_col(position = "Dodge", alpha = 0.8) + 
   theme_minimal() + 
@@ -148,7 +153,15 @@ fig.methods.x.periods <- ggplot(long.gen.by.periods, aes(period, n.genera, fill 
     "n.genera.pmb" = "Pollen Metabarcoding",
     "n.genera.gmb" = "Gut Metabarcoding")) +
   theme(axis.ticks.x = element_blank()) +
-  ggtitle("Detected plant genera by methodology across 2023 field sampling periods")
+  ggtitle("Detected plant genera by methodology across 2023 field sampling periods") +
+  geom_line(
+    data = mean.taxa.periods,
+    aes(x = period, y = mean.genera),
+    color = "black",
+    linetype = "dashed",
+    linewidth = 0.7,
+    inherit.aes = FALSE
+  ) 
 
 
 
@@ -344,7 +357,11 @@ permanova.all.data %>%
 metodology.disp <- betadisper(dist.all.plants, clean4stats.bp23.all.binary$method)
 #metodology.disp #observe average distances to mean between groups, do they look different?
 #interaction definitely looks more dispersed thatn the others, then gut mb
-anova(metodology.disp) #are the differences in dispersal significantly different?
+disp.anova <- anova(metodology.disp) #are the differences in dispersal significantly different?
+#disp.anova %>% kbl(caption = "ANOVA analysis of methodology's effect on dispersal of plant-pollinator 
+#                   interaction network composition data in ordination") %>% 
+#  kable_minimal(full_width = F, html_font = "Cambria")
+
 #looks like yes
 
 
