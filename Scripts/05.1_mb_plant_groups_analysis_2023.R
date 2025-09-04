@@ -22,6 +22,8 @@ taxa_breakdown <- c(141,15,9,7)
 taxa_groups <- c("Entomophilous (floral)","Poaceae","Woody Plants","Anemophilous herbaceous")
 plot_labels <- c("Entomophilous (n = 141)","Poaceae (n = 15)","Woody Plants (n = 9)","Anemophilous herbaceous (n = 7)")
 
+taxa.df <- data.frame(taxa_breakdown,taxa_groups,plot_labels)
+
 taxa.df <- taxa.df %>% 
   mutate(group = taxa_groups) %>% 
   mutate(n.taxa = taxa_breakdown) %>% 
