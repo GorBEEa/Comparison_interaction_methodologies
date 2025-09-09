@@ -80,7 +80,7 @@ clean_results <- pairwise.results %>%
   ))
 
 # Create a markdown/HTML table suitable for reporting
-kable(clean_results, 
+ppermanova.kbl <- kable(clean_results, 
       col.names = c("Group 1", "Group 2", "R\u00B2", "F value", "df1", "df2", "p value", "Adjusted p value", "Significance"),
       caption = "Pairwise PERMANOVA Results",
       digits = 3) %>% 

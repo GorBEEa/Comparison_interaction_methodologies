@@ -25,5 +25,8 @@ write.csv(its2_sus_genera, here("Data/its2_sus_genera.csv"))
 
 #pass csv to Xabi, Brais, etc. plant boys to confirm species to keep or eliminate
 
+load(file = here("Data/known.misIDs.RData")) #Not sure when or where this was created, but it is good to have. Here you can add on to it
 
+known.misIDs <- append(known.misIDs, "Spondias")
 
+save(known.misIDs, file = here("Data/known.misIDs.RData"))

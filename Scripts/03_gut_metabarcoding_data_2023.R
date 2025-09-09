@@ -198,7 +198,7 @@ ggplot(top.mb.genus.detections.xday, aes(x = reorder(genus, -n.day.detections), 
 
 
 
-c.bp23.genomic.binary <-  bp23.genomic.binary %>% mutate(c_intertegular_dist_mm = intertegular_dist_mm - 4.91) #4.91 is the mean intertegular distance for 2023
+#c.bp23.genomic.binary <-  bp23.genomic.binary %>% mutate(c_intertegular_dist_mm = intertegular_dist_mm - 4.91) #4.91 is the mean intertegular distance for 2023
 
 #organize metabarcoding data for all in 1 analysis with interaction and flower count data
 

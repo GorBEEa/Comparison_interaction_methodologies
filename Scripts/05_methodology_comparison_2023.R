@@ -95,19 +95,19 @@ paste("Of the", nrow(poln.genus.hits.2023),"taxa detected in gut metabarcoding,"
 #Venn diagram visualization of detection overlap
 #just add another part to the list once we have pollen
 taxa.all.methodologies <- list(
-  "Gut Metabarcoding\nN = 132" = genus.hits.23$genus,
+  "Gut\nMetabarcoding\nN = 131" = genus.hits.23$genus,
   "Interactions\nN = 27" = gut.detected.int.genus$genus, #this works to give the correct N, but it's sketchy. There is probably a better way
   "Flower Count\nN = 117" = flower.count.genera$flower_genus,
-  "Pollen Metabarcoding\nN = 123" = poln.genus.hits.2023$genus)
+  "Pollen\nMetabarcoding\nN = 123" = poln.genus.hits.2023$genus)
 
-ggvenn(taxa.all.methodologies,
+fig.venn <- ggvenn(taxa.all.methodologies,
                show_percentage = FALSE,
                fill_color = c("forestgreen","lightblue","slategrey","goldenrod1"),
                stroke_size = 0.5,
-               set_name_size = 6,
-               padding = 0.1)
+               set_name_size = 5,
+               text_size = 5)
 
-
+fig.venn
 
 
 
@@ -195,17 +195,8 @@ bp23.all.binary <- full_join(bp23.int4stats.wide.binary, bp23.genomic.binary4sta
 bp23.all.binary[is.na(bp23.all.binary)] <- 0 #Just do this now, later it's a disaster
 
 
-#Same thing, joining data only by shared sampling days
-n_methods <- n_distinct(bp23.all.binary$method)
-complete_pairs <- bp23.all.binary %>%
-       distinct(period, site, method) %>%
-       group_by(period, site) %>%
-       tally() %>%
-       filter(n == n_methods) %>%
-       select(period, site)
+#Here you can begin with the script here("Scripts/trials/05.3_community_comparison_full_2023.R")
 
-bp23.full.days.binary <- bp23.all.binary %>% 
-  inner_join(complete_pairs, by = c("period", "site"))
 
 
 #vegan outputs sometimes do not like a few of the "samples" that have no species detections at all
@@ -219,10 +210,6 @@ clean4stats.bp23.all.binary <- clean4stats.bp23.all.binary %>%
          where(~ is.numeric(.) && sum(., na.rm = TRUE) > 0)) #remove 0 sum columns
 #removes Avenella and Mentha
 
-#trial with just shared days
-clean4stats.bp23.full.days.binary <- bp23.full.days.binary %>% 
-  replace(is.na(bp23.full.days.binary), 0) %>% 
-  filter(rowSums(pick(4:ncol(bp23.full.days.binary))) != 0)
 
 
 #simplify factors and data for nMDS 
@@ -234,16 +221,6 @@ all.plants <- clean4stats.bp23.all.binary %>%
   select(!c(site, period, method))
 
 
-#trial with just shared days
-site.full <- as.factor(clean4stats.bp23.full.days.binary$site)
-period.full <- as.factor(clean4stats.bp23.full.days.binary$period)
-methodology.full <- as.factor(clean4stats.bp23.full.days.binary$method)
-full.plants <- clean4stats.bp23.full.days.binary %>% select(!c(site, period, method))
-
-
-
-
-
 #NMDS visualization of data ----
 
 #prepare NMDS data with vegan
@@ -252,12 +229,6 @@ dist.all.plants <- vegdist(all.plants, method = "raup", binary = TRUE) #calc dis
 set.seed(123) #this should make it so that the nmds results are always the same despite permutations
 all.plant.mds <- metaMDS(all.plants, distance = "raup") 
 
-#trial with just shared days
-dist.full.plants <- vegdist(full.plants, method = "raup", binary = TRUE) #calc distance between communities for later stat analysis
-set.seed(123) #this should make it so that the nmds results are always the same despite permutations
-full.plant.mds <- metaMDS(full.plants, distance = "raup") 
-
-
 
 #Quick plot option - the colors are probably deceiving right now
 #plot(all.plant.mds$points, col = method.colors, pch = 16)
@@ -265,7 +236,7 @@ full.plant.mds <- metaMDS(full.plants, distance = "raup")
 #that outlier point is from interactions, P2S14
 
 
-#Nice plot option - used in EcoFlor poster
+#Nice plot option - as used in EcoFlor poster
 nmds_points <- as.data.frame(all.plant.mds$points)
 nmds_points <- nmds_points %>% 
   mutate(methodology = methodology) # %>% 
@@ -307,49 +278,13 @@ NMDS.method.comparisons <- ggplot(nmds_points, aes(x = MDS1, y = MDS2, color = m
 
 NMDS.method.comparisons
 
-
-#trial with just shared days
-full.nmds_points <- as.data.frame(full.plant.mds$points)
-full.nmds_points$methodology <- methodology.full
-full.polygon_data <- full.nmds_points %>%
-  group_by(methodology) %>%
-  slice(chull(MDS1, MDS2))
-full.NMDS.title <- expression(paste("NMDS visualization of network composition by methodology for days with samples from all methodologies"))
-full.NMDS.method.comparisons <- ggplot(full.nmds_points, aes(x = MDS1, y = MDS2, color = methodology)) +
-  geom_polygon(data = full.polygon_data, 
-               aes(fill = methodology, color = NULL), 
-               alpha = 0.2, 
-               show.legend = FALSE) +
-  geom_point(size = 3) + 
-  scale_color_manual(values = method.colors2,
-                     labels = c(
-                       "count" = "Floral diversity survey",
-                       "interaction" = "Interaction observations",
-                       "gut.metabarcoding" = "Gut metabarcoding",
-                       "pollen.metabarcoding" = "Pollen metabarcoding")
-  ) +
-  scale_fill_manual(values = method.colors2) +
-  theme_classic() +  
-  labs(
-    title = full.NMDS.title,
-    x = "NMDS1",
-    y = "NMDS2",
-    color = "Methodology"
-  ) +
-  theme(plot.title = element_text(hjust=0.5),
-        legend.position.inside = c(0.13, 0.85)
-  )
-
-
-
 #statistical analysis using PERMANOVA
 #Are the patterns observed withing NMDS real?
 
 permanova.all.data <- adonis2(all.plants ~ methodology, permutations = 9999, method = "raup", pairwise = TRUE)
 
-permanova.all.data %>% 
-  kbl(caption = "PERMANOVA analysis of methodology's effect on observed plant diversity across four survey methodologies:
-      Bombus gut DNA content and corbicular pollen DNA content, interaction transects, and floral diversity surveys.") %>% 
+permanova.kbl <- permanova.all.data %>% 
+  kbl(caption = "PERMANOVA analysis of methodology's effect on observed plant community") %>% 
   kable_minimal(full_width = F, html_font = "Cambria")
 
 #Output probability that F statistic is significant, meaning that the model explains R2 *100% (Model/TotaL FOR sUMoFsQS) of the observed variation (SumOfSqs) between groups 
