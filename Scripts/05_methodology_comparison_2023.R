@@ -100,11 +100,12 @@ taxa.all.methodologies <- list(
   "Flower Count\nN = 117" = flower.count.genera$flower_genus,
   "Pollen Metabarcoding\nN = 123" = poln.genus.hits.2023$genus)
 
-ggvenn::ggvenn(taxa.all.methodologies,
+ggvenn(taxa.all.methodologies,
                show_percentage = FALSE,
                fill_color = c("forestgreen","lightblue","slategrey","goldenrod1"),
                stroke_size = 0.5,
-               set_name_size = 4)
+               set_name_size = 6,
+               padding = 0.1)
 
 
 

@@ -134,11 +134,11 @@ paste("Metabarcoding detected", nrow(genus.hits.23),"plant genera across all of 
 
 bp23.genomic.analys <- bp23.genomic.specs #a copy for manipulation
 bp23.genomic.analys$sample <- str_split_fixed(bp23.genomic.analys$sample, "_", 2)[,1] #remove sequencing plate labels
-bp23.genomic.analys <- right_join(bp23.genomic.analys, bp23.size, by = "sample") #I think this step is adding 3 rows that are not real samples
-bp23.genomic.analys <- bp23.genomic.analys %>% relocate(intertegular_dist_mm, .after = quant_reading) %>% 
-  relocate(abdomen_length_mm, .after = intertegular_dist_mm) %>% 
-  relocate(total_length_mm, .after = abdomen_length_mm) %>% 
-  filter(specimen != is.na(specimen))
+#bp23.genomic.analys <- right_join(bp23.genomic.analys, bp23.size, by = "sample") #This step is duplicating some samples and removing others
+#bp23.genomic.analys <- bp23.genomic.analys %>% relocate(intertegular_dist_mm, .after = quant_reading) %>% 
+ # relocate(abdomen_length_mm, .after = intertegular_dist_mm) %>% 
+  #relocate(total_length_mm, .after = abdomen_length_mm) %>% 
+  #filter(specimen != is.na(specimen))
 #NOTE: NAs exist for bombus measurements
 #use df %>% na.replace(0) if needed
 

@@ -5,6 +5,7 @@
 library(decontam); packageVersion("decontam")
 library(phyloseq) ; packageVersion("phyloseq")
 library(ggplot2); packageVersion("ggplot2")
+library(readxl)
 
 # Load data
 count_tab <- read.table(here("Data/dada2_outputs/2023_24_pollen_GorBEEa_ASVs_counts.tsv"), header=T, row.names=1,
@@ -16,10 +17,26 @@ tax_tab <- as.matrix(read.table(here("Data/dada2_outputs/2023_24_pollen_GorBEEa_
 sample_info_tab <- read.delim(here("Data/dada2_outputs/2023_24_pollen_GorBEEa_sample_info.tsv"),
                               header=T, row.names=1, check.names=F, sep="\t")
 sample_info_tab$type[rownames(sample_info_tab) != "PBLANKP0101I_ITS"] <- "sample" #a correction. for some reason they all read as a negative control in type
+sample_info_tab <- sample_info_tab %>%
+  mutate(long_ID = row.names(sample_info_tab)) %>% 
+  mutate(ID = sub("_.*", "", long_ID)) #some shuffling to join in concentration data
+
+
+sample.conc <- as.data.frame(read_xls(here("Data/Y23.24P_sample_conc.xls")))
+sample.conc <- sample.conc %>% 
+  select(c(`Sample name`,`Concentartionng/ul`)) %>% 
+  rename(conc = `Concentartionng/ul`) %>% 
+  rename(ID = `Sample name`)
+
+sample_info_tab <- left_join(sample_info_tab, sample.conc, by = "ID") 
+rownames(sample_info_tab) <- sample_info_tab[,"long_ID"]
+sample_info_tab <- sample_info_tab %>% 
+  select(!c(year, period, site, specimen, plate,quant_reading, long_ID, ID))
 
 # Setting the color column to be of type "character", which helps later
 sample_info_tab$color_p <- as.character(sample_info_tab$color_p)
 sample_info_tab$color_s <- as.character(sample_info_tab$color_s)
+sample_info_tab$conc <- as.numeric(sample_info_tab$conc)
 
 # Create a phyloseq object
 otu_table_obj <- otu_table(count_tab, taxa_are_rows = TRUE)
@@ -58,16 +75,16 @@ plot
 
 
 # Identify Contaminants - Frequency 
-# LJ --> I think is not doing correctly. not with read frequency, is has to be done with DNA concentration
-#our quant_read values are actually read frequencies
 
-#contamdf.freq <- isContaminant(physeq_pruned, method="frequency", conc="quant_reading")
-#head(contamdf.freq)
-#table(contamdf.freq$contaminant)
-#head(which(contamdf.freq$contaminant))
+contamdf.freq <- isContaminant(physeq, method="frequency", conc="conc")
+head(contamdf.freq)
+table(contamdf.freq$contaminant)
+head(which(contamdf.freq$contaminant))
 
-#plot_frequency(physeq_pruned, taxa_names(physeq)[c(1,6)], conc="quant_reading") + 
-#  xlab("DNA Concentration (PicoGreen fluorescent intensity)")
+plot_frequency(physeq, taxa_names(physeq)[c(7,11)], conc="conc") + 
+  xlab("DNA Concentration (PicoGreen fluorescent intensity)")
+
+
 ##########################################################################################################################
 
 ## 1.b) Identify Contaminants - Prevalence      ####
