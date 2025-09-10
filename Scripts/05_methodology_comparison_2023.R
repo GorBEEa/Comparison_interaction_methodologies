@@ -87,7 +87,7 @@ paste("Of the", nrow(genus.hits.23),"taxa detected in gut metabarcoding,", nrow(
 #Inverse of above - Which taxa observed in pollen metabarcoding were undetected by gut metabarcoding?
 observed.pmb.genus$gmb.detected <- as.integer(poln.genus.hits.2023$genus %in% observed.mb.genus$genus)
 in.pmb.not.gmb <-  observed.pmb.genus %>% filter(gmb.detected == 0)
-paste("Of the", nrow(poln.genus.hits.2023),"taxa detected in gut metabarcoding,", nrow(in.pmb.not.gmb),
+paste("Of the", nrow(poln.genus.hits.2023),"taxa detected in pollen metabarcoding,", nrow(in.pmb.not.gmb),
       "were uniquely detected when compared with gut metabarcoding")
 
 
@@ -95,10 +95,10 @@ paste("Of the", nrow(poln.genus.hits.2023),"taxa detected in gut metabarcoding,"
 #Venn diagram visualization of detection overlap
 #just add another part to the list once we have pollen
 taxa.all.methodologies <- list(
-  "Gut\nMetabarcoding\nN = 131" = genus.hits.23$genus,
+  "Gutcontent\nmetabarcoding\nN = 131" = genus.hits.23$genus,
   "Interactions\nN = 27" = gut.detected.int.genus$genus, #this works to give the correct N, but it's sketchy. There is probably a better way
-  "Flower Count\nN = 117" = flower.count.genera$flower_genus,
-  "Pollen\nMetabarcoding\nN = 123" = poln.genus.hits.2023$genus)
+  "Flower count\nN = 117" = flower.count.genera$flower_genus,
+  "Pollen\nmetabarcoding\nN = 123" = poln.genus.hits.2023$genus)
 
 fig.venn <- ggvenn(taxa.all.methodologies,
                show_percentage = FALSE,
