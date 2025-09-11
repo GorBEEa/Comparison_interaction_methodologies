@@ -138,13 +138,29 @@ long.gen.by.periods$method <- factor(
 
 #Means across methodologies by period
 
-mean.taxa.periods <- long.gen.by.periods %>% group_by(period) %>% summarise(mean.genera = mean(n.genera))
+#Some data prep for making an informative bar chart
+mean.taxa.periods <- long.gen.by.periods %>% 
+  group_by(period) %>% 
+  summarise(mean.genera = mean(n.genera))
+
+mean.gut.taxa.periods <- long.gen.by.periods %>% 
+  filter(method == "n.genera.gmb") %>% 
+  group_by(period) %>% 
+  summarise(mean.genera = mean(n.genera))
+
+mean.fc.taxa.periods <- long.gen.by.periods %>% 
+  filter(method == "n.genera.fc") %>% 
+  group_by(period) %>% 
+  summarise(mean.genera = mean(n.genera))
+
+mean.gut.taxa.periods$LineType <- "Gut Content Metabarcoding"
+mean.fc.taxa.periods$LineType <- "Flower Count"
+mean.lines <- rbind(mean.gut.taxa.periods, mean.fc.taxa.periods)
 
 
 fig.methods.x.periods <- ggplot(long.gen.by.periods, aes(period, n.genera, fill = method)) + 
   geom_col(position = "Dodge", alpha = 0.8) + 
   theme_minimal() + 
-  labs(fill = "Methodology") +
   xlab("Sampling Period") +
   ylab("Detected Plant Genera") +
   scale_x_continuous(breaks = 1:6, labels = 1:6) + 
@@ -152,19 +168,24 @@ fig.methods.x.periods <- ggplot(long.gen.by.periods, aes(period, n.genera, fill 
     "n.genera.int" = "Interactions Transects",
     "n.genera.fc" = "Flower Count",
     "n.genera.pmb" = "Pollen Metabarcoding",
-    "n.genera.gmb" = "Gut Metabarcoding")) +
+    "n.genera.gmb" = "Gut Content Metabarcoding")) +
+  labs(fill = "Methodology", color = NULL , linetype = NULL) +
   theme(axis.ticks.x = element_blank()) +
   ggtitle("Detected plant genera by methodology across 2023 field sampling periods") +
   geom_line(
-    data = mean.taxa.periods,
-    aes(x = period, y = mean.genera),
-    color = "black",
-    linetype = "dashed",
-    linewidth = 0.7,
-    inherit.aes = FALSE
-  ) 
-
-
+    data = mean.lines,
+    aes(x = period, y = mean.genera, color = LineType, linetype = LineType),
+    linewidth = 1,
+    inherit.aes = FALSE) +
+  scale_color_manual(values = c("Gut Content Metabarcoding" = "forestgreen", "Flower Count" = "slategrey")) +
+  scale_linetype_manual(values = c("Gut Content Metabarcoding" = "dashed", "Flower Count" = "dotdash")) +
+  guides(
+    fill = guide_legend(order = 1),
+    color = guide_legend(order = 2),
+    linetype = guide_legend(order = 2)
+  )
+  
+  
 
 #Diversity by site -----
 

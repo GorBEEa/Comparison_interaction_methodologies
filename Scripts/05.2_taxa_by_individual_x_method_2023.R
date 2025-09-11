@@ -6,7 +6,7 @@
 #library(tidyr)
 #library(tidyselect)
 
-#Data prep ----
+#Data prep ---------------------------------------------------------------------------------------------------
 
 #Bring pollen metabarcoding data in and format for this analysis
 poln.2023.indv <- poln.2023.genomic.specs #copy the existing pollen mb data and clean it up for this analysis
@@ -37,7 +37,7 @@ gut.w.poln.2023 <- left_join(IDS,gut.2023.indv, by = "sample")
 
 
 
-#Analysis ----
+#Data analysis -----------------------------------------------------------------------------------------------
 
 #Check which taxa were identified in each sample by methodology
 #tool for doing this:
@@ -100,9 +100,6 @@ ggplot(individual.period.data, aes(x = factor(period), y = `mean(n.taxa.g)`)) +
   theme_minimal()
 
 
-
-
-
 #Create a df that shows the number of shared taxa between the two methodologies by sample
 all_ids <- intersect(names(results_poln), names(results_gut))
 sharing <- data.frame(
@@ -120,4 +117,56 @@ total.taxa.specimen <- total.taxa.specimen %>%
   mutate(portion.shared = shared_count/total.per.specimen) %>% 
   mutate(period = as.integer(str_sub(sample, 6, 7)),
     site   = as.integer(str_sub(sample, 8, 9)))
+
+
+
+
+
+
+#statistical analyses ------------------------------------------------------------------------------------- 
+
+#prep
+cp.gut.2023.indv <- gut.2023.indv #make a new copy of gut data
+cp.gut.2023.indv <- cp.gut.2023.indv %>% #rename for the next step
+  rename(ID = sample) %>% 
+  select(!c(period,site))
+
+#create a dataset of all metabarcoding data for individual samples
+mb.2023.indv <- full_join(cp.gut.2023.indv,poln.2023.indv)
+mb.2023.indv[is.na(mb.2023.indv)] <- 0 #Remove NAs
+mb.2023.indv <- mb.2023.indv %>% 
+  rename(method = type)
+
+#clean out zero sum rows and columns 
+clean4stats.mb.2023.indv <- mb.2023.indv %>% 
+  filter(rowSums(across(3:last_col())) > 0) %>% 
+  select(1:2, # keep metadata columns unchanged
+         where(~ is.numeric(.) && sum(., na.rm = TRUE) > 0)) #remove 0 sum columns
+
+
+mb.2023.indv.methodology <- as.factor(clean4stats.mb.2023.indv$method)
+#length(factor) #to count/check factor lengths (should all be the same and same as row # in clean4stats.bp23.all.binary and all.plants)
+mb.2023.indv.plants <- clean4stats.mb.2023.indv %>% 
+  select(!c(ID,method))
+
+
+
+
+permanova.mb.2023.indv <- adonis2(mb.2023.indv.plants ~ mb.2023.indv.methodology,
+                                  permutations = 9999,
+                                  binary = TRUE,
+                                  method = "raup",
+                                  pairwise = TRUE)
+
+permanova.mb.2023.indv.kbl <- permanova.mb.2023.indv %>% 
+  kbl(caption = "PERMANOVA analysis of metabarcoding methodology's effect on observed plant community") %>% 
+  kable_minimal(full_width = F, html_font = "Cambria")
+
+
+
+
+
+
+
+save.image(file = here("Data/05.2_output.RData"))
 
