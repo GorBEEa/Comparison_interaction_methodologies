@@ -1,25 +1,29 @@
 #Analyzing interaction methodologies and floral diversity data together 
-#Interaction_Data.R, flower_count_data.R, and metabarcoding_data.R should already be sourced
-#(In that order)
 
-
-#unblock these packages if not running after _data.R scripts
-#library(readr)
-#library(here)
-#library(tidyverse)
-#library(tidyr)
-#library(tidyselect)
-#library(easystats)
-#library(visreg)
-#library(vegan)
-#library(easystats)
-
+library(readr)
+library(here)
+library(tidyverse)
+library(tidyr)
+library(tidyselect)
+library(easystats)
+library(visreg)
+library(vegan)
+library(easystats)
 library(mvabund)
 library(kableExtra)
 library(ggvenn)
 
 
-#Overlap in methodology communities ----------
+
+#Load data from methodologies (Scripts 01-04)
+load(file = here("Data/methodologies_data.RData"))
+#or run 00_quickstart script or all scripts 01-04, 1 by 1
+
+
+
+
+
+#Overlap in methodology communities ------------------------------------------------------------
 
 #Which interaction transect species were detected by gut metabarcoding 
 gut.detected.int.genus <- df.int.genus %>% distinct(genus) #Clean list of genera (27) from BP interactions
@@ -92,7 +96,11 @@ paste("Of the", nrow(poln.genus.hits.2023),"taxa detected in pollen metabarcodin
 
 
 
-#Venn diagram visualization of detection overlap
+
+
+#Venn diagram visualization of detection overlap ------------------------------------------------------
+
+
 #just add another part to the list once we have pollen
 taxa.all.methodologies <- list(
   "Gutcontent\nmetabarcoding\nN = 131" = genus.hits.23$genus,
@@ -112,7 +120,7 @@ fig.venn
 
 
 
-#Diversity by periods ----- 
+#Diversity by periods --------------------------------------------------------------------------------
 
 method.colors <- c("n.genera.int" = "lightblue",
                    "n.genera.fc" ="slategrey",
@@ -185,9 +193,11 @@ fig.methods.x.periods <- ggplot(long.gen.by.periods, aes(period, n.genera, fill 
     linetype = guide_legend(order = 2)
   )
   
-  
 
-#Diversity by site -----
+fig.methods.x.periods
+
+
+#Diversity by site ------------------------------------------------------------------------------
 
 #compare.gen.by.sites <- right_join(int.genus.by.site, bp23.genomic.sites, by = "site") %>%right_join(., flower.genus.by.site, by = "site") %>% right_join(., poln23.genomic.sites, by = "site") 
 #compare.gen.by.sites <- compare.gen.by.sites %>% rename(b_n_genera_gut_metabarcoding = n.genera.y) %>% rename(a_n_genera_interactions = n.genera.x) %>% rename(c_n_genera_flower_count = n.flower.count.genera) %>% rename(d_n_genera_pollen_metabarcoding = n.genera.poln) %>% select(c(site, b_n_genera_gut_metabarcoding, a_n_genera_interactions, c_n_genera_flower_count, d_n_genera_pollen_metabarcoding))
@@ -204,11 +214,9 @@ fig.methods.x.periods <- ggplot(long.gen.by.periods, aes(period, n.genera, fill 
 
 
 
-#Statistical analysis of methodologies ------
+#Statistical analysis of methodologies --------------------------------------------------------------
 
 #bring together binary presence absence data from interactions and metabarcoding into one table
-
-#load(file = here("Data/gbp23.interaction.data4analysis.RData"))
 
 bp23.all.binary <- full_join(bp23.int4stats.wide.binary, bp23.genomic.binary4stats.xday) %>% 
   full_join(.,bp23.fc4stats.wide.binary) %>% 
@@ -216,7 +224,7 @@ bp23.all.binary <- full_join(bp23.int4stats.wide.binary, bp23.genomic.binary4sta
 bp23.all.binary[is.na(bp23.all.binary)] <- 0 #Just do this now, later it's a disaster
 
 
-#Here you can begin with the script here("Scripts/trials/05.3_community_comparison_full_2023.R")
+#Here, if interested in only analyzing data from the days with the full set of methodologies you can jump to the script here("Scripts/trials/05.3_community_comparison_full_2023.R")
 
 
 
@@ -242,7 +250,7 @@ all.plants <- clean4stats.bp23.all.binary %>%
   select(!c(site, period, method))
 
 
-#NMDS visualization of data ----
+#NMDS visualization of data
 
 #prepare NMDS data with vegan
 

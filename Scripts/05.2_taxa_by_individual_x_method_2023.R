@@ -101,11 +101,11 @@ ggplot(individual.period.data, aes(x = factor(period), y = `mean(n.taxa.g)`)) +
 
 
 #Create a df that shows the number of shared taxa between the two methodologies by sample
-all_ids <- intersect(names(results_poln), names(results_gut))
+all_ids <- intersect(names(n_results_poln), names(n_results_gut))
 sharing <- data.frame(
   ID = all_ids,
   shared_count = sapply(all_ids, function(id) {
-    sum(as.integer(results_gut[[id]] %in% results_poln[[id]]))
+    sum(as.integer(taxa_results_gut[[id]] %in% taxa_results_poln[[id]]))
   })
 )
 
@@ -128,7 +128,7 @@ total.taxa.specimen <- total.taxa.specimen %>%
 #prep
 cp.gut.2023.indv <- gut.2023.indv #make a new copy of gut data
 cp.gut.2023.indv <- cp.gut.2023.indv %>% #rename for the next step
-  rename(ID = sample) %>% 
+ # rename(ID = sample) %>% 
   select(!c(period,site))
 
 #create a dataset of all metabarcoding data for individual samples
@@ -137,21 +137,45 @@ mb.2023.indv[is.na(mb.2023.indv)] <- 0 #Remove NAs
 mb.2023.indv <- mb.2023.indv %>% 
   rename(method = type)
 
+#try with only specimens with shared samples
+mb2x.2023.indv <- full_join(gut.w.poln.2023,poln.2023.indv)
+mb2x.2023.indv[is.na(mb2x.2023.indv)] <- 0 #Remove NAs
+
+
+
+
 #clean out zero sum rows and columns 
 clean4stats.mb.2023.indv <- mb.2023.indv %>% 
   filter(rowSums(across(3:last_col())) > 0) %>% 
   select(1:2, # keep metadata columns unchanged
          where(~ is.numeric(.) && sum(., na.rm = TRUE) > 0)) #remove 0 sum columns
 
+#same for only specimens with shared samples
+clean4stats.mb2x.2023.indv <- mb2x.2023.indv %>% 
+  filter(rowSums(across(6:last_col())) > 0) %>% 
+  select(1:5, # keep metadata columns unchanged
+         where(~ is.numeric(.) && sum(., na.rm = TRUE) > 0)) #remove 0 sum columns
 
+
+
+
+
+#create elements for statistical analysis
 mb.2023.indv.methodology <- as.factor(clean4stats.mb.2023.indv$method)
 #length(factor) #to count/check factor lengths (should all be the same and same as row # in clean4stats.bp23.all.binary and all.plants)
 mb.2023.indv.plants <- clean4stats.mb.2023.indv %>% 
   select(!c(ID,method))
 
+#same for only specimens with shared samples
+mb2x.2023.indv.methodology <- as.factor(clean4stats.mb2x.2023.indv$type)
+mb2x.2023.indv.plants <- clean4stats.mb2x.2023.indv %>% 
+  select(!c(ID,sample,type,period,site))
 
 
 
+
+
+#Test
 permanova.mb.2023.indv <- adonis2(mb.2023.indv.plants ~ mb.2023.indv.methodology,
                                   permutations = 9999,
                                   binary = TRUE,
@@ -161,6 +185,17 @@ permanova.mb.2023.indv <- adonis2(mb.2023.indv.plants ~ mb.2023.indv.methodology
 permanova.mb.2023.indv.kbl <- permanova.mb.2023.indv %>% 
   kbl(caption = "PERMANOVA analysis of metabarcoding methodology's effect on observed plant community") %>% 
   kable_minimal(full_width = F, html_font = "Cambria")
+
+
+
+#Test for only specimens with shared samples
+permanova.mb2x.2023.indv <- adonis2(mb2x.2023.indv.plants ~ mb2x.2023.indv.methodology,
+                                  permutations = 9999,
+                                  binary = TRUE,
+                                  method = "raup",
+                                  pairwise = TRUE)
+
+
 
 
 
