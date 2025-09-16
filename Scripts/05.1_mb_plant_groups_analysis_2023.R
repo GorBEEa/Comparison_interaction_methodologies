@@ -61,3 +61,84 @@ ggplot(taxa.df, aes(ymax = ymax, ymin = ymin, xmax = 5, xmin = 4.8, fill = group
   theme(legend.position = "none") +
   theme(plot.title = element_text(hjust = 0.3, face = "bold", size = 12, margin = margin(b = -25))) 
  
+
+
+#analysis of which taxa were observed by metabarcoding by period ----------------------------------
+#this is an investigation of which taxa are responsible for the difference in number of taxa observed across methodologies and periods 
+
+
+gmb.taxa.gap <- clean4stats.bp23.all.binary %>% 
+  filter(method == "gut.metabarcoding")
+
+pmb.taxa.gap <- clean4stats.bp23.all.binary %>% 
+  filter(method == "pollen.metabarcoding")
+
+smry.gmb.taxa.gap <- gmb.taxa.gap %>%
+  select(!site) %>%
+  group_by(period) %>%
+  summarise(across(where(is.numeric), sum), .groups = "drop")
+
+smry.pmb.taxa.gap <- pmb.taxa.gap %>%
+  select(!site) %>%
+  group_by(period) %>%
+  summarise(across(where(is.numeric), sum), .groups = "drop")
+
+#function for extracting deetected taxa names
+get_nonzero_cols <- function(df, id_col = "ID") {
+  setNames(
+    lapply(df[[id_col]], function(this_id) {
+      ix <- which(df[[id_col]] == this_id)
+      if (length(ix) == 0) return(character(0))
+      data_cols <- setdiff(colnames(df), c(id_col, "sample", "type","period", "site"))
+      valid_cols <- data_cols[!is.na(df[ix, data_cols]) & df[ix, data_cols] != 0]
+      valid_cols
+    }),
+    df[[id_col]]
+  )
+}
+
+#results
+gmb.taxa.periods <- get_nonzero_cols(smry.gmb.taxa.gap, id_col = "period")
+pmb.taxa.periods <- get_nonzero_cols(smry.pmb.taxa.gap, id_col = "period")
+
+
+
+#ask AI which of the resulting names are from anemophilous taxa - 
+
+#Luisja suggested analysis representing functional groups in a boxplot within the bar
+
+#guts
+#p1 woody: (5) Betula, Fagus, Platanus, Quercus, Salix
+#p1 grasses: (0) Grasses.
+#p1 other an: (2) Plantago, Urtica.
+#p1 ent: (43)
+
+#p2 woody: (9) Betula, Fagus, Eucalyptus, Prunus, Pyrus, Quercus, Robinia, Sambucus, Salix.
+#p2 grasses: (3) Holcus, Carex, Anthoxanthum.
+#p2 other: (2) Plantago, Urtica.
+#p2 ent: (45)
+
+#p3: (8) Betula, Fagus, Quercus, Ilex, Juglans, Prunus, Eucalyptus, Crataegus
+#p3: (3) Aegilops, Arrhenatherum, Brachypodium.
+#p3: (4) Plantago, Anthoxanthum, Sisymbrium, Pleuropterus.
+#p3 ent: (39)
+
+#p4: (4) Actinidia, Crataegus, Rosa, Sambucus,
+#p4: (3) Dactylis, Festuca, Holcus.
+#p4: (4) Plantago, Urtica, Arenaria, Sisymbrium.
+#p4 ent: (51)
+
+#p5: (4) Castanea, Citrus, Eucalyptus, Fagus
+#p5: (0) Grasses.
+#p5: (1) Plantago.
+#p5 ent: (37)
+
+#p6: (11) Alnus, Castanea, Crataegus, Citrus, Eucalyptus, Ilex, Juglans, Prunus, Quercus, Robinia, Sambucus
+#p6: (9) Agrostis, Aegilops, Arrhenatherum, Brachypodium, Dactylis, Festuca, Holcus, Lolium, Poa.
+#p6: (5) Plantago, Parietaria, Stellaria, Urtica, Raphanus.
+#p6 ent: (50)
+
+periods <- c(1,2,3,4,5,6)
+methods <- c("Interactions Transects", "Flower Count", "Pollen Metabarcoding", "Gut Content Metabarcoding")
+type.methods.period <- 
+
