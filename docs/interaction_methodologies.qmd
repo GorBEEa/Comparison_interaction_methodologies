@@ -68,89 +68,19 @@ Raw illumina sequences were processed using the DADA2 bioinformatics pipeline [@
 
 ASV counts and taxonomy assigned in DADA2 were analyzed for contaminants using the decontam package in R [@davis2018]. ASVs were analyzed using the prevalence test, in which gut sequence samples were compared to six negative sequenced controls, and pollen sequence samples were compared to one negative sequence control. Given the low control sample number in the pollen sample analysis, the frequency test was also applied as the first screening measure. For the prevalence test, we set a contaminant determination threshold of 0.5. With this threshold value, any ASV with higher read frequency in the negative samples than in experimental samples was removed as a contaminant. Further, taxa detected in only one ASV of our sequence data were verified with a BLAST search, executed within the ITS2 Database [@ankenbrand2015]. The taxonomic identifications from the “decontaminated” ASVs were finally screened by comparing the list of detected taxa to the list of documented plant species within the study area. This screening was conducted under the supervision of a local botanist, incorporating expert knowledge into the evaluation.
 
+*Analysis of Networks at the Species Level*
+
+We calculated the values of network metrics at the species level for *B. pascuorum* as provided by the different methodologies. The degree of *B. pascuorum* as a network node was calculated as the number of plant genera detected across the 2023 sampling period by individual methodology. Centrality of plant taxa within interaction networks was calculated for each methodology individually as the number of interactions *B. pascuorum* made with a specific taxon over the season divided by the total number of interactions observed over the season. For metabarcoding methodologies, interactions were quantified as the number of samples in which a plant taxon was detected. Finally, specialization (*d'*) was calculated...
+
 **Results**
 
 ```{r}
-#Analyzing interaction methodologies and floral diversity data together 
-
-library(readr)
-library(here)
-library(tidyverse)
-library(tidyr)
-library(tidyselect)
-library(easystats)
-library(visreg)
-library(vegan)
-library(easystats)
-library(mvabund)
-library(kableExtra)
-library(ggvenn)
-library(knitr)
-
-
-
 #Load data from methodologies (Scripts 01-04)
+library(here)
 load(file = here("Data/methodologies_data.RData"))
-#or run 00_quickstart script or all scripts 01-04, 1 by 1
-
-
-
-
-
-#Overlap in methodology communities ------------------------------------------------------------
-
-#Which interaction transect species were detected by gut metabarcoding 
-gut.detected.int.genus <- df.int.genus %>% distinct(genus) #Clean list of genera (27) from BP interactions
-gut.detected.int.genus$mb.detected <- as.integer(gut.detected.int.genus$genus %in% genus.hits.23$genus)
-int.genus.occur.gut.mb.detect <- full_join(gut.detected.int.genus, df.int.genus %>% count(genus)) 
-
-#Which interaction transect species were detected by pollen metabarcoding 
-poln.detected.int.genus <- df.int.genus %>% distinct(genus) #Clean list of genera (27) from BP interactions
-poln.detected.int.genus$mb.detected <- as.integer(poln.detected.int.genus$genus %in% poln.genus.hits.2023$genus) 
-poln.genus.occur.gut.mb.detect <- full_join(poln.detected.int.genus, df.int.genus %>% count(genus))  
-
-
-#Inverse analysis of above - which genera observed in gut metabarcoding were observed in interactions -----
-observed.mb.genus <- genus.hits.23
-observed.mb.genus$int.detected <- as.integer(observed.mb.genus$genus %in% df.int.genus$genus)
-
-#Which genera observed in pollen metabarcoding were observed in interactions -----
-observed.pmb.genus <- poln.genus.hits.2023
-observed.pmb.genus$int.detected <- as.integer(observed.pmb.genus$genus %in% df.int.genus$genus)
-
-
-#which detected by gut metabarcoding were observed in flower counts?
-observed.mb.genus$flower.count.detected <- as.integer(observed.mb.genus$genus %in% flower.count.genera$flower_genus)
-
-#which detected by pollen metabarcoding were observed in flower counts?
-observed.pmb.genus$flower.count.detected <- as.integer(observed.pmb.genus$genus %in% flower.count.genera$flower_genus)
-
-#inverse of above - how many flower count genera were not in gut metabarcoding results?
-cp.flower.count.genera <- flower.count.genera
-cp.flower.count.genera$in.mb <- as.integer(flower.count.genera$flower_genus %in% genus.hits.23$genus)
-in.fc.not.gmb <- cp.flower.count.genera %>% filter(in.mb == 0)
-
-
-#How many flower count genera were not in pollen metabarcoding results?
-cp.flower.count.genera$in.pmb <- as.integer(flower.count.genera$flower_genus %in% poln.genus.hits.2023$genus)
-in.fc.not.pmb <- cp.flower.count.genera %>% filter(in.pmb == 0)
-
-
-#How many flower count genera were not in any metabarcoding results?
-in.fc.not.mb <- cp.flower.count.genera %>% filter(in.mb == 0 & in.pmb == 0)
-
-
-
-#Which taxa observed in gut metabarcoding were undetected by pollen metabarcoding?
-observed.mb.genus$pmb.detected <- as.integer(observed.mb.genus$genus %in% poln.genus.hits.2023$genus)
-in.gmb.not.pmb <-  observed.mb.genus %>% filter(pmb.detected == 0)
-
-
-#Inverse of above - Which taxa observed in pollen metabarcoding were undetected by gut metabarcoding?
-observed.pmb.genus$gmb.detected <- as.integer(poln.genus.hits.2023$genus %in% observed.mb.genus$genus)
-in.pmb.not.gmb <-  observed.pmb.genus %>% filter(gmb.detected == 0)
-
-
+load(file = here("Data/05_output.RData"))
+load(file = here("Data/05.2_output.RData"))
+load(file = here("Data/06_output.RData"))
 ```
 
 *Interaction networks compared to floral diversity* 
@@ -162,104 +92,12 @@ Comparing flower count surveys to the plant networks detected by the three inter
 Both metabarcoding methodologies detected multiple unique taxa, while interaction transects detected fewer total taxa, with zero unique interactions (Figure 1). Gut content metabarcoding detected interactions with `{r} nrow(genus.hits.23)` total plant genera, including 33 taxa uniquely identified by this methodology. The total diversity identified by this methodology included all of the genera identified by interaction transects. Corbicular pollen metabarcoding detected `{r} nrow(poln.genus.hits.2023)` plant genera, with 31 uniquely detected genera. Again, these genera included all of those identified by interaction transects. The two metabarcoding methodologies shared `{r} nrow(genus.hits.23)-nrow(in.gmb.not.pmb)` common plant genera, representing `{r}  trunc(((nrow(poln.genus.hits.2023)-nrow(in.pmb.not.gmb))/nrow(poln.genus.hits.2023))*100)`% of the total corbicular pollen diversity and `{r} trunc(((nrow(genus.hits.23)-nrow(in.gmb.not.pmb))/nrow(genus.hits.23))*100)`% of the gut content diversity.
 
 ```{r}
-#Venn diagram visualization of detection overlap
-
-
-#just add another part to the list once we have pollen
-taxa.all.methodologies <- list(
-  "Gutcontent\nmetabarcoding\nN = 131" = genus.hits.23$genus,
-  "Interactions\nN = 27" = gut.detected.int.genus$genus, #this works to give the correct N, but it's sketchy. There is probably a better way
-  "Flower count\nN = 117" = flower.count.genera$flower_genus,
-  "Pollen\nmetabarcoding\nN = 123" = poln.genus.hits.2023$genus)
-
-fig.venn <- ggvenn(taxa.all.methodologies,
-               show_percentage = FALSE,
-               fill_color = c("forestgreen","lightblue","slategrey","goldenrod1"),
-               stroke_size = 0.5,
-               set_name_size = 5,
-               text_size = 5)
-
-fig.venn
-
+knitr::include_graphics(here("results/venn.figure.png"))
 ```
 
 Taxonomic diversity observed by sampling period revealed different temporal patterns in flowering taxa and interaction diversity over the sampling season (Figure 2). While there was a net increase in available floral taxa and interactions from the first to last period, peak floral diversity was observed in period four, while peak interactions were observed in period six. Metabarcoding methodologies consistently detected more taxa than interaction transects, with gut content metabarcoding detecting more taxa than the other interaction methodologies in all periods. In periods one, two, and six, before and after the peak observed floral diversity, gut content metabarcoding detected more taxa than were observed in flower counts. During periods three through five, floral diversity was greater than gut content diversity
 
 ```{r}
-#Diversity by periods
-
-method.colors <- c("n.genera.int" = "lightblue",
-                   "n.genera.fc" ="slategrey",
-                   "n.genera.pmb" = "goldenrod1",
-                   "n.genera.gmb" = "forestgreen") #set some universal colors for this project
-
-compare.gen.by.periods <- right_join(
-  int.genus.by.period, flower.genus.by.period, by = "period") %>% 
-  right_join(., bp23.genomic.periods, by = "period") %>% 
-  right_join(., poln.2023.genomic.periods, by = "period")
-  
-compare.gen.by.periods <- compare.gen.by.periods %>% 
-  select(c(period, n.genera.int, n.genera.fc, n.genera.pmb, n.genera.gmb))
-
-long.gen.by.periods <- compare.gen.by.periods %>%
-  pivot_longer(!period) %>% rename(method = name) %>% 
-  rename(n.genera = value)
-
-long.gen.by.periods$method <- factor(
-  long.gen.by.periods$method, 
-  levels = c("n.genera.int", "n.genera.fc", "n.genera.pmb", "n.genera.gmb")
-)
-
-#Means across methodologies by period
-
-#Some data prep for making an informative bar chart
-mean.taxa.periods <- long.gen.by.periods %>% 
-  group_by(period) %>% 
-  summarise(mean.genera = mean(n.genera))
-
-mean.gut.taxa.periods <- long.gen.by.periods %>% 
-  filter(method == "n.genera.gmb") %>% 
-  group_by(period) %>% 
-  summarise(mean.genera = mean(n.genera))
-
-mean.fc.taxa.periods <- long.gen.by.periods %>% 
-  filter(method == "n.genera.fc") %>% 
-  group_by(period) %>% 
-  summarise(mean.genera = mean(n.genera))
-
-mean.gut.taxa.periods$LineType <- "Gut Content Metabarcoding"
-mean.fc.taxa.periods$LineType <- "Flower Count"
-mean.lines <- rbind(mean.gut.taxa.periods, mean.fc.taxa.periods)
-
-
-#Figure 
-fig.methods.x.periods <- ggplot(long.gen.by.periods, aes(period, n.genera, fill = method)) + 
-  geom_col(position = "Dodge", alpha = 0.8) + 
-  theme_minimal() + 
-  xlab("Sampling Period") +
-  ylab("Detected Plant Genera") +
-  scale_x_continuous(breaks = 1:6, labels = 1:6) + 
-  scale_fill_manual(values = method.colors, labels = c(
-    "n.genera.int" = "Interactions Transects",
-    "n.genera.fc" = "Flower Count",
-    "n.genera.pmb" = "Pollen Metabarcoding",
-    "n.genera.gmb" = "Gut Content Metabarcoding")) +
-  labs(fill = "Methodology", color = NULL , linetype = NULL) +
-  theme(axis.ticks.x = element_blank()) +
-  ggtitle("Detected plant genera by methodology across 2023 field sampling periods") +
-  geom_line(
-    data = mean.lines,
-    aes(x = period, y = mean.genera, color = LineType, linetype = LineType),
-    linewidth = 1,
-    inherit.aes = FALSE) +
-  scale_color_manual(values = c("Gut Content Metabarcoding" = "forestgreen", "Flower Count" = "slategrey")) +
-  scale_linetype_manual(values = c("Gut Content Metabarcoding" = "dashed", "Flower Count" = "dotdash")) +
-  guides(
-    fill = guide_legend(order = 1),
-    color = guide_legend(order = 2),
-    linetype = guide_legend(order = 2)
-  )
-  
 
 fig.methods.x.periods
 
@@ -274,294 +112,21 @@ While the taxa included in the interaction networks of flower counts and interac
 Plant communities detected by each methodology were compared for statistical evaluation of the differences between results. Binary presence-absence matrices were used to compare the communities detected by each methodology, aggregated by sampling day. Community composition was contrasted using the Raup-Crick dissimilarity index within a PERMANOVA test, including methodology as the independent variable (Table 1 - all results of PERMANOVAs). A PERMANOVA test [@vegan] of the differences in taxonomic composition across methodologies indicated that methodology has a significant effect (P \< 0.001) on the detected plant community involved in pollinator interactions, accounting for 28% of the variation in detected interaction networks. In pairwise comparisons, the flower count communities differed significantly (P = 0.001) from those of all other methodologies. Between pairs of other methodologies, no significant differences were observed. Differences in methodologies were also assessed in an ordination using Non-metric Multidimensional Scaling (Figure 3, stress = 0.171). Average distances to the group centroid indicated by beta dispersal showed the highest dispersal of data in interaction transect results (Table? Supplementary?). An ANOVA test of mean dispersal by methodology indicated a significant difference (P \< 0.001) in dispersal attributed to methodology. 
 
 ```{r}
-#Statistical analysis of methodologies
-
-#bring together binary presence absence data from interactions and metabarcoding into one table
-
-bp23.all.binary <- full_join(bp23.int4stats.wide.binary, bp23.genomic.binary4stats.xday) %>% 
-  full_join(.,bp23.fc4stats.wide.binary) %>% 
-  full_join(.,poln.genomic.binary.2023.xday.4stats)
-bp23.all.binary[is.na(bp23.all.binary)] <- 0
-
-
-
-#remove NAs and clean out zero sum rows and columns in binary data for statistical analyses. The next two commands do the same and are redundant, but why not do both
-clean4stats.bp23.all.binary <- bp23.all.binary[rowSums(bp23.all.binary[, 4:ncol(bp23.all.binary)], na.rm = TRUE) > 0, ] #keeps only the rows that have greater than 0 sums in binary presence absence
-clean4stats.bp23.all.binary <- clean4stats.bp23.all.binary %>% 
-  select(1:3, # keep metadata columns unchanged
-         where(~ is.numeric(.) && sum(., na.rm = TRUE) > 0)) #remove 0 sum columns
-#removes Avenella and Mentha
-
-
-
-#simplify factors and data for nMDS 
-site.all <- as.factor(clean4stats.bp23.all.binary$site)
-period.all <- as.factor(clean4stats.bp23.all.binary$period)
-methodology <- as.factor(clean4stats.bp23.all.binary$method)
-#length(factor) #to count/check factor lengths (should all be the same and same as row # in clean4stats.bp23.all.binary and all.plants)
-all.plants <- clean4stats.bp23.all.binary %>% 
-  select(!c(site, period, method))
-
-
-#NMDS visualization of data --------------------------------------------------
-
-#prepare NMDS data with vegan
-
-dist.all.plants <- vegdist(all.plants, method = "raup", binary = TRUE) #calc distance between communities for later stat analysis
-set.seed(123) #this should make it so that the nmds results are always the same despite permutations
-all.plant.mds <- metaMDS(all.plants, distance = "raup", trace = FALSE) 
-
-
-
-#NMDS plot
-nmds_points <- as.data.frame(all.plant.mds$points)
-nmds_points <- nmds_points %>% 
-  mutate(methodology = methodology) # %>% 
-  #slice(-8) #if you want to remove the outlier for whatever reason
-method.colors2 <- c("count" ="slategrey",
-                    "interaction" = "lightblue",
-                    "gut.metabarcoding" = "forestgreen",
-                    "pollen.metabarcoding" = "goldenrod1")
-
-polygon_data <- nmds_points %>%
-  group_by(methodology) %>%
-  slice(chull(MDS1, MDS2))
-
-NMDS.title <- expression(paste("NMDS visualization of network composition by methodology"))
-NMDS.method.comparisons <- ggplot(nmds_points, aes(x = MDS1, y = MDS2, color = methodology)) +
-  geom_polygon(data = polygon_data, 
-               aes(fill = methodology, color = NULL), 
-               alpha = 0.2, 
-               show.legend = FALSE) +
-  geom_point(size = 3) + 
-  scale_color_manual(values = method.colors2,
-                     labels = c(
-                      "count" = "Floral diversity survey",
-                      "interaction" = "Interaction observations",
-                      "gut.metabarcoding" = "Gut metabarcoding",
-                      "pollen.metabarcoding" = "Pollen metabarcoding")
-                     ) +
-  scale_fill_manual(values = method.colors2) +
-  theme_classic() +  
-  labs(
-    title = NMDS.title,
-    x = "NMDS1",
-    y = "NMDS2",
-    color = "Methodology"
-  ) +
-  theme(plot.title = element_text(hjust=0.5),
-    legend.position.inside = c(0.13, 0.85)
-  )
-
-NMDS.method.comparisons
-
-#statistical analysis using PERMANOVA ----------------------------------------
-#Are the patterns observed withing NMDS real?
-
-permanova.all.data <- adonis2(all.plants ~ methodology, permutations = 9999, method = "raup", pairwise = TRUE)
-
-permanova.kbl <- permanova.all.data %>% 
-  kbl(caption = "PERMANOVA analysis of methodology's effect on observed plant community") %>% 
-  kable_minimal(full_width = F, html_font = "Cambria")
-
 permanova.kbl
 
-#statistical analysis using a pairwise PERMANOVA -------------------------------
-
-#build function for a pairwise permanova ------
-pairwise_permanova <- function(sp_matrix, group_var, dist = "raup", adj = "holm", perm = 9999) {
-  group_var <- as.factor(group_var)
-  groups <- combn(levels(group_var), 2)
-  
-  results <- data.frame(
-    group1 = character(),
-    group2 = character(),
-    R2 = numeric(),
-    F_value = numeric(),
-    df1 = numeric(),
-    df2 = numeric(),
-    p_value = numeric(),
-    p_adj = numeric(),
-    stringsAsFactors = FALSE
-  )
-  
-  for (i in 1:ncol(groups)) {
-    g1 <- groups[1, i]
-    g2 <- groups[2, i]
-    subset_idx <- group_var %in% c(g1, g2)
-    
-    sub_matrix <- sp_matrix[subset_idx, , drop = FALSE]
-    sub_group <- droplevels(group_var[subset_idx])
-    
-    fit <- adonis2(sub_matrix ~ sub_group, method = dist, permutations = perm)
-    
-    results <- rbind(results, data.frame(
-      group1 = g1,
-      group2 = g2,
-      R2 = fit$R2,
-      F_value = fit$F,
-      df1 = fit$Df,
-      df2 = fit$Df[1],
-      p_value = fit$`Pr(>F)`,
-      p_adj = NA
-    ))
-  }
-  
-  results$p_adj <- p.adjust(results$p_value, method = adj)
-  return(results)
-}
-
-
-#execute pairwise permanova using all data -----
-
-#load and prepare my data for using this function
-load(here("Data/05_output.RData"))
-
-all.plants.matrix <- as.matrix(all.plants)
-
-pairwise.results <- pairwise_permanova(all.plants.matrix, methodology)
-
-#Make a cleaner visual of results
-clean_results <- pairwise.results %>%
-  # Remove rows with NA in p_value or F_value (likely redundant summary rows)
-  filter(!is.na(p_value) & !is.na(F_value)) %>%
-  
-  # Round numeric columns nicely for display
-  mutate(
-    R2 = round(R2, 3),
-    F_value = round(F_value, 2),
-    p_value = signif(p_value, 3),
-    p_adj = signif(p_adj, 3)
-  ) %>%
-  
-  # Add significance stars
-  mutate(significance = case_when(
-    p_adj <= 0.001 ~ "***",
-    p_adj <= 0.01 ~ "**",
-    p_adj <= 0.05 ~ "*",
-    TRUE ~ ""
-  ))
-
-# Create a markdown/HTML table suitable for reporting
-ppermanova.kbl <- kable(clean_results, 
-      col.names = c("Group 1", "Group 2", "R\u00B2", "F value", "df1", "df2", "p value", "Adjusted p value", "Significance"),
-      caption = "Pairwise PERMANOVA Results",
-      digits = 3) %>% 
-  kable_minimal(full_width = F, html_font = "Cambria")
-
 ppermanova.kbl
+
+NMDS.method.comparisons
 
 ```
 
 *Specimen level metabarcoding results*
 
-```{r}
+Taxonomic detections from the two metabarcoding methodologies were compared by individual specimens. For specimens providing both types of samples, fewer taxa were detected in gut content samples (mean = `{r} trunc(mean(total.taxa.specimen$n.taxa.g))` genera, sd = `{r} trunc(sd(total.taxa.specimen$n.taxa.g))`) than in pollen samples (mean = `{r} trunc(mean(total.taxa.specimen$n.taxa.p))` genera, sd = `{r} trunc(sd(total.taxa.specimen$n.taxa.p))`). Comparing the number of taxa identified by each specimen for both sample sources, `{r} trunc((mean(total.taxa.specimen$shared_count)/mean(total.taxa.specimen$total.per.specimen))*100)`% of the detected taxa (mean = `{r} trunc(mean(total.taxa.specimen$shared_count))` genera, sd = `{r} trunc(sd(total.taxa.specimen$shared_count))`) were shared, on average. **A PERMANOVA test of the differences in taxonomic composition between the two showed a significant effect (P \< 0.001) of metabarcoding sample source on the detected plant community within the resulting individual interaction networks. This effect accounted for 11% of the variation in detected interaction networks.** 
 
-#Bring pollen metabarcoding data in and format for this analysis
-poln.2023.indv <- poln.2023.genomic.specs #copy the existing pollen mb data and clean it up for this analysis
-poln.2023.indv$ID <- sub('^(Y\\d{8}P).*', '\\1', poln.2023.genomic.specs$sample) #get clean IDs
-poln.2023.indv <- poln.2023.indv %>% relocate(ID) %>% 
-  select(!c(sample, year, period, site, specimen, color_p, color_s, type, plate, quant_reading, is.neg)) %>% 
-  mutate(type = rep("pollen", 25))%>% 
-  relocate(type, .after = ID)
+*Species Level Interaction Network Metrics*
 
-#Bring gut metabarcoding data in and format for this analysis
-gut.2023.indv <- bp23.genomic.analys #copy the existing gut mb data and clean it up for this analysis
-gut.2023.indv <- gut.2023.indv %>% 
-  select(!c(year, specimen, color_p, color_s, type, plate, quant_reading, is.neg)) %>% 
-  mutate(type = rep("gut", 126)) %>% 
-  relocate(type, .after = sample)
-
-#Need to be able to match gut/pollen samples by specimen
-IDS <- as.data.frame(read.csv2(here("Data/pollen_gut_id_match.csv"), sep = ",")) #create a df for connecting samples from both methodologies
-IDS <- IDS %>% 
-  rename(sample = Bombus_sample) %>% 
-  rename(ID = sample_ID)
-
-#Isolate data for specimens with both sample types by reducing gut samples in analysis
-gut.w.poln.2023 <- left_join(IDS,gut.2023.indv, by = "sample")
-
-
-
-
-#Data analysis ------------------------------------------------------
-
-#Check which taxa were identified in each sample by methodology
-#tool for doing this:
-get_nonzero_cols <- function(df, id_col = "ID") {
-  setNames(
-    lapply(df[[id_col]], function(this_id) {
-      ix <- which(df[[id_col]] == this_id)
-      if (length(ix) == 0) return(character(0))
-      data_cols <- setdiff(colnames(df), c(id_col, "sample", "type","period", "site"))
-      valid_cols <- data_cols[!is.na(df[ix, data_cols]) & df[ix, data_cols] != 0]
-      valid_cols
-    }),
-    df[[id_col]]
-  )
-}
-
-#results, with names of genera detected
-taxa_results_poln <- get_nonzero_cols(poln.2023.indv) #for pollen
-taxa_results_gut <- get_nonzero_cols(gut.w.poln.2023) #for guts
-gut.2023.indv <- gut.2023.indv %>% rename (ID = sample) #reformat quickly - make sure everything is run IN ORDER
-taxa_results_all_guts <- get_nonzero_cols(gut.2023.indv) #for all gut data, disregarding pollen
-
-common_ids <- intersect(names(taxa_results_poln), names(taxa_results_gut))
-common_results <- lapply(common_ids, function(id) {
-  intersect(taxa_results_poln[[id]], taxa_results_gut[[id]])
-})
-names(common_results) <- common_ids
-
-
-#same results but in number of taxa detected
-n_results_poln <-sapply(taxa_results_poln, length)
-n_results_gut <- sapply(taxa_results_gut, length)
-n_results_all_guts <- sapply(taxa_results_all_guts, length)
-
-#organize the last results into nice dfs
-n_by_sample_poln <- data.frame(
-  ID = names(n_results_poln),
-  n.taxa.p = as.numeric(n_results_poln))
-
-n_by_sample_gut <- data.frame(
-  ID = names(n_results_gut),
-  n.taxa.g = as.numeric(n_results_gut))
-n_by_sample_gut <- left_join(n_by_sample_gut, IDS, by = "ID") %>%
-  relocate(sample)
-
-n_by_sample_all_guts <- data.frame(
-  ID = names(n_results_all_guts),
-  n.taxa.g = as.integer(n_results_all_guts))
-n_by_sample_all_guts <- n_by_sample_all_guts %>% 
-  mutate(period = as.integer(str_sub(ID, 6, 7)),
-         site   = as.integer(str_sub(ID, 8, 9)))
-
-#summary of these data:
-individual.period.data <- n_by_sample_all_guts %>% group_by(period) %>% summarise(mean(n.taxa.g), sd(n.taxa.g))
-
-#Create a df that shows the number of shared taxa between the two methodologies by sample
-all_ids <- intersect(names(n_results_poln), names(n_results_gut))
-sharing <- data.frame(
-  ID = all_ids,
-  shared_count = sapply(all_ids, function(id) {
-    sum(as.integer(taxa_results_gut[[id]] %in% taxa_results_poln[[id]]))
-  })
-)
-
-#make a df summarizing the comparison between mb methodologies at the individual level
-total.taxa.specimen <- left_join(n_by_sample_gut, n_by_sample_poln, by = "ID")
-total.taxa.specimen <- total.taxa.specimen %>% 
-  mutate(total.per.specimen = n.taxa.g + n.taxa.p) %>% 
-  left_join(sharing, by = "ID") %>% 
-  mutate(portion.shared = shared_count/total.per.specimen) %>% 
-  mutate(period = as.integer(str_sub(sample, 6, 7)),
-    site   = as.integer(str_sub(sample, 8, 9)))
-
-
-```
-
-Taxonomic detections from the two metabarcoding methodologies were compared by individual specimens. For specimens providing both types of samples, fewer taxa were detected in gut content samples (mean = `{r} trunc(mean(total.taxa.specimen$n.taxa.g))` genera, sd = `{r} trunc(sd(total.taxa.specimen$n.taxa.g))`) than in pollen samples (mean = `{r} trunc(mean(total.taxa.specimen$n.taxa.p))` genera, sd = `{r} trunc(sd(total.taxa.specimen$n.taxa.p))`). Comparing the number of taxa identified by each specimen for both sample sources, `{r} trunc((mean(total.taxa.specimen$shared_count)/mean(total.taxa.specimen$total.per.specimen))*100)`% of the detected taxa (mean = `{r} trunc(mean(total.taxa.specimen$shared_count))` genera, sd = `{r} trunc(sd(total.taxa.specimen$shared_count))`) were shared, on average. A PERMANOVA test of the differences in taxonomic composition between the two showed a significant effect (P \< 0.001) of metabarcoding sample source on the detected plant community within the resulting individual interaction networks. This effect accounted for 11% of the variation in detected interaction networks. 
+We calculated the values of network metrics at the species level for
 
 **Discussion**
 

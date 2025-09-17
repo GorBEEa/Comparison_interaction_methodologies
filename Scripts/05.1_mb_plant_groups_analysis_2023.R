@@ -74,8 +74,8 @@ pmb.taxa.gap <- clean4stats.bp23.all.binary %>%
   filter(method == "pollen.metabarcoding")
 
 smry.gmb.taxa.gap <- gmb.taxa.gap %>%
-  select(!site) %>%
-  group_by(period) %>%
+  select(!period) %>%
+  group_by(site) %>%
   summarise(across(where(is.numeric), sum), .groups = "drop")
 
 smry.pmb.taxa.gap <- pmb.taxa.gap %>%
@@ -98,7 +98,7 @@ get_nonzero_cols <- function(df, id_col = "ID") {
 }
 
 #results
-gmb.taxa.periods <- get_nonzero_cols(smry.gmb.taxa.gap, id_col = "period")
+gmb.taxa.periods <- get_nonzero_cols(smry.gmb.taxa.gap, id_col = "site")
 pmb.taxa.periods <- get_nonzero_cols(smry.pmb.taxa.gap, id_col = "period")
 
 

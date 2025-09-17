@@ -95,7 +95,7 @@ individual.period.data <- n_by_sample_all_guts %>% group_by(period) %>% summaris
 ggplot(individual.period.data, aes(x = factor(period), y = `mean(n.taxa.g)`)) +
   geom_bar(stat = "identity") +
   geom_errorbar(aes(ymin = `mean(n.taxa.g)` - `sd(n.taxa.g)`, ymax = `mean(n.taxa.g)` + `sd(n.taxa.g)`), 
-                width = 0.2, size = 1) +
+                width = 0.2, linewidth = 1) +
   labs(x = "Period", y = "Mean taxa per sample", title = "Mean taxa per individual gut sample and standard deviation by period (2023)") +
   theme_minimal()
 
