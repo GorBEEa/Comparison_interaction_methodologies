@@ -207,3 +207,5 @@ fig.centrality.pmb
 
 
 
+
+save.image(file = here("Data/07_output.RData"))

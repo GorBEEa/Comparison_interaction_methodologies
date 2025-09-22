@@ -187,7 +187,7 @@ fig.methods.x.periods <- ggplot(long.gen.by.periods, aes(period, n.genera, fill 
     aes(x = period, y = mean.genera, color = LineType, linetype = LineType),
     linewidth = 1,
     inherit.aes = FALSE) +
-  scale_color_manual(values = c("Gut Content Metabarcoding" = "forestgreen", "Flower Count" = "slategrey")) +
+ scale_color_manual(values = c("Gut Content Metabarcoding" = "forestgreen", "Flower Count" = "slategrey")) +
   scale_linetype_manual(values = c("Gut Content Metabarcoding" = "dashed", "Flower Count" = "dotdash")) +
   guides(
     fill = guide_legend(order = 1),
@@ -282,6 +282,15 @@ polygon_data <- nmds_points %>%
   slice(chull(MDS1, MDS2))
 
 NMDS.title <- expression(paste("NMDS visualization of network composition by methodology"))
+NMDS.cap <- expression(paste(
+  bold("Figure3: "), "Non-metric dimensional scaling of interaction plant communities for", italic(" Bombus pascuorum "),"as detected by three interaction observation methodologies and a floral diversity survey. ",
+  "Interaction methodologies included floral diversity surveys and ITS2 metabarcoding of DNA extracted from bumblebee gut contents and corbicular pollen loads. ",
+  "Observation data are aggregated by sampling day, and the binary presence/absence list for the plant genera observed by each methodology on each sampling day are compared in ordination space. ",
+  "PERMANOVA comparisons of the community compositions represented by NMDS show no significant differences between interaction observations, gut content metabarcoding, and corbicular pollen metabarcoding. ",
+  "Floral diversity survey results were significantly different (P < 0.001) from each of the interaction methodologies."
+))
+nmds.cap.wrap <- str_wrap(NMDS.cap, width = 150)
+
 NMDS.method.comparisons <- ggplot(nmds_points, aes(x = MDS1, y = MDS2, color = methodology)) +
   geom_polygon(data = polygon_data, 
                aes(fill = methodology, color = NULL), 
@@ -299,13 +308,15 @@ NMDS.method.comparisons <- ggplot(nmds_points, aes(x = MDS1, y = MDS2, color = m
   theme_classic() +  
   labs(
     title = NMDS.title,
+    caption = nmds.cap.wrap,
     x = "NMDS1",
     y = "NMDS2",
     color = "Methodology"
   ) +
   theme(plot.title = element_text(hjust=0.5),
-    legend.position.inside = c(0.13, 0.85)
-  )
+    legend.position.inside = c(0.13, 0.85),
+    plot.caption = element_text(hjust = 0, size = 10),
+    plot.caption.position = "plot")
 
 NMDS.method.comparisons
 

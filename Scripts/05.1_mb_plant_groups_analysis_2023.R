@@ -8,6 +8,7 @@
 #library(tidyselect)
 #library(ggplot2)
 library(ggrepel)
+library(ggpattern)
 
 #list fed to perplexity of all mb taxa:
 #full_join(genus.hits.23, poln.genus.hits.2023, by = 'genus')
@@ -73,12 +74,22 @@ gmb.taxa.gap <- clean4stats.bp23.all.binary %>%
 pmb.taxa.gap <- clean4stats.bp23.all.binary %>% 
   filter(method == "pollen.metabarcoding")
 
-smry.gmb.taxa.gap <- gmb.taxa.gap %>%
+smry.gmb.taxa.site <- gmb.taxa.gap %>%
   select(!period) %>%
   group_by(site) %>%
   summarise(across(where(is.numeric), sum), .groups = "drop")
 
-smry.pmb.taxa.gap <- pmb.taxa.gap %>%
+smry.gmb.taxa.period <- gmb.taxa.gap %>%
+  select(!site) %>%
+  group_by(period) %>%
+  summarise(across(where(is.numeric), sum), .groups = "drop")
+
+smry.pmb.taxa.site <- pmb.taxa.gap %>%
+  select(!period) %>%
+  group_by(site) %>%
+  summarise(across(where(is.numeric), sum), .groups = "drop")
+
+smry.pmb.taxa.period <- pmb.taxa.gap %>%
   select(!site) %>%
   group_by(period) %>%
   summarise(across(where(is.numeric), sum), .groups = "drop")
@@ -98,9 +109,11 @@ get_nonzero_cols <- function(df, id_col = "ID") {
 }
 
 #results
-gmb.taxa.periods <- get_nonzero_cols(smry.gmb.taxa.gap, id_col = "site")
-pmb.taxa.periods <- get_nonzero_cols(smry.pmb.taxa.gap, id_col = "period")
+gmb.taxa.sites <- get_nonzero_cols(smry.gmb.taxa.site, id_col = "site")
+gmb.taxa.periods <- get_nonzero_cols(smry.gmb.taxa.period, id_col = "period")
 
+pmb.taxa.sites <- get_nonzero_cols(smry.pmb.taxa.site, id_col = "site")
+pmb.taxa.periods <- get_nonzero_cols(smry.pmb.taxa.period, id_col = "period")
 
 
 #ask AI which of the resulting names are from anemophilous taxa - 
@@ -112,6 +125,7 @@ pmb.taxa.periods <- get_nonzero_cols(smry.pmb.taxa.gap, id_col = "period")
 #p1 grasses: (0) Grasses.
 #p1 other an: (2) Plantago, Urtica.
 #p1 ent: (43)
+#7/50 are anemophilous
 
 #p2 woody: (9) Betula, Fagus, Eucalyptus, Prunus, Pyrus, Quercus, Robinia, Sambucus, Salix.
 #p2 grasses: (3) Holcus, Carex, Anthoxanthum.
@@ -138,7 +152,53 @@ pmb.taxa.periods <- get_nonzero_cols(smry.pmb.taxa.gap, id_col = "period")
 #p6: (5) Plantago, Parietaria, Stellaria, Urtica, Raphanus.
 #p6 ent: (50)
 
-periods <- c(1,2,3,4,5,6)
-methods <- c("Interactions Transects", "Flower Count", "Pollen Metabarcoding", "Gut Content Metabarcoding")
-type.methods.period <- 
+gmb.p1 <- c(5,0,2,43)
+gmb.p2 <- c(9,3,2,45)
+gmb.p3 <- c(8,3,4,39)
+gmb.p4 <- c(4,3,4,51)
+gmb.p5 <- c(4,0,1,37)
+gmb.p6 <- c(11,9,5,50)
 
+taxa_groups2 <- c("Woody","Poaceae","Anemophilous_other","Entomophilous")
+gmb.groups.x.period <- rbind(gmb.p1, gmb.p2, gmb.p3, gmb.p4, gmb.p5, gmb.p6)
+colnames(gmb.groups.x.period) <- taxa_groups2
+gmb.groups.x.period <- data.frame(period = rownames(gmb.groups.x.period), gmb.groups.x.period, row.names = NULL)
+gmb.groups.x.period$all_anemophilous <-  rowSums(gmb.groups.x.period[,c(2,3,4)])
+gmb.groups.x.period$total <-  rowSums(gmb.groups.x.period[,c(2,3,4,5)])
+gmb.groups.x.period$prcnt_ane <-  gmb.groups.x.period$all_anemophilous/gmb.groups.x.period$total
+
+
+gmb.groups.x.period_long <- pivot_longer(gmb.groups.x.period, cols = c(Woody, Poaceae, Anemophilous_other, Entomophilous), 
+                        names_to = "group", values_to = "value")
+
+
+gmb.groups.x.period_long$group <- factor(gmb.groups.x.period_long$group, 
+                                         levels = c("Woody", "Poaceae", "Anemophilous_other","Entomophilous"))
+
+
+custom_colors <- c(
+  "Entomophilous" = "forestgreen",      # darkest, base of stack
+  "Woody" = "#73C473",                  # forest green hex
+  "Poaceae" = "darkolivegreen",                # medium green
+  "Anemophilous_other" = "#98FB98"      # pale green
+)
+
+ggplot(gmb.groups.x.period_long, aes(x = period, y = value, fill = group)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = custom_colors) +
+  labs(x = "Period", y = "Count", fill = "Group") +
+  theme_minimal()
+
+
+
+
+select.data <- gmb.groups.x.period %>% select(c(period,Entomophilous,all_anemophilous))
+
+#this is apparently needed for integrating this info into the plot
+long_select <- select.data |>
+  pivot_longer(
+    cols = c(Entomophilous, all_anemophilous),
+    names_to = "group",
+    values_to = "count"
+  )
+long_select$period <- as.integer(sub(".*\\.p", "", long_select$period))
