@@ -8,6 +8,7 @@
 #library(tidyr)
 library(bipartite)
 library(treemap)
+library(viridis)
 
 
 #prepare data -----------------------------------------------------------------

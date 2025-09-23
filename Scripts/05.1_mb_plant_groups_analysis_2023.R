@@ -8,7 +8,6 @@
 #library(tidyselect)
 #library(ggplot2)
 library(ggrepel)
-library(ggpattern)
 
 #list fed to perplexity of all mb taxa:
 #full_join(genus.hits.23, poln.genus.hits.2023, by = 'genus')
@@ -178,17 +177,26 @@ gmb.groups.x.period_long$group <- factor(gmb.groups.x.period_long$group,
 
 custom_colors <- c(
   "Entomophilous" = "forestgreen",      # darkest, base of stack
-  "Woody" = "#73C473",                  # forest green hex
-  "Poaceae" = "darkolivegreen",                # medium green
-  "Anemophilous_other" = "#98FB98"      # pale green
+  "Woody" = "cyan4",                  # forest green hex
+  "Poaceae" = "wheat",                # medium green
+  "Anemophilous_other" = "darkolivegreen3"      # pale green
 )
 
-ggplot(gmb.groups.x.period_long, aes(x = period, y = value, fill = group)) +
-  geom_bar(stat = "identity") +
-  scale_fill_manual(values = custom_colors) +
-  labs(x = "Period", y = "Count", fill = "Group") +
+gmb.plant.groups.x.period <- ggplot(gmb.groups.x.period_long, aes(x = period, y = value, fill = group)) +
+  geom_bar(stat = "identity", alpha = 0.6) +
+  scale_fill_manual(values = custom_colors,
+                    labels = c(
+                      "Entomophilous" = "Entomophilous",
+                      "Woody" = "Woody Plants",
+                      "Poaceae" = "Poaceae",
+                      "Anemophilous_other" = "Anemophilous Herbaceous")) +
+  labs(x = "Period", y = "Count", title = "Plant groups detected by metabarcoding of gut contents across sampling periods", fill = "Group") +
+  xlab("Sampling Period") +
+  ylab("Detected Plant Genera") +
+  scale_x_discrete(labels= c("1","2","3","4","5","6")) +
   theme_minimal()
 
+gmb.plant.groups.x.period
 
 
 
