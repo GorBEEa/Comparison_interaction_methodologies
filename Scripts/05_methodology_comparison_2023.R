@@ -103,10 +103,19 @@ paste("Of the", nrow(poln.genus.hits.2023),"taxa detected in pollen metabarcodin
 
 #just add another part to the list once we have pollen
 taxa.all.methodologies <- list(
-  "Gutcontent\nmetabarcoding\nN = 131" = genus.hits.23$genus,
+  "Gut content\nMetabarcoding\nN = 131" = genus.hits.23$genus,
   "Interactions\nN = 27" = gut.detected.int.genus$genus, #this works to give the correct N, but it's sketchy. There is probably a better way
-  "Flower count\nN = 117" = flower.count.genera$flower_genus,
-  "Pollen\nmetabarcoding\nN = 123" = poln.genus.hits.2023$genus)
+  "Flower Count\nN = 117" = flower.count.genera$flower_genus,
+  "Pollen\nMetabarcoding\nN = 123" = poln.genus.hits.2023$genus)
+
+venn.cap <- expression(paste(bold("Figure 1: "),"Number of plant genera detected within interation networks 
+                             constructed for", italic(" B. pascuorum "), "using three interaction observation methodologies:
+                             interaction field transects, corbicular pollen metabarcoding, and gut content metabarcoding
+                             Flower count floral diversity survey results are represented within the analysis to provide 
+                             environmental context. All results are aggregated from samples and surveys taken from April to 
+                             August of 2023. Degree of ", italic(" B. pascuorum "), " as a network node is represented by the
+                             total number of genera detected by each methodology (N = ). Overlap with other methodologies, and
+                             uniquely detected genera are shown within the venn diagram."))
 
 fig.venn <- ggvenn(taxa.all.methodologies,
                show_percentage = FALSE,
@@ -114,7 +123,11 @@ fig.venn <- ggvenn(taxa.all.methodologies,
                stroke_size = 0.5,
                set_name_size = 5,
                text_size = 5) + 
-  coord_cartesian(clip = "off")
+  coord_cartesian(clip = "off") +
+  ggtitle("Interaction network degree and
+    overlap by methodology") +
+ # labs(caption = venn.cap) +
+  theme(plot.title = element_text(face="bold", vjust = 2, hjust = 0.01))
 
 ggsave(here("results/venn.figure.png"),fig.venn, width=10, height=9, units="in", dpi=300)
 
@@ -180,7 +193,8 @@ fig.methods.x.periods <- ggplot(long.gen.by.periods, aes(period, n.genera, fill 
     "n.genera.pmb" = "Pollen Metabarcoding",
     "n.genera.gmb" = "Gut Content Metabarcoding")) +
   labs(fill = "Methodology", color = NULL , linetype = NULL) +
-  theme(axis.ticks.x = element_blank()) +
+  theme(plot.title = element_text(hjust = 0.7),
+    axis.ticks.x = element_blank()) +
   ggtitle("Detected plant genera by methodology across 2023 field sampling periods") +
   geom_line(
     data = mean.lines,
@@ -258,7 +272,7 @@ all.plants <- clean4stats.bp23.all.binary %>%
 
 dist.all.plants <- vegdist(all.plants, method = "raup", binary = TRUE) #calc distance between communities for later stat analysis
 set.seed(123) #this should make it so that the nmds results are always the same despite permutations
-all.plant.mds <- metaMDS(all.plants, distance = "raup") 
+all.plant.mds <- metaMDS(all.plants, distance = "raup", trace = FALSE) 
 
 
 #Quick plot option - the colors are probably deceiving right now
