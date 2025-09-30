@@ -70,7 +70,7 @@ int.method.colors <- c("interaction" = "lightblue",
 
 
 #Figure comparing d' evolution over season by methodology
-fig.dprime.title <- expression(paste(italic("d' "), "specialization of", italic(" B. pascuorum "), "over time as indicated by interaction network methodologies"))
+fig.dprime.title <- expression(paste("Specialization of", italic(" B. pascuorum "), "over time as indicated by interaction methodology"))
 
 fig.dprime <- ggplot(specialization, aes(period, dprime, fill = method)) + 
   geom_col(position = "Dodge", alpha = 0.8) + 
@@ -88,7 +88,8 @@ fig.dprime <- ggplot(specialization, aes(period, dprime, fill = method)) +
   annotate("text", x = Inf, y = 0.9, label = "perfect specialist", 
            hjust = 1.1, vjust = -0.5, color = "black", size = 4) +
   ggtitle(fig.dprime.title) +
-  theme_minimal() 
+  theme_minimal() +
+  theme(plot.title = element_text(face="bold", hjust = 0.7))
 
 fig.dprime
 
@@ -127,23 +128,23 @@ gmb_sorted_nonzero <- sort(gmb_nonzero, decreasing = TRUE)
 
 gmb_df <- data.frame(
   genus = names(gmb_sorted_nonzero),
-  centrality = as.numeric(gmb_sorted_nonzero),
+  Importance = as.numeric(gmb_sorted_nonzero),
   row.names = NULL,
   stringsAsFactors = FALSE
 )
 
 gmb.most.central <- gmb_df[1:27,1:2]
-gmb.most.central$label <- paste0(gmb.most.central$genus, "\n", round(gmb.most.central$centrality, 4))
+gmb.most.central$label <- paste0(gmb.most.central$genus, "\n", round(gmb.most.central$Importance, 4))
 
 fig.centrality.gmb <- treemap(gmb.most.central,
         index = "label",      
-        vSize = "centrality",
-        vColor = "centrality",
+        vSize = "Importance",
+        vColor = "Importance",
         type = "value",
         palette = custom_viridis,
         range = c(0.0136, 0.133),
-        title = expression(paste("Centrality of plant taxa within the", italic(" B. pascuorum "), 
-                                 "interaction network as revealed by gut content metabarcoding")))
+        title = expression(paste("Importance of plant taxa within the", italic(" B. pascuorum "), 
+                                 "interaction network revealed by gut content metabarcoding")))
 
 fig.centrality.gmb
 
@@ -157,23 +158,23 @@ int_sorted_nonzero <- sort(int_nonzero, decreasing = TRUE)
 
 int_df <- data.frame(
   genus = names(int_sorted_nonzero),
-  centrality = as.numeric(int_sorted_nonzero),
+  Importance = as.numeric(int_sorted_nonzero),
   row.names = NULL,
   stringsAsFactors = FALSE
 )
 
 int.most.central <- int_df[1:27,1:2]
-int.most.central$label <- paste0(int.most.central$genus, "\n", round(int.most.central$centrality, 4))
+int.most.central$label <- paste0(int.most.central$genus, "\n", round(int.most.central$Importance, 4))
 
 fig.centrality.int <- treemap(int.most.central,
         index = "label",      
-        vSize = "centrality",
-        vColor = "centrality",
+        vSize = "Importance",
+        vColor = "Importance",
         type = "value",
         palette = custom_viridis,
         range = c(0.0136, 0.133),
-        title = expression(paste("Centrality of plant taxa within the", italic(" B. pascuorum "), 
-                                 "interaction network as revealed by interaction transects")))
+        title = expression(paste("Importance of plant taxa within the", italic(" B. pascuorum "), 
+                                 "interaction network revealed by interaction transects")))
 
 fig.centrality.int
 
@@ -186,23 +187,23 @@ pmb_sorted_nonzero <- sort(pmb_nonzero, decreasing = TRUE)
 
 pmb_df <- data.frame(
   genus = names(pmb_sorted_nonzero),
-  centrality = as.numeric(pmb_sorted_nonzero),
+  Importance = as.numeric(pmb_sorted_nonzero),
   row.names = NULL,
   stringsAsFactors = FALSE
 )
 
 pmb.most.central <- pmb_df[1:27,1:2]
-pmb.most.central$label <- paste0(pmb.most.central$genus, "\n", round(pmb.most.central$centrality, 4))
+pmb.most.central$label <- paste0(pmb.most.central$genus, "\n", round(pmb.most.central$Importance, 4))
 
 fig.centrality.pmb <- treemap(pmb.most.central,
         index = "label",      
-        vSize = "centrality",
-        vColor = "centrality",
+        vSize = "Importance",
+        vColor = "Importance",
         type = "value",
         palette = custom_viridis,
         range = c(0.0136, 0.133),
-        title = expression(paste("Centrality of plant taxa within the", italic(" B. pascuorum "), 
-                                 "interaction network as revealed by corbicular pollen metabarcoding")))
+        title = expression(paste("Importance of plant taxa within the", italic(" B. pascuorum "), 
+                                 "interaction network revealed by corbicular pollen metabarcoding")))
 
 fig.centrality.pmb
 

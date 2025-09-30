@@ -36,10 +36,9 @@ library(phyloseq) ; packageVersion("phyloseq")
 
 #Working with data cleaned with decontam
 
-plant.decontam0.5 <- readRDS(here("Data/gbp23.plant.decontam.0.5.RDS")) #all data in phyloseq format from strict decontam filter (th = 0.5)
+plant.decontam0.5 <- readRDS(here("Data/gbp23.plant.decontam.0.5.RDS")) #all data in phyloseq format from strict decontam filter (th = 0.5) THESE ARE THE DATA USED IN THE FINAL ANALYSIS
 plant.decontam0.1 <- readRDS(here("Data/gbp23.plant.decontam.0.1.RDS")) #all data in phyloseq format from less strict decontam filter (th = 0.1)
 long.plant.decontam0.5 <- readRDS(here("Data/long.gbp23.plant.decontam.0.5.RDS")) #all data from ITS2 specific dada2 analysis in phyloseq format from strict decontam filter (th = 0.5)
-pollen.decontam0.5 <- readRDS(here("Data/pollen23.24.decontam.0.5.RDS")) #all data in phyloseq format from 20234 and 2024 Pollen sequence data
 
 #split into dataframes used in this analysis
 

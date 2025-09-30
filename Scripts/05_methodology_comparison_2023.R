@@ -122,14 +122,14 @@ fig.venn <- ggvenn(taxa.all.methodologies,
                fill_color = c("forestgreen","lightblue","slategrey","goldenrod1"),
                stroke_size = 0.5,
                set_name_size = 5,
-               text_size = 5) + 
+               text_size = 8) + 
   coord_cartesian(clip = "off") +
   ggtitle("Interaction network degree and
     overlap by methodology") +
  # labs(caption = venn.cap) +
   theme(plot.title = element_text(face="bold", vjust = 2, hjust = 0.01))
 
-ggsave(here("results/venn.figure.png"),fig.venn, width=10, height=9, units="in", dpi=300)
+ggsave(here("results/venn.figure.jpeg"),fig.venn, width=10, height=9, units="in", dpi=300)
 
 
 
