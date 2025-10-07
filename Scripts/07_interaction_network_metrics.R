@@ -72,24 +72,49 @@ int.method.colors <- c("interaction" = "lightblue",
 #Figure comparing d' evolution over season by methodology
 fig.dprime.title <- expression(paste("Specialization of", italic(" B. pascuorum "), "over time as indicated by interaction methodology"))
 
-fig.dprime <- ggplot(specialization, aes(period, dprime, fill = method)) + 
-  geom_col(position = "Dodge", alpha = 0.8) + 
+
+fig.dprime <- ggplot(specialization, aes(x = period, y = dprime, group = method,
+                                         color = method, linetype = method, shape = method)) + 
+  geom_line(size = 1.2) +
+  geom_point(size = 3, alpha = 0.9) + 
   xlab("Sampling Period") +
   ylab("d' specialization") +
   scale_x_continuous(breaks = 1:6, labels = 1:6) + 
-  scale_fill_manual(values = int.method.colors, labels = c(
-    "interaction" = "Interactions Transects",
-    "pollen.metabarcoding" = "Pollen Metabarcoding",
-    "gut.metabarcoding" = "Gut Content Metabarcoding")) +
-  labs(fill = "Methodology",
-       color = NULL ,
-       linetype = NULL) +
+  scale_color_manual(
+    values = int.method.colors,
+    labels = c(
+      "interaction" = "Interactions Transects",
+      "pollen.metabarcoding" = "Pollen Metabarcoding",
+      "gut.metabarcoding" = "Gut Content Metabarcoding")) +
+  scale_shape_manual(
+    values = c(
+      "gut.metabarcoding" = 17,   
+      "interaction" = 15,         
+      "pollen.metabarcoding" = 3),
+    labels = c(
+      "interaction" = "Interactions Transects",
+      "pollen.metabarcoding" = "Pollen Metabarcoding",
+      "gut.metabarcoding" = "Gut Content Metabarcoding")) +
+  scale_linetype_manual(
+    values = c(
+      "gut.metabarcoding" = "solid",   
+      "interaction" = "dashed",         
+      "pollen.metabarcoding" = "dotted"
+    ),
+    labels = c(
+      "interaction" = "Interactions Transects",
+      "pollen.metabarcoding" = "Pollen Metabarcoding",
+      "gut.metabarcoding" = "Gut Content Metabarcoding" )) +
+  labs(color = "Methodology", shape = "Methodology", linetype = "Methodology") +
   geom_hline(yintercept = 1, linetype = "dashed", color = "black") + 
   annotate("text", x = Inf, y = 0.9, label = "perfect specialist", 
            hjust = 1.1, vjust = -0.5, color = "black", size = 4) +
   ggtitle(fig.dprime.title) +
   theme_minimal() +
-  theme(plot.title = element_text(face="bold", hjust = 0.7))
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.7)
+  )
+
 
 fig.dprime
 
@@ -120,7 +145,7 @@ end_col <- "#FDE725FF"
 custom_viridis <- viridis(100)
 
 
-#analyze centrality results for gut contents
+#analyze "importance" results for gut contents
 gmb.centralities_vec <- as.numeric(gmb.centralities)
 names(gmb.centralities_vec) <- colnames(gmb.centralities)
 gmb_nonzero <- gmb.centralities_vec[gmb.centralities_vec != 0]
@@ -143,6 +168,8 @@ fig.centrality.gmb <- treemap(gmb.most.central,
         type = "value",
         palette = custom_viridis,
         range = c(0.0136, 0.133),
+        fontface.labels = "italic",
+        fontcolor.labels = "black",
         title = expression(paste("Importance of plant taxa within the", italic(" B. pascuorum "), 
                                  "interaction network revealed by gut content metabarcoding")))
 
@@ -173,6 +200,8 @@ fig.centrality.int <- treemap(int.most.central,
         type = "value",
         palette = custom_viridis,
         range = c(0.0136, 0.133),
+        fontface.labels = "italic",
+        fontcolor.labels = "black",
         title = expression(paste("Importance of plant taxa within the", italic(" B. pascuorum "), 
                                  "interaction network revealed by interaction transects")))
 
@@ -202,6 +231,8 @@ fig.centrality.pmb <- treemap(pmb.most.central,
         type = "value",
         palette = custom_viridis,
         range = c(0.0136, 0.133),
+        fontface.labels = "italic",
+        fontcolor.labels = "black",
         title = expression(paste("Importance of plant taxa within the", italic(" B. pascuorum "), 
                                  "interaction network revealed by corbicular pollen metabarcoding")))
 

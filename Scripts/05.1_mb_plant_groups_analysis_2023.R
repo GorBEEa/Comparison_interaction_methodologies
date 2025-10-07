@@ -18,9 +18,9 @@ library(ggrepel)
 #7/172 #other herbaceous 4%
 #leaves 141 entomophilous
 
-taxa_breakdown <- c(141,15,9,7)
-taxa_groups <- c("Entomophilous (floral)","Poaceae","Woody Plants","Anemophilous herbaceous")
-plot_labels <- c("Entomophilous (n = 141)","Poaceae (n = 15)","Woody Plants (n = 9)","Anemophilous herbaceous (n = 7)")
+taxa_breakdown <- c(90,9,19,3)
+taxa_groups <- c("Entomophilous (floral)","Poaceae/grasses","Trees/Woody Plants","Anemophilous herbaceous")
+plot_labels <- c("Entomophilous (n = 90)","Poaceae/grasses (n = 9)","Trees/Woody Plants (n = 19)","Anemophilous herbaceous (n = 3)")
 
 taxa.df <- data.frame(taxa_breakdown,taxa_groups,plot_labels)
 
@@ -48,16 +48,16 @@ ggplot(taxa.df, aes(ymax = ymax, ymin = ymin, xmax = 5, xmin = 4.8, fill = group
   theme_void() +
   scale_fill_manual(values = tax_colors) +
   geom_text_repel(
-    aes(x = 5.1, y = labelPosition, label = plot_labs),
+    aes(x = 5.1, y = labelPosition - 0.02, label = plot_labs),
     family = "sans",
     size = 4,
-    nudge_x = 0.02,
+    nudge_x = 0.2,
     segment.color = "white",
     direction = "y",
     hjust = 0,
     box.padding = 0.5,
     point.padding = 0.3) +
-  ggtitle("Pollinator interaction plant groups detected by metabarcoding methodologies (2023)") +
+  ggtitle("Pollinator interaction plant groups detected by gut content metabarcoding") +
   theme(legend.position = "none") +
   theme(plot.title = element_text(hjust = 0.3, face = "bold", size = 12, margin = margin(b = -25))) 
  
@@ -144,19 +144,19 @@ pmb.taxa.periods <- get_nonzero_cols(smry.pmb.taxa.period, id_col = "period")
 #p5: (4) Castanea, Citrus, Eucalyptus, Fagus
 #p5: (0) Grasses.
 #p5: (1) Plantago.
-#p5 ent: (37)
+#p5 ent: (36)
 
 #p6: (11) Alnus, Castanea, Crataegus, Citrus, Eucalyptus, Ilex, Juglans, Prunus, Quercus, Robinia, Sambucus
 #p6: (9) Agrostis, Aegilops, Arrhenatherum, Brachypodium, Dactylis, Festuca, Holcus, Lolium, Poa.
 #p6: (5) Plantago, Parietaria, Stellaria, Urtica, Raphanus.
-#p6 ent: (50)
+#p6 ent: (68)
 
 gmb.p1 <- c(5,0,2,43)
 gmb.p2 <- c(9,3,2,45)
 gmb.p3 <- c(8,3,4,39)
 gmb.p4 <- c(4,3,4,51)
 gmb.p5 <- c(4,0,1,37)
-gmb.p6 <- c(11,9,5,50)
+gmb.p6 <- c(11,9,5,68)
 
 taxa_groups2 <- c("Woody","Poaceae","Anemophilous_other","Entomophilous")
 gmb.groups.x.period <- rbind(gmb.p1, gmb.p2, gmb.p3, gmb.p4, gmb.p5, gmb.p6)
@@ -183,12 +183,12 @@ custom_colors <- c(
 )
 
 gmb.plant.groups.x.period <- ggplot(gmb.groups.x.period_long, aes(x = period, y = value, fill = group)) +
-  geom_bar(stat = "identity", alpha = 0.6) +
+  geom_bar(stat = "identity", alpha = 0.6, width = 0.3) +
   scale_fill_manual(values = custom_colors,
                     labels = c(
                       "Entomophilous" = "Entomophilous",
-                      "Woody" = "Woody Plants",
-                      "Poaceae" = "Poaceae",
+                      "Woody" = "Trees & Woody Plants",
+                      "Poaceae" = "Grasses",
                       "Anemophilous_other" = "Anemophilous Herbaceous")) +
   labs(x = "Period", y = "Count", title = "Plant groups detected by metabarcoding of gut contents across sampling periods", fill = "Group") +
   xlab("Sampling Period") +
@@ -210,3 +210,4 @@ long_select <- select.data |>
     values_to = "count"
   )
 long_select$period <- as.integer(sub(".*\\.p", "", long_select$period))
+

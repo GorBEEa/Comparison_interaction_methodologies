@@ -295,7 +295,7 @@ polygon_data <- nmds_points %>%
   group_by(methodology) %>%
   slice(chull(MDS1, MDS2))
 
-NMDS.title <- expression(paste("NMDS visualization of network composition by methodology"))
+NMDS.title <- expression(paste("Composition of interaction plant community by methodology"))
 NMDS.cap <- expression(paste(
   bold("Figure3: "), "Non-metric dimensional scaling of interaction plant communities for", italic(" Bombus pascuorum "),"as detected by three interaction observation methodologies and a floral diversity survey. ",
   "Interaction methodologies included floral diversity surveys and ITS2 metabarcoding of DNA extracted from bumblebee gut contents and corbicular pollen loads. ",
@@ -305,7 +305,7 @@ NMDS.cap <- expression(paste(
 ))
 nmds.cap.wrap <- str_wrap(NMDS.cap, width = 150)
 
-NMDS.method.comparisons <- ggplot(nmds_points, aes(x = MDS1, y = MDS2, color = methodology)) +
+NMDS.method.comparisons <- ggplot(nmds_points, aes(x = MDS1, y = MDS2, color = methodology, shape = methodology)) +
   geom_polygon(data = polygon_data, 
                aes(fill = methodology, color = NULL), 
                alpha = 0.2, 
@@ -317,20 +317,27 @@ NMDS.method.comparisons <- ggplot(nmds_points, aes(x = MDS1, y = MDS2, color = m
                       "interaction" = "Interaction observations",
                       "gut.metabarcoding" = "Gut metabarcoding",
                       "pollen.metabarcoding" = "Pollen metabarcoding")
-                     ) +
+                     ) + 
+  scale_shape_manual(values = c(
+    "count" = 16,               
+    "gut.metabarcoding" = 17,   
+    "interaction" = 15,         
+    "pollen.metabarcoding" = 3),
+    labels = c(
+      "count" = "Floral diversity survey",
+      "interaction" = "Interaction observations",
+      "gut.metabarcoding" = "Gut metabarcoding",
+      "pollen.metabarcoding" = "Pollen metabarcoding")) + 
   scale_fill_manual(values = method.colors2) +
   theme_classic() +  
   labs(
     title = NMDS.title,
-    caption = nmds.cap.wrap,
     x = "NMDS1",
     y = "NMDS2",
-    color = "Methodology"
-  ) +
+    color = "Methodology",
+    shape = "Methodology") +
   theme(plot.title = element_text(hjust=0.5),
-    legend.position.inside = c(0.13, 0.85),
-    plot.caption = element_text(hjust = 0, size = 10),
-    plot.caption.position = "plot")
+        legend.position.inside = c(0.13, 0.85))
 
 NMDS.method.comparisons
 
@@ -408,7 +415,7 @@ fig.poster <- ggplot(top.detects.comparison, aes(x = reorder(genus, -n.sample.de
                       "poln only" = "Pollen metabarcoding only")) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         plot.title = element_text(hjust=0.5),
-        legend.position = c(1, 1),
+        legend.position.inside = c(1, 1),
         legend.justification = c(1, 1)) +
   labs(x = "Plant Genus", y = "Positive Detections in Gut Samples", fill = "Detection Method Overlap") +
   ggtitle(fig.poster.title) 
