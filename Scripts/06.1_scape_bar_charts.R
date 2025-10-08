@@ -66,6 +66,9 @@ fig.methods.w.fc <- ggplot(int.gen.x.periods, aes(period, n.genera, fill = metho
 
 fig.methods.w.fc
 
+ggsave(here("results/interaction.diversity.periods.png"),fig.methods.w.fc)
+
+
 
 
 

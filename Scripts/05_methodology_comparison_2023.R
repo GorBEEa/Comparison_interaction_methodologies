@@ -103,10 +103,10 @@ paste("Of the", nrow(poln.genus.hits.2023),"taxa detected in pollen metabarcodin
 
 #just add another part to the list once we have pollen
 taxa.all.methodologies <- list(
-  "Gut content\nMetabarcoding\nN = 131" = genus.hits.23$genus,
-  "Interactions\nN = 27" = gut.detected.int.genus$genus, #this works to give the correct N, but it's sketchy. There is probably a better way
-  "Flower Count\nN = 117" = flower.count.genera$flower_genus,
-  "Pollen\nMetabarcoding\nN = 123" = poln.genus.hits.2023$genus)
+  "Gut content\nMetabarcoding\n131 genera" = genus.hits.23$genus,
+  "Interactions\n27 genera" = gut.detected.int.genus$genus, #this works to give the correct N, but it's sketchy. There is probably a better way
+  "Flower Count\n117 genera" = flower.count.genera$flower_genus,
+  "Pollen\nMetabarcoding\n123 genera" = poln.genus.hits.2023$genus)
 
 venn.cap <- expression(paste(bold("Figure 1: "),"Number of plant genera detected within interation networks 
                              constructed for", italic(" B. pascuorum "), "using three interaction observation methodologies:
@@ -124,12 +124,12 @@ fig.venn <- ggvenn(taxa.all.methodologies,
                set_name_size = 5,
                text_size = 8) + 
   coord_cartesian(clip = "off") +
-  ggtitle("Interaction network degree and
-    overlap by methodology") +
+ # ggtitle("Interaction network degree and
+  #  overlap by methodology") +
  # labs(caption = venn.cap) +
   theme(plot.title = element_text(face="bold", vjust = 2, hjust = 0.01))
 
-ggsave(here("results/venn.figure.jpeg"),fig.venn, width=10, height=9, units="in", dpi=300)
+ggsave(here("results/venn.figure.png"),fig.venn, width=10, height=9.35, units="in", dpi=300)
 
 
 

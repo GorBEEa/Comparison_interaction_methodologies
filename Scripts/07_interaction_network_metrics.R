@@ -112,7 +112,7 @@ fig.dprime <- ggplot(specialization, aes(x = period, y = dprime, group = method,
   ggtitle(fig.dprime.title) +
   theme_minimal() +
   theme(
-    plot.title = element_text(face = "bold", hjust = 0.7)
+    plot.title = element_text(face = "bold", hjust = 0.8)
   )
 
 
@@ -242,3 +242,4 @@ fig.centrality.pmb
 
 
 save.image(file = here("Data/07_output.RData"))
+

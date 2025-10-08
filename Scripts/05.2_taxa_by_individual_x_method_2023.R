@@ -170,7 +170,7 @@ mb.2023.indv.plants <- clean4stats.mb.2023.indv %>%
 mb2x.2023.indv.methodology <- as.factor(clean4stats.mb2x.2023.indv$type)
 mb2x.2023.indv.plants <- clean4stats.mb2x.2023.indv %>% 
   select(!c(ID,sample,type,period,site))
-
+sample_blocks <- as.factor(clean4stats.mb2x.2023.indv$ID)
 
 
 
@@ -188,17 +188,12 @@ permanova.mb.2023.indv.kbl <- permanova.mb.2023.indv %>%
 
 
 
-#Test for only specimens with shared samples
-permanova.mb2x.2023.indv <- adonis2(mb2x.2023.indv.plants ~ mb2x.2023.indv.methodology,
-                                  permutations = 9999,
-                                  binary = TRUE,
-                                  method = "raup",
-                                  pairwise = TRUE)
-
-
-
-
-
+#Test for only specimens with shared samples, using specimen as a block to force methodological comparison by specimen
+permanova.2023.indv.x.sample <- adonis2(mb2x.2023.indv.plants ~ mb2x.2023.indv.methodology,
+  permutations = 999, 
+  binary = TRUE,
+  method = "raup",
+  strata = sample_blocks)
 
 
 

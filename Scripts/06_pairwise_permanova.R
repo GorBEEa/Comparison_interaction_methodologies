@@ -57,7 +57,12 @@ load(here("Data/05_output.RData"))
 
 all.plants.matrix <- as.matrix(all.plants)
 
-pairwise.results <- pairwise_permanova(all.plants.matrix, methodology)
+pairwise.methodology <- recode_factor(methodology,
+                                      count = "flower count",
+                                      gut.metabarcoding = "gut metabarcoding",
+                                      pollen.metabarcoding = "pollen metabarcoding")
+
+pairwise.results <- pairwise_permanova(all.plants.matrix, pairwise.methodology)
 
 #Make a cleaner visual of results
 clean_results <- pairwise.results %>%
