@@ -195,6 +195,10 @@ permanova.2023.indv.x.sample <- adonis2(mb2x.2023.indv.plants ~ mb2x.2023.indv.m
   method = "raup",
   strata = sample_blocks)
 
+indv.permanova.kbl <- permanova.2023.indv.x.sample %>% 
+  kbl(caption = "Specimen level comparison of plant community between metabarcoding methodologies") %>% 
+  kable_minimal(full_width = F, html_font = "Cambria")
+
 
 
 

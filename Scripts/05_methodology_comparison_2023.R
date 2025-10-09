@@ -371,56 +371,56 @@ disp.anova <- anova(metodology.disp) #are the differences in dispersal significa
 
 
 
-#Figure: metabarcoding results and co-occurence in other methods ------
+#Figure: metabarcoding results and co-occurence in other methods -----------------------------
 #figure used in EcoFlor poster
 #should this use the detections by samples and not by days? I think so... here we want resolution and we don't need it to match for comparison
 
 #maybe I have to do the average detections between MB methods and 
-detects.by.genus <- as.data.frame(colSums(bp23.genomic.binary[16:ncol(bp23.genomic.binary)])) %>% #THR COLUMNS SELECTED HERE ARE IMPORTANT FOR THE RESULTS YOU SEE. Make sure that they include all taxa
-  rownames_to_column(var = "genus") %>% 
-  rename(n.sample.detections = "colSums(bp23.genomic.binary[16:ncol(bp23.genomic.binary)])")
+#detects.by.genus <- as.data.frame(colSums(bp23.genomic.binary[16:ncol(bp23.genomic.binary)])) %>% #THR COLUMNS SELECTED HERE ARE IMPORTANT FOR THE RESULTS YOU SEE. Make sure that they include all taxa
+ # rownames_to_column(var = "genus") %>% 
+  #rename(n.sample.detections = "colSums(bp23.genomic.binary[16:ncol(bp23.genomic.binary)])")
 
-detects.comparison <- right_join(detects.by.genus,observed.mb.genus, by = "genus") %>% 
-  mutate(detected.fc.int = int.detected + flower.count.detected)
-detects.comparison <- detects.comparison[order(detects.comparison$n.sample.detections, decreasing = TRUE) , ] %>% 
-  mutate(color_group = case_when(
-    detected.fc.int == 2 ~ "Both",
-    detected.fc.int == 1 & int.detected == 1 ~ "Int Only",
-    detected.fc.int == 1 & flower.count.detected == 1 ~ "Flower Only",
-    detected.fc.int == 0 ~ "Neither",
-    detected.fc.int == 0 & pmb.detected == 1 ~ "poln Only",
-  ))
+#detects.comparison <- right_join(detects.by.genus,observed.mb.genus, by = "genus") %>% 
+ # mutate(detected.fc.int = int.detected + flower.count.detected)
+#detects.comparison <- detects.comparison[order(detects.comparison$n.sample.detections, decreasing = TRUE) , ] %>% 
+ # mutate(color_group = case_when(
+  #  detected.fc.int == 2 ~ "Both",
+   # detected.fc.int == 1 & int.detected == 1 ~ "Int Only",
+    #detected.fc.int == 1 & flower.count.detected == 1 ~ "Flower Only",
+    #detected.fc.int == 0 ~ "Neither",
+    #detected.fc.int == 0 & pmb.detected == 1 ~ "poln Only",
+  #))
 #this system depends on the fact that any interaction observed will have included a plant species already documented in the flower count. Which should always be the case.
 
 
 #select top occurrences
-top.detects.comparison <- detects.comparison[1:30,] #30 is a detailed but not overwhelming number for visualization
+#top.detects.comparison <- detects.comparison[1:30,] #30 is a detailed but not overwhelming number for visualization
 #contaminant/misidentified species should have been removed in metabarcoding_data after importing said data
 
 #plot
-fig.poster.title <- expression(paste("Top plant genera detected in", italic(" B. pascuorum "), "genetic sampling 2023"))
-fig.poster <- ggplot(top.detects.comparison, aes(x = reorder(genus, -n.sample.detections)
-                                                 , y = n.sample.detections, fill = color_group)) +
-  geom_col(alpha = 0.7) +
-  scale_fill_manual(values = c("Both" = "skyblue4",
-                               "Int Only" = "lightblue",
-                               "Flower Only" = "skyblue2",
-                               "Neither" = "grey80",
-                               "poln only" = "forestgreen"),
-                    labels = c(
-                      "Both" = "Interactions + floral resource survey",
-                      "Int Only" = "Interactions only",
-                      "Flower Only" = "Floral resource survey only",
-                      "Neither" = "Gut Metabarcoding only",
-                      "poln only" = "Pollen metabarcoding only")) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1),
-        plot.title = element_text(hjust=0.5),
-        legend.position.inside = c(1, 1),
-        legend.justification = c(1, 1)) +
-  labs(x = "Plant Genus", y = "Positive Detections in Gut Samples", fill = "Detection Method Overlap") +
-  ggtitle(fig.poster.title) 
+#fig.poster.title <- expression(paste("Top plant genera detected in", italic(" B. pascuorum "), "genetic sampling 2023"))
+#fig.poster <- ggplot(top.detects.comparison, aes(x = reorder(genus, -n.sample.detections)
+ #                                                , y = n.sample.detections, fill = color_group)) +
+ # geom_col(alpha = 0.7) +
+  #scale_fill_manual(values = c("Both" = "skyblue4",
+   #                            "Int Only" = "lightblue",
+    #                           "Flower Only" = "skyblue2",
+     #                          "Neither" = "grey80",
+      #                         "poln only" = "forestgreen"),
+       #             labels = c(
+        #              "Both" = "Interactions + floral resource survey",
+         #             "Int Only" = "Interactions only",
+          #            "Flower Only" = "Floral resource survey only",
+           #           "Neither" = "Gut Metabarcoding only",
+            #          "poln only" = "Pollen metabarcoding only")) +
+#  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+ #       plot.title = element_text(hjust=0.5),
+  #      legend.position.inside = c(1, 1),
+   #     legend.justification = c(1, 1)) +
+#  labs(x = "Plant Genus", y = "Positive Detections in Gut Samples", fill = "Detection Method Overlap") +
+#  ggtitle(fig.poster.title) 
 
-fig.poster
+# fig.poster
 
 
 

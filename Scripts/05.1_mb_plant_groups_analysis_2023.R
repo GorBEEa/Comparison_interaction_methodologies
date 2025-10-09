@@ -1,29 +1,26 @@
 #Script to analyze groups of plant types relevant to pollinators detected by metabarcoding
-#Perplexity used to identify which of metabarcoding taxa were anemophilpous, which from groups:
+#chatGPT used to identify which of metabarcoding taxa were anemophilpous, which from groups:
 #grasses, woody plants, other herbaceous
 #results organized here
 
+#packages -------------------------------------------------------------
 #library(tidyverse)
 #library(tidyr)
 #library(tidyselect)
 #library(ggplot2)
 library(ggrepel)
 
-#list fed to perplexity of all mb taxa:
-#full_join(genus.hits.23, poln.genus.hits.2023, by = 'genus')
 
-#returned
-#9/172 #woody plants 5%
-#15/172 #grasses or poaceae 9%
-#7/172 #other herbaceous 4%
-#leaves 141 entomophilous
+#Breakdown of functional groups in gut content metabarcoding results ----------------------------------
 
-taxa_breakdown <- c(90,9,19,3)
+#I fed chat gpt the list of plant genera detected in metabarcoding results and asked it to classify each under one of 4 categories:
+taxa_breakdown <- c(90,9,19,3) #in order as listed below
 taxa_groups <- c("Entomophilous (floral)","Poaceae/grasses","Trees/Woody Plants","Anemophilous herbaceous")
 plot_labels <- c("Entomophilous (n = 90)","Poaceae/grasses (n = 9)","Trees/Woody Plants (n = 19)","Anemophilous herbaceous (n = 3)")
-
 taxa.df <- data.frame(taxa_breakdown,taxa_groups,plot_labels)
 
+
+#build a df with info for plotting
 taxa.df <- taxa.df %>% 
   mutate(group = taxa_groups) %>% 
   mutate(n.taxa = taxa_breakdown) %>% 
@@ -36,12 +33,11 @@ taxa.df <- taxa.df %>%
     ymax = cumsum(fraction),
     ymin = c(0, head(ymax, -1)),
     labelPosition = (ymax + ymin) / 2,
-    label = paste0(group, "\n", n.taxa)
-  )
+    label = paste0(group, "\n", n.taxa))
 
-tax_colors <- c("chocolate1", "lightskyblue1", "wheat3", "darkolivegreen3")
+tax_colors <- c("cyan4", "wheat", "forestgreen", "darkolivegreen3")
 
-ggplot(taxa.df, aes(ymax = ymax, ymin = ymin, xmax = 5, xmin = 4.8, fill = group)) +
+fig.gmb.fun.groups <- ggplot(taxa.df, aes(ymax = ymax, ymin = ymin, xmax = 5, xmin = 4.8, fill = group)) +
   geom_rect(color = "white") +
   coord_polar(theta = "y") +
   xlim(c(2, 7)) +  # extend x limits further to give enough room for outside labels
@@ -59,8 +55,56 @@ ggplot(taxa.df, aes(ymax = ymax, ymin = ymin, xmax = 5, xmin = 4.8, fill = group
     point.padding = 0.3) +
   ggtitle("Pollinator interaction plant groups detected by gut content metabarcoding") +
   theme(legend.position = "none") +
-  theme(plot.title = element_text(hjust = 0.3, face = "bold", size = 12, margin = margin(b = -25))) 
+  theme(plot.title = element_text(hjust = 0.3, vjust = -3, face = "bold", size = 12, margin = margin(b = -25))) 
  
+fig.gmb.fun.groups
+
+#Breakdown of functional groups in pollen metabarcoding results ----------------------------------
+
+#I fed chat gpt the list of plant genera detected in metabarcoding results and asked it to classify each under one of 4 categories:
+pmb.taxa_breakdown <- c(79,16,21,7) #in order as listed below
+pmb.plot_labels <- c("Entomophilous (n = 79)","Poaceae/grasses (n = 16)","Trees/Woody Plants (n = 21)","Anemophilous herbaceous (n = 7)")
+pmb.taxa.df <- data.frame(pmb.taxa_breakdown,taxa_groups,pmb.plot_labels)
+
+
+pmb.taxa.df <- pmb.taxa.df %>% 
+  mutate(group = taxa_groups) %>% 
+  mutate(n.taxa = pmb.taxa_breakdown) %>% 
+  mutate(plot_labs = pmb.plot_labels) %>% 
+  select(c(group,n.taxa,plot_labs)) %>%
+  arrange(desc(group)) %>%  # sort in the order you want slices to appear
+  mutate(
+    group = factor(group, levels = unique(group)),  # fix factor levels order
+    fraction = n.taxa / sum(n.taxa),
+    ymax = cumsum(fraction),
+    ymin = c(0, head(ymax, -1)),
+    labelPosition = (ymax + ymin) / 2,
+    label = paste0(group, "\n", n.taxa))
+
+
+fig.pmb.fun.groups <- ggplot(pmb.taxa.df, aes(ymax = ymax, ymin = ymin, xmax = 5, xmin = 4.8, fill = group)) +
+  geom_rect(color = "white") +
+  coord_polar(theta = "y") +
+  xlim(c(2, 7)) +  # extend x limits further to give enough room for outside labels
+  theme_void() +
+  scale_fill_manual(values = tax_colors) +
+  geom_text_repel(
+    aes(x = 5.1, y = labelPosition - 0.02, label = plot_labs),
+    family = "sans",
+    size = 4,
+    nudge_x = 0.2,
+    segment.color = "white",
+    direction = "y",
+    hjust = 0,
+    vjust = 2.5,
+    box.padding = 0.5,
+    point.padding = 0.3) +
+  ggtitle("Pollinator interaction plant groups detected by pollen metabarcoding") +
+  theme(legend.position = "none") +
+  theme(plot.title = element_text(hjust = 0.5, vjust = -3, face = "bold", size = 12, margin = margin(b = -25))) 
+
+fig.pmb.fun.groups
+
 
 
 #analysis of which taxa were observed by metabarcoding by period ----------------------------------
@@ -124,12 +168,13 @@ pmb.taxa.periods <- get_nonzero_cols(smry.pmb.taxa.period, id_col = "period")
 #p1 grasses: (0) Grasses.
 #p1 other an: (2) Plantago, Urtica.
 #p1 ent: (43)
-#7/50 are anemophilous
+#6/50 are anemophilous
 
 #p2 woody: (9) Betula, Fagus, Eucalyptus, Prunus, Pyrus, Quercus, Robinia, Sambucus, Salix.
 #p2 grasses: (3) Holcus, Carex, Anthoxanthum.
 #p2 other: (2) Plantago, Urtica.
 #p2 ent: (45)
+#8/59 are anemophilous
 
 #p3: (8) Betula, Fagus, Quercus, Ilex, Juglans, Prunus, Eucalyptus, Crataegus
 #p3: (3) Aegilops, Arrhenatherum, Brachypodium.
@@ -150,6 +195,7 @@ pmb.taxa.periods <- get_nonzero_cols(smry.pmb.taxa.period, id_col = "period")
 #p6: (9) Agrostis, Aegilops, Arrhenatherum, Brachypodium, Dactylis, Festuca, Holcus, Lolium, Poa.
 #p6: (5) Plantago, Parietaria, Stellaria, Urtica, Raphanus.
 #p6 ent: (68)
+#16/93 are anemophilous
 
 gmb.p1 <- c(5,0,2,43)
 gmb.p2 <- c(9,3,2,45)
@@ -176,10 +222,10 @@ gmb.groups.x.period_long$group <- factor(gmb.groups.x.period_long$group,
 
 
 custom_colors <- c(
-  "Entomophilous" = "forestgreen",      # darkest, base of stack
-  "Woody" = "cyan4",                  # forest green hex
-  "Poaceae" = "wheat",                # medium green
-  "Anemophilous_other" = "darkolivegreen3"      # pale green
+  "Entomophilous" = "forestgreen",  
+  "Woody" = "cyan4",              
+  "Poaceae" = "wheat",              
+  "Anemophilous_other" = "darkolivegreen3"    
 )
 
 gmb.plant.groups.x.period <- ggplot(gmb.groups.x.period_long, aes(x = period, y = value, fill = group)) +
@@ -197,17 +243,4 @@ gmb.plant.groups.x.period <- ggplot(gmb.groups.x.period_long, aes(x = period, y 
   theme_minimal()
 
 gmb.plant.groups.x.period
-
-
-
-select.data <- gmb.groups.x.period %>% select(c(period,Entomophilous,all_anemophilous))
-
-#this is apparently needed for integrating this info into the plot
-long_select <- select.data |>
-  pivot_longer(
-    cols = c(Entomophilous, all_anemophilous),
-    names_to = "group",
-    values_to = "count"
-  )
-long_select$period <- as.integer(sub(".*\\.p", "", long_select$period))
 
