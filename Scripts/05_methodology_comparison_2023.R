@@ -313,7 +313,7 @@ NMDS.method.comparisons <- ggplot(nmds_points, aes(x = MDS1, y = MDS2, color = m
   geom_point(size = 3) + 
   scale_color_manual(values = method.colors2,
                      labels = c(
-                      "count" = "Floral diversity survey",
+                      "count" = "Flower count",
                       "interaction" = "Interaction observations",
                       "gut.metabarcoding" = "Gut metabarcoding",
                       "pollen.metabarcoding" = "Pollen metabarcoding")
@@ -345,9 +345,15 @@ NMDS.method.comparisons
 #Are the patterns observed withing NMDS real?
 
 permanova.all.data <- adonis2(all.plants ~ methodology, permutations = 9999, method = "raup", pairwise = TRUE)
+rownames(permanova.all.data) <- c("Methodology","Residual","Total")
 
-permanova.kbl <- permanova.all.data %>% 
-  kbl(caption = "PERMANOVA analysis of methodology's effect on observed plant community") %>% 
+permanova.all.clean <- permanova.all.data %>% 
+  mutate(
+    `Pr(>F)` = ifelse(`Pr(>F)` < 0.001, "<0.001", signif(`Pr(>F)`, 3))  # adjust column name if needed!
+  )
+
+permanova.kbl <- permanova.all.clean %>% 
+  kbl(col.names = c("DF", "Sum of sqs", "R\u00B2", "F", "p")) %>% 
   kable_minimal(full_width = F, html_font = "Cambria")
 
 #Output probability that F statistic is significant, meaning that the model explains R2 *100% (Model/TotaL FOR sUMoFsQS) of the observed variation (SumOfSqs) between groups 
@@ -361,10 +367,10 @@ disp.anova <- anova(metodology.disp) #are the differences in dispersal significa
 #                   interaction network composition data in ordination") %>% 
 #  kable_minimal(full_width = F, html_font = "Cambria")
 
-#looks like yes
 
+pairwise.disp.anova <- TukeyHSD(metodology.disp)
 
-
+kable(pairwise.disp.anova)
 
 
 

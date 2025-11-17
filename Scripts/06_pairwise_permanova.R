@@ -4,7 +4,7 @@
 
 #library(vegan)
 library(knitr)
-
+library(kableExtra)
 
 #build function for a pairwise permanova ------
 pairwise_permanova <- function(sp_matrix, group_var, dist = "raup", adj = "holm", perm = 9999) {
@@ -14,10 +14,10 @@ pairwise_permanova <- function(sp_matrix, group_var, dist = "raup", adj = "holm"
   results <- data.frame(
     group1 = character(),
     group2 = character(),
-    R2 = numeric(),
-    F_value = numeric(),
     df1 = numeric(),
     df2 = numeric(),
+    R2 = numeric(),
+    F_value = numeric(),
     p_value = numeric(),
     p_adj = numeric(),
     stringsAsFactors = FALSE
@@ -36,10 +36,10 @@ pairwise_permanova <- function(sp_matrix, group_var, dist = "raup", adj = "holm"
     results <- rbind(results, data.frame(
       group1 = g1,
       group2 = g2,
-      R2 = fit$R2,
-      F_value = fit$F,
       df1 = fit$Df,
       df2 = fit$Df[1],
+      R2 = fit$R2,
+      F_value = fit$F,
       p_value = fit$`Pr(>F)`,
       p_adj = NA
     ))
@@ -73,22 +73,14 @@ clean_results <- pairwise.results %>%
   mutate(
     R2 = round(R2, 3),
     F_value = round(F_value, 2),
-    p_value = signif(p_value, 3),
-    p_adj = signif(p_adj, 3)
-  ) %>%
+    p_value = ifelse(p_value < 0.001, "<0.001", signif(p_value, 3)),
+    p_adj = ifelse(p_adj < 0.001, "<0.001", signif(p_adj, 3))
+  )
   
-  # Add significance stars
-  mutate(significance = case_when(
-    p_adj <= 0.001 ~ "***",
-    p_adj <= 0.01 ~ "**",
-    p_adj <= 0.05 ~ "*",
-    TRUE ~ ""
-  ))
 
 # Create a markdown/HTML table suitable for reporting
 ppermanova.kbl <- kable(clean_results, 
-      col.names = c("Group 1", "Group 2", "R\u00B2", "F value", "df1", "df2", "p value", "Adjusted p value", "Significance"),
-      caption = "Pairwise PERMANOVA Results",
+      col.names = c("Methodology 1", "Methodology 2", "DF1", "DF2", "R\u00B2", "F", "p", "Adjusted p"),
       digits = 3) %>% 
   kable_minimal(full_width = F, html_font = "Cambria")
 

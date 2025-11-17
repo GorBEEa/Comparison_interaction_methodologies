@@ -200,7 +200,9 @@ indv.permanova.kbl <- permanova.2023.indv.x.sample %>%
   kable_minimal(full_width = F, html_font = "Cambria")
 
 
-
+dist.mb2x.2023.indv.plants <- vegdist(mb2x.2023.indv.plants, method = "raup", binary = TRUE)
+indiv.disp <- betadisper(dist.mb2x.2023.indv.plants, clean4stats.mb2x.2023.indv$type)
+permutest(indiv.disp)
 
 save.image(file = here("Data/05.2_output.RData"))
 
