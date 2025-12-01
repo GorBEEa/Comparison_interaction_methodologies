@@ -35,9 +35,9 @@ int.networks.x.methodology <- int.networks.x.methodology[,-c(1:3)]
 
 
 #make interaction matrices for calculating d' over 6 periods
-int.web <- as.matrix(int.networks.x.methodology[7:12, 1:210])
-gmb.web <- as.matrix(int.networks.x.methodology[1:6, 2:210])
-pmb.web <- as.matrix(int.networks.x.methodology[13:18, 2:210])
+int.web <- as.matrix(int.networks.x.methodology[7:12, 1:209])
+gmb.web <- as.matrix(int.networks.x.methodology[1:6, 2:209])
+pmb.web <- as.matrix(int.networks.x.methodology[13:18, 2:209])
 
 #calculate d'
 dprime.int <- dfun(int.web)
@@ -129,14 +129,14 @@ centr.interactions <- clean4stats.bp23.all.binary %>%
   summarise(across(Lathyrus:last_col(), ~ sum(.)))
 
 #calculate total interactions for each methodology
-m.int <- sum(centr.interactions[2, 2:210]) #number of interactions from interactions
-m.gmb <- sum(centr.interactions[1, 2:210]) #gut 
-m.pmb <- sum(centr.interactions[3, 2:210]) #pollen
+m.int <- sum(centr.interactions[2, 2:209]) #number of interactions from interactions
+m.gmb <- sum(centr.interactions[1, 2:209]) #gut 
+m.pmb <- sum(centr.interactions[3, 2:209]) #pollen
 
 #calculate centrality for each plant genera for each methodology
-gmb.centralities <-centr.interactions[1,2:210]/m.gmb
-int.centralities <- centr.interactions[2,2:210]/m.int
-pmb.centralities <- centr.interactions[3,2:210]/m.pmb
+gmb.centralities <-centr.interactions[1,2:209]/m.gmb
+int.centralities <- centr.interactions[2,2:209]/m.int
+pmb.centralities <- centr.interactions[3,2:209]/m.pmb
 
 
 #some color settings before making 3 plots
@@ -170,7 +170,7 @@ fig.centrality.gmb <- treemap(gmb.most.central,
         range = c(0.0136, 0.133),
         fontface.labels = "italic",
         fontcolor.labels = "black",
-        title = expression(paste("Importance of plant taxa within the", italic(" B. pascuorum "), 
+        title = expression(paste("A.Importance of plant taxa within the", italic(" B. pascuorum "), 
                                  "interaction network revealed by gut content metabarcoding")))
 
 fig.centrality.gmb
@@ -202,7 +202,7 @@ fig.centrality.int <- treemap(int.most.central,
         range = c(0.0136, 0.133),
         fontface.labels = "italic",
         fontcolor.labels = "black",
-        title = expression(paste("Importance of plant taxa within the", italic(" B. pascuorum "), 
+        title = expression(paste("B. Importance of plant taxa within the", italic(" B. pascuorum "), 
                                  "interaction network revealed by interaction transects")))
 
 fig.centrality.int
@@ -233,7 +233,7 @@ fig.centrality.pmb <- treemap(pmb.most.central,
         range = c(0.0136, 0.133),
         fontface.labels = "italic",
         fontcolor.labels = "black",
-        title = expression(paste("Importance of plant taxa within the", italic(" B. pascuorum "), 
+        title = expression(paste("C. Importance of plant taxa within the", italic(" B. pascuorum "), 
                                  "interaction network revealed by corbicular pollen metabarcoding")))
 
 fig.centrality.pmb

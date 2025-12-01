@@ -129,7 +129,7 @@ fig.venn <- ggvenn(taxa.all.methodologies,
  # labs(caption = venn.cap) +
   theme(plot.title = element_text(face="bold", vjust = 2, hjust = 0.01))
 
-ggsave(here("results/venn.figure.png"),fig.venn, width=10, height=9.35, units="in", dpi=300)
+ggsave(here("results/venn.figure.jpeg"),fig.venn, width=10, height=9.35, units="in", dpi=300)
 
 
 
@@ -314,7 +314,7 @@ NMDS.method.comparisons <- ggplot(nmds_points, aes(x = MDS1, y = MDS2, color = m
   scale_color_manual(values = method.colors2,
                      labels = c(
                       "count" = "Flower count",
-                      "interaction" = "Interaction observations",
+                      "interaction" = "Visitation observations",
                       "gut.metabarcoding" = "Gut metabarcoding",
                       "pollen.metabarcoding" = "Pollen metabarcoding")
                      ) + 
@@ -324,8 +324,8 @@ NMDS.method.comparisons <- ggplot(nmds_points, aes(x = MDS1, y = MDS2, color = m
     "interaction" = 15,         
     "pollen.metabarcoding" = 3),
     labels = c(
-      "count" = "Floral diversity survey",
-      "interaction" = "Interaction observations",
+      "count" = "Flower count",
+      "interaction" = "Visitation observations",
       "gut.metabarcoding" = "Gut metabarcoding",
       "pollen.metabarcoding" = "Pollen metabarcoding")) + 
   scale_fill_manual(values = method.colors2) +
@@ -340,6 +340,7 @@ NMDS.method.comparisons <- ggplot(nmds_points, aes(x = MDS1, y = MDS2, color = m
         legend.position.inside = c(0.13, 0.85))
 
 NMDS.method.comparisons
+
 
 #statistical analysis using PERMANOVA
 #Are the patterns observed withing NMDS real?
@@ -370,7 +371,6 @@ disp.anova <- anova(metodology.disp) #are the differences in dispersal significa
 
 pairwise.disp.anova <- TukeyHSD(metodology.disp)
 
-kable(pairwise.disp.anova)
 
 
 

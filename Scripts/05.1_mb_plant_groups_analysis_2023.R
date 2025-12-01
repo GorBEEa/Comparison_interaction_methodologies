@@ -53,17 +53,16 @@ fig.gmb.fun.groups <- ggplot(taxa.df, aes(ymax = ymax, ymin = ymin, xmax = 5, xm
     hjust = 0,
     box.padding = 0.5,
     point.padding = 0.3) +
-  ggtitle("Pollinator interaction plant groups detected by gut content metabarcoding") +
+  ggtitle("A. Gut content metabarcoding") +
   theme(legend.position = "none") +
   theme(plot.title = element_text(hjust = 0.3, vjust = -3, face = "bold", size = 12, margin = margin(b = -25))) 
- 
-fig.gmb.fun.groups
+
 
 #Breakdown of functional groups in pollen metabarcoding results ----------------------------------
 
 #I fed chat gpt the list of plant genera detected in metabarcoding results and asked it to classify each under one of 4 categories:
-pmb.taxa_breakdown <- c(79,16,21,7) #in order as listed below
-pmb.plot_labels <- c("Entomophilous (n = 79)","Poaceae/grasses (n = 16)","Trees/Woody Plants (n = 21)","Anemophilous herbaceous (n = 7)")
+pmb.taxa_breakdown <- c(79,15,21,7) #in order as listed below
+pmb.plot_labels <- c("Entomophilous (n = 79)","Poaceae/grasses (n = 15)","Trees/Woody Plants (n = 21)","Anemophilous herbaceous (n = 7)")
 pmb.taxa.df <- data.frame(pmb.taxa_breakdown,taxa_groups,pmb.plot_labels)
 
 
@@ -99,12 +98,13 @@ fig.pmb.fun.groups <- ggplot(pmb.taxa.df, aes(ymax = ymax, ymin = ymin, xmax = 5
     vjust = 2.5,
     box.padding = 0.5,
     point.padding = 0.3) +
-  ggtitle("Pollinator interaction plant groups detected by pollen metabarcoding") +
+  ggtitle("B. Corbicular pollen metabarcoding") +
   theme(legend.position = "none") +
   theme(plot.title = element_text(hjust = 0.5, vjust = -3, face = "bold", size = 12, margin = margin(b = -25))) 
 
-fig.pmb.fun.groups
 
+#Figure for supplemental content
+fig.gmb.fun.groups + fig.pmb.fun.groups
 
 
 #analysis of which taxa were observed by metabarcoding by period ----------------------------------

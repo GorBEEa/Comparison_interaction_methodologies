@@ -19,7 +19,7 @@
 
 #Working with data cleaned with decontam
 
-pollen.decontam0.5 <- readRDS(here("Data/pollen23.24.decontam.0.5.RDS")) #all data in phyloseq format from 20234 and 2024 Pollen sequence data
+pollen.decontam0.5 <- readRDS(here("Data/pollen23.24.decontam.0.5.RDS")) #all data in phyloseq format from 2023 and 2024 Pollen sequence data
 
 
 #split into dataframes used in this analysis
@@ -34,6 +34,7 @@ poln.samples <- rownames(poln.sample_data_tab.cl)
 poln.2023.24 <- data.frame(sample = poln.samples, poln.sample_data_tab.cl, stringsAsFactors = FALSE)
 
 poln.tax_table.cl <- as.data.frame(tax_table(pollen.decontam0.5))
+poln.tax_table.cl$Genus[poln.tax_table.cl$Genus == "Chaetopogon"] <- "Agrostis" #these are the same, we don't want to double count
 poln.asvs2 <- rownames(poln.tax_table.cl)
 poln.asv.tax.2023.24 <- poln.tax_table.cl%>% 
   rename(genus = Genus) %>% 
