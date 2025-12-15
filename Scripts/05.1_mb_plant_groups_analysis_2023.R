@@ -9,7 +9,7 @@
 #library(tidyselect)
 #library(ggplot2)
 library(ggrepel)
-
+library(patchwork)
 
 #Breakdown of functional groups in gut content metabarcoding results ----------------------------------
 
@@ -164,45 +164,50 @@ pmb.taxa.periods <- get_nonzero_cols(smry.pmb.taxa.period, id_col = "period")
 #Luisja suggested analysis representing functional groups in a boxplot within the bar
 
 #guts
-#p1 woody: (5) Betula, Fagus, Platanus, Quercus, Salix
+#p1 woody: (4) Betula, Fagus, Platanus, Quercus
 #p1 grasses: (0) Grasses.
 #p1 other an: (2) Plantago, Urtica.
 #p1 ent: (43)
-#6/50 are anemophilous
+#6/50 #are anemophilous
 
-#p2 woody: (9) Betula, Fagus, Eucalyptus, Prunus, Pyrus, Quercus, Robinia, Sambucus, Salix.
+#p2 woody: (3) Betula, Fagus, Quercus
 #p2 grasses: (3) Holcus, Carex, Anthoxanthum.
 #p2 other: (2) Plantago, Urtica.
 #p2 ent: (45)
-#8/59 are anemophilous
+#7/59
 
-#p3: (8) Betula, Fagus, Quercus, Ilex, Juglans, Prunus, Eucalyptus, Crataegus
+#p3: (4) Betula, Fagus, Quercus, Juglans
 #p3: (3) Aegilops, Arrhenatherum, Brachypodium.
 #p3: (4) Plantago, Anthoxanthum, Sisymbrium, Pleuropterus.
 #p3 ent: (39)
+#11/55
 
-#p4: (4) Actinidia, Crataegus, Rosa, Sambucus,
+#p4: (0) 
 #p4: (3) Dactylis, Festuca, Holcus.
 #p4: (4) Plantago, Urtica, Arenaria, Sisymbrium.
 #p4 ent: (51)
+#7/62
 
-#p5: (4) Castanea, Citrus, Eucalyptus, Fagus
+#p5: (1) Fagus
 #p5: (0) Grasses.
 #p5: (1) Plantago.
 #p5 ent: (36)
+#2/42
 
-#p6: (11) Alnus, Castanea, Crataegus, Citrus, Eucalyptus, Ilex, Juglans, Prunus, Quercus, Robinia, Sambucus
+#p6: (3) Alnus, Juglans, Quercus
 #p6: (9) Agrostis, Aegilops, Arrhenatherum, Brachypodium, Dactylis, Festuca, Holcus, Lolium, Poa.
 #p6: (5) Plantago, Parietaria, Stellaria, Urtica, Raphanus.
 #p6 ent: (68)
-#16/93 are anemophilous
+#17/93
 
-gmb.p1 <- c(5,0,2,43)
-gmb.p2 <- c(9,3,2,45)
-gmb.p3 <- c(8,3,4,39)
-gmb.p4 <- c(4,3,4,51)
-gmb.p5 <- c(4,0,1,37)
-gmb.p6 <- c(11,9,5,68)
+proportion.anemophilous <- c(0.12, 0.12, 0.2, 0.11, 0.05, 0.18) #results of dividing the proportions above
+
+gmb.p1 <- c(4,0,2,44)
+gmb.p2 <- c(3,3,2,51)
+gmb.p3 <- c(4,3,4,44)
+gmb.p4 <- c(0,3,4,55)
+gmb.p5 <- c(1,0,1,40)
+gmb.p6 <- c(3,9,5,76)
 
 taxa_groups2 <- c("Woody","Poaceae","Anemophilous_other","Entomophilous")
 gmb.groups.x.period <- rbind(gmb.p1, gmb.p2, gmb.p3, gmb.p4, gmb.p5, gmb.p6)

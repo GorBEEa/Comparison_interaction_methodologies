@@ -167,13 +167,20 @@ fig.centrality.gmb <- treemap(gmb.most.central,
         vColor = "Importance",
         type = "value",
         palette = custom_viridis,
-        range = c(0.0136, 0.133),
+        range = c(0.0126, 0.133),
         fontface.labels = "italic",
         fontcolor.labels = "black",
-        title = expression(paste("A.Importance of plant taxa within the", italic(" B. pascuorum "), 
-                                 "interaction network revealed by gut content metabarcoding")))
+        title = "
+        ")
 
-fig.centrality.gmb
+grid.text(
+  expression(paste("B. Gut Content Metabarcoding")),
+  x = unit(0.01, "npc"),   
+  y = unit(0.99, "npc"),  
+  just = c("left", "top"),
+  gp = gpar(fontsize = 14, fontface = "bold")
+)
+
 
 
 #analyze centrality results for interactions
@@ -202,10 +209,17 @@ fig.centrality.int <- treemap(int.most.central,
         range = c(0.0136, 0.133),
         fontface.labels = "italic",
         fontcolor.labels = "black",
-        title = expression(paste("B. Importance of plant taxa within the", italic(" B. pascuorum "), 
-                                 "interaction network revealed by interaction transects")))
+        title = "
+        ")
+grid.text(
+  expression(paste("A. Importance of plant taxa within the", italic(" B. pascuorum "), "interaction network revealed by interaction transects")),
+  x = unit(0.01, "npc"),   
+  y = unit(0.99, "npc"),  
+  just = c("left", "top"),
+  gp = gpar(fontsize = 14, fontface = "bold")
+)
 
-fig.centrality.int
+
 
 
 #analyze centrality results for pollen metabarcoding
@@ -233,10 +247,16 @@ fig.centrality.pmb <- treemap(pmb.most.central,
         range = c(0.0136, 0.133),
         fontface.labels = "italic",
         fontcolor.labels = "black",
-        title = expression(paste("C. Importance of plant taxa within the", italic(" B. pascuorum "), 
-                                 "interaction network revealed by corbicular pollen metabarcoding")))
+        title = "
+        ")
+grid.text(
+  expression(paste("C. Corbicular Pollen Metabarcoding")),
+  x = unit(0.01, "npc"),   
+  y = unit(0.99, "npc"),  
+  just = c("left", "top"),
+  gp = gpar(fontsize = 14, fontface = "bold")
+)
 
-fig.centrality.pmb
 
 
 

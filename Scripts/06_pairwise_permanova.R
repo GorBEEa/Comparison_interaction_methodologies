@@ -6,6 +6,9 @@
 library(knitr)
 library(kableExtra)
 
+#to proceed:
+#load(here("Data/05_output.RData"))
+
 #build function for a pairwise permanova ------
 pairwise_permanova <- function(sp_matrix, group_var, dist = "raup", adj = "holm", perm = 9999) {
   group_var <- as.factor(group_var)

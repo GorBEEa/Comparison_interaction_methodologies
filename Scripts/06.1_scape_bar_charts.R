@@ -1,3 +1,11 @@
+#Simplified versions of diversity detected by different methodologies over
+#periods
+#Figures used to visually step up to Fig. 2 of manuscript in conference presentation
+
+#to proceed:
+#load(here("Data/05_output.RData"))
+
+
 fig.fc.x.periods <- ggplot(mean.fc.taxa.periods, aes(period, mean.genera)) + 
   geom_col(alpha = 0.8,  width = 0.3, fill = "slategrey") + 
   theme_minimal() + 
@@ -9,8 +17,6 @@ fig.fc.x.periods <- ggplot(mean.fc.taxa.periods, aes(period, mean.genera)) +
   ggtitle("Flowering Herbaceous Plant Diversity in Transects")
  
 fig.fc.x.periods
-
-
 
 
 
@@ -88,7 +94,7 @@ fig.gmb.fc <- ggplot(gmb.fc.periods, aes(period, n.genera, fill = method)) +
         axis.ticks.x = element_blank()) +
   ggtitle("Interaction diversity by methodology") 
 
-fig.gmb.fc
+fig.gmb.fc #Drawings over this figure were made in google sheets
 
 
 
