@@ -6,6 +6,8 @@
 #load(here("Data/05_output.RData"))
 
 
+#Flower Count by period ------------------------------------------
+
 fig.fc.x.periods <- ggplot(mean.fc.taxa.periods, aes(period, mean.genera)) + 
   geom_col(alpha = 0.8,  width = 0.3, fill = "slategrey") + 
   theme_minimal() + 
@@ -16,11 +18,11 @@ fig.fc.x.periods <- ggplot(mean.fc.taxa.periods, aes(period, mean.genera)) +
         axis.ticks.x = element_blank()) +
   ggtitle("Flowering Herbaceous Plant Diversity in Transects")
  
-fig.fc.x.periods
 
 
 
 
+#Interaction methodologies by period -------------------------------
 int.gen.x.periods <- long.gen.by.periods %>% filter(method != "n.genera.fc")
   
 fig.int.methods.x.periods <- ggplot(int.gen.x.periods, aes(period, n.genera, fill = method)) + 
@@ -38,12 +40,11 @@ fig.int.methods.x.periods <- ggplot(int.gen.x.periods, aes(period, n.genera, fil
         axis.ticks.x = element_blank()) +
   ggtitle("Interaction diversity by methodology")
  
-fig.int.methods.x.periods
 
 
 
 
-
+#Manuscript Figure 2: pertiod breakdown of diversity by all surveys ---------------
 
 fc.line <- mean.lines %>% filter(LineType == "Flower Count")
 
@@ -70,13 +71,12 @@ fig.methods.w.fc <- ggplot(int.gen.x.periods, aes(period, n.genera, fill = metho
   scale_linetype_manual(values = c("Flower Count" = "dotdash"))
   
 
-fig.methods.w.fc
-
 ggsave(here("results/interaction.diversity.periods.png"),fig.methods.w.fc)
 
 
 
 
+#Just gut metabarcoding and flower count by period -------------------
 
 gmb.fc.periods <- long.gen.by.periods %>% filter(method %in% c("n.genera.fc", "n.genera.gmb"))
 
@@ -93,8 +93,6 @@ fig.gmb.fc <- ggplot(gmb.fc.periods, aes(period, n.genera, fill = method)) +
   theme(plot.title = element_text(hjust = 0.6),
         axis.ticks.x = element_blank()) +
   ggtitle("Interaction diversity by methodology") 
-
-fig.gmb.fc #Drawings over this figure were made in google sheets
 
 
 
