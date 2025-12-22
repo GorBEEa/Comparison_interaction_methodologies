@@ -1,10 +1,17 @@
 ---
-title: "Coupling Diet and Pollen Metabarcoding with Field Surveys to Reveal Plant - pollinator Interactions"
-subtitle: "Christian Gostout ^1^, Luis J. Chueca ^1^, Jon Poza, Xabier Salgado-Irazabal^1^, Estefanía Tobajas^1^, Jennifer Rose^1^, Brais Hermosilla^1^, Marion Donald^2^, Manpreet Dhami^2^, Ainhoa Magrach^1,3^
+title: "Assessing the Complementarity of Gut-Content and Pollen-Load Metabarcoding with Field Surveys for Inferring Plant–Pollinator Interactions"
 
-^1^BC3 Basque Centre for Climate Change, Leioa, Spain, ^2^Bioeconomy Science Institute, Lincoln, New Zealand, ^3^IKERBASQUE, Basque Foundation for Science, Bilbao, Spain
-"
-format: html
+subtitle: "Christian Gostout, Luis J. Chueca, Jon Poza, Xabier Salgado-Irazabal, Estefanía Tobajas, Jennifer Rose, Brais Hermosilla, Marion Donald, Manpreet Dhami, Ainhoa Magrach"
+
+format:
+  pdf:
+    pdf-engine: lualatex
+    mainfont: "Times New Roman"
+    sansfont: "Georgia"
+    include-in-header:
+      text: |
+        \usepackage{lineno}
+        \linenumbers
 editor: visual
 bibliography: references.bib
 csl: methods-in-ecology-and-evolution2.csl
@@ -18,7 +25,7 @@ execute:
 
 **Abstract**
 
-Our understanding of plant-pollinator interaction networks hinges on the methods used to describe their nodes and links. Currently, most networks are built from field observations that may overlook many consumer–resource links. Further, interaction networks lack descriptive links that characterize interaction types and outcomes. Towards a more complete approach for building interaction networks, we compare plant interactions from the wild pollinator species, Bombus pascuorum, observed by three methodologies with different implications for interaction outcomes. We compare floral visitation interactions obtained from field observations to plant consumption interactions revealed by metabarcoding of gut contents and pollen transport interactions detected by corbicular pollen loads. Our approach adds functional context to plant–pollinator network links and reveals new interactions. We show that both metabarcoding approaches increase sampling efficiency and reveal links left unobserved by field observations of visitation, highlighting plant taxa that are not pollinator-dependent, yet constitute important dietary resources. Paired with floral diversity surveys, gut content results also reveal seasonal patterns in the spatial extent and functional diversity included in forage, which other methodologies fail to demonstrate. Metabarcoding data analyzed at the individual specimen level further reveal heterogeneity in plant resource use between pollen transport and consumption. Metabarcoding methodologies capture greater spatial, temporal, and taxonomic ranges, while field observations provide validating datasets with taxonomic precision.Our results show that integrating visitation, transport, and consumption data changes network topology and the roles of plant nodes, offering a more nuanced and complete map of interactions with clearer priorities for management. We advocate for defining links explicitly by their functions and combining methods to account for hidden structure in ecological networks.
+Our understanding of plant-pollinator interaction networks hinges on the methods used to describe their nodes and links. Currently, most networks are built from field observations that may overlook many consumer–resource links. Further, interaction networks lack descriptive links that characterize interaction types and outcomes. Towards a more complete approach for building interaction networks, we compare plant interactions from the wild pollinator species, *Bombus pascuorum*, observed by three methodologies with different implications for interaction outcomes. We compare floral visitation interactions obtained from field observations to plant consumption interactions revealed by metabarcoding of gut contents and pollen transport interactions detected by corbicular pollen loads. Our approach adds functional context to plant–pollinator network links and reveals new interactions. We show that both metabarcoding approaches increase sampling efficiency and reveal links left unobserved by field observations of visitation, highlighting plant taxa that are not pollinator-dependent, yet constitute important dietary resources. Paired with floral diversity surveys, gut content results also reveal seasonal patterns in the spatial extent and functional diversity included in forage, which other methodologies fail to demonstrate. Metabarcoding data analyzed at the individual specimen level further reveal heterogeneity in plant resource use between pollen transport and consumption. Metabarcoding methodologies capture greater spatial, temporal, and taxonomic ranges, while field observations provide validating datasets with taxonomic precision.Our results show that integrating visitation, transport, and consumption data changes network topology and the roles of plant nodes, offering a more nuanced and complete map of interactions with clearer priorities for management. We advocate for defining links explicitly by their functions and combining methods to account for hidden structure in ecological networks.
 
 **Introduction**
 
@@ -44,7 +51,7 @@ Our sample collection was conducted in Gorbeia Natural Park, a protected area in
 
 *Interaction transects and floral resource availability surveys* 
 
-We used the one 250 m transect at each site for both interaction transect and flower count surveys, recording observations within \~2 m of the transect line. Interaction surveys were conducted three times per day, each lasting 1 h. All insects observed contacting the reproductive parts of herbaceous flowers within the transect were recorded; for this study, we retained only Bombus pascuorum interaction data. Surveys were spaced by \~2 hours (\~11:00, \~13:00, \~15:00), and transects were walked at a constant pace to cover the full length within an hour. For each site and sampling period, one flower count was conducted by recording all of the flowering herbaceous species within the transects.
+We used the one 250 m transect at each site for both interaction transect and flower count surveys, recording observations within \~2 m of the transect line. Interaction surveys were conducted three times per day, each lasting 1 h. All insects observed contacting the reproductive parts of herbaceous flowers within the transect were recorded; for this study, we retained only *Bombus pascuorum* interaction data. Surveys were spaced by \~2 hours (\~11:00, \~13:00, \~15:00), and transects were walked at a constant pace to cover the full length within an hour. For each site and sampling period, one flower count was conducted by recording all of the flowering herbaceous species within the transects.
 
 *Bombus pascuorum specimens*
 
@@ -78,8 +85,6 @@ We used interaction frequencies from the three methodologies to build *B. pascuo
 
 We created a composite interaction network for *B. pascuorum*, incorporating the data of each methodology and the interaction outcome types as network metadata. Network nodes included *B. pascuorum* and the list of plant genera detected across the three interaction datasets. Single plant genera were assigned between one and three links corresponding to interaction type, depending on their detection across methodologies.
 
-------------------------------------------------------------------------
-
 **Results**
 
 ```{r}
@@ -103,7 +108,7 @@ Within our flower count surveys we registered a total of 117 flowering herbaceou
 
 Both metabarcoding methodologies detected multiple unique taxa (33 taxa for gut contents and 30 for corbicular pollen), while interaction transects did not detect any unique interactions (Fig. 1). The two metabarcoding methodologies shared `{r} nrow(genus.hits.23)-nrow(in.gmb.not.pmb)` common plant genera, representing `{r}  trunc(((nrow(poln.genus.hits.2023)-nrow(in.pmb.not.gmb))/nrow(poln.genus.hits.2023))*100)`% of the total corbicular pollen diversity and `{r} trunc(((nrow(genus.hits.23)-nrow(in.gmb.not.pmb))/nrow(genus.hits.23))*100)`% of the gut content diversity.
 
-```{r}
+```{r, echo=FALSE, out.width="100%"}
 include_graphics("manuscript_figures/venn.figure.png")
 ```
 
@@ -131,8 +136,8 @@ A PERMANOVA test comparing taxonomic composition of interaction plant communitie
 ppermanova.kbl
 ```
 
-```{r}
-NMDS.method.comparisons
+```{r,echo=FALSE, out.width="100%"}
+include_graphics("manuscript_figures/NMDS.method.comparisons.png")
 ```
 
 **Figure 3:** Non-metric dimensional scaled visualization of plant communities detected by three methodologies for observing *B. pascuorum* floral interactions and a flower diversity survey. Observations from each methodology are aggregated by sampling day, reduced to binary presence/absence data, and compared in ordination using the Raup-Crick dissimilarity index (ordination stress = 0.17). 
@@ -145,8 +150,8 @@ Comparing metabarcoding results from the same specimens, gut contents yielded fe
 
 We calculated interaction specialization of *B. pascuorum* and an importance metric for the plant taxa within interaction networks. Specialization (*d’*; @blüthgen2006) declined over the season for transect and pollen-metabarcoding data but remained relatively stable for gut-content metabarcoding (Fig. 4), with transects indicating complete specialization in the first period. Across all methods, *Lotus* emerged as the most important plant genus, though the structure of importance differed: the two metabarcoding networks showed more evenly distributed importance values, whereas the transect network was dominated by a few top taxa (Fig. 5).
 
-```{r}
-fig.dprime
+```{r, echo=FALSE, out.width="100%"}
+include_graphics("manuscript_figures/fig.dprime.png")
 ```
 
 ***Figure 4:** Specialization of plant interactions for B. pascuorum as indicated by networks constructed from three interaction observation methodologies. Specialization was calculated as d’ using the methodology of Blüthgen et al. (2006), with d’ = 1 representing perfect specialist behavior. Specialization of B. pascuorum for each period was calculated relative to interaction data from the same species in other periods, rather than other pollinator species.*
@@ -163,7 +168,7 @@ fig.pmb.importance
 
 We combined the results from each interaction methodology to create an interaction network for *B. pascuorum* with links defined by interaction outcomes, including consumption, transport, and visitation (Fig. 6). This single species network included 169 nodes, increasing the number of taxa included in the network compared to individual methodology constructed networks. Additionally, each plant taxa received up to three links, including link metadata for interaction outcomes in the network. In total, the network contained 281 descriptive links.
 
-```{r}
+```{r, echo=FALSE, out.width="100%"}
 include_graphics("manuscript_figures/THE_GBP_composite_network.jpg")
 ```
 
@@ -173,7 +178,7 @@ include_graphics("manuscript_figures/THE_GBP_composite_network.jpg")
 
 Our results show that combining methodologies yields stronger validation of plant–pollinator interactions and deeper insight into network structure. Notably, the two metabarcoding approaches revealed shared interactions with anemophilous and partially anemophilous plants for pollen consumption and transport, highlighting the complementarity of their data. Although each interaction methodology overlapped statistically at the aggregated level, the combined network resulting from each methodology increased the total nodes, and each methodology provided context to network links. Metabarcoding alone also proved efficient at capturing a broad range of links and providing detailed, specimen-level data. Important information from the function of links is missing under the current approach to characterizing interaction networks, but using multiple methodologies helps to fill these gaps.
 
-We compared each methodology in terms of the diversity of detected interactions, assignment of relative importance of plant taxa and specialization of B. pascuorum within the resulting network, and observed plant community composition. Consistent with previous comparisons between field and metabarcoding observation of plant-pollinator interactions, metabarcoding increased observed interaction diversity [@milla2022; @baksay2022; @smart2017], in our case by more than six-fold compared to interaction transect results. Considering this, and the time dedicated to data collection for both types of methodologies, metabarcoding was a more efficient approach. Interaction transects did provide the advantage of greater taxonomic resolution, as we were able to detect interactions at the species-species level, whereas metabarcoding provided species-genus level interactions. Beyond taxonomic detection capabilities, the results from each methodology allowed for network level cross-validation. 
+We compared each methodology in terms of the diversity of detected interactions, assignment of relative importance of plant taxa and specialization of *B. pascuorum* within the resulting network, and observed plant community composition. Consistent with previous comparisons between field and metabarcoding observation of plant-pollinator interactions, metabarcoding increased observed interaction diversity [@milla2022; @baksay2022; @smart2017], in our case by more than six-fold compared to interaction transect results. Considering this, and the time dedicated to data collection for both types of methodologies, metabarcoding was a more efficient approach. Interaction transects did provide the advantage of greater taxonomic resolution, as we were able to detect interactions at the species-species level, whereas metabarcoding provided species-genus level interactions. Beyond taxonomic detection capabilities, the results from each methodology allowed for network level cross-validation. 
 
 Network topology and specialization patterns differed markedly across methodologies. Interaction transects tended to overstate both the degree of specialization and the dominance of the most frequently visited plant taxa. Although *B. pascuorum* is known to form strong early-season associations with certain plant species (Artamendi et al. in preparation), the metabarcoding approaches indicated much lower specialization and produced more evenly distributed network structures. These results mirrored previous interaction networks constructed for individual pollinator species, which also have shown a tendency towards representing pollinators as specialists when using field observation data versus the generalist behavior indicated by metabarcoding data [@arstingstall2021]. Overall, the combination of our datasets across methodologies suggested a more diverse foraging niche than observational data alone would have implied.
 
@@ -204,3 +209,5 @@ While most of the methodologies we applied—aside from gut-content metabarcodin
 *Data and code availability*
 
 All amplicon sequencing data will be deposited in the European Nucleotide Archive project: PRJEB105453. Other data and code will be available in the GorBEEa public GitHub repository, Comparison_interaction_methodologies. Data and code will be made publicly available upon acceptance of the manuscript.
+
+**References**

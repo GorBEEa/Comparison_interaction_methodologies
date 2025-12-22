@@ -131,7 +131,7 @@ fig.venn <- ggvenn(taxa.all.methodologies,
 
 ggsave(here("results/venn.figure.jpeg"),fig.venn, width=10, height=9.35, units="in", dpi=300)
 
-
+fig.venn <- here("results/venn.figure.jpeg")
 
 
 
@@ -296,14 +296,6 @@ polygon_data <- nmds_points %>%
   slice(chull(MDS1, MDS2))
 
 NMDS.title <- expression(paste("Composition of interaction plant community by methodology"))
-NMDS.cap <- expression(paste(
-  bold("Figure3: "), "Non-metric dimensional scaling of interaction plant communities for", italic(" Bombus pascuorum "),"as detected by three interaction observation methodologies and a floral diversity survey. ",
-  "Interaction methodologies included floral diversity surveys and ITS2 metabarcoding of DNA extracted from bumblebee gut contents and corbicular pollen loads. ",
-  "Observation data are aggregated by sampling day, and the binary presence/absence list for the plant genera observed by each methodology on each sampling day are compared in ordination space. ",
-  "PERMANOVA comparisons of the community compositions represented by NMDS show no significant differences between interaction observations, gut content metabarcoding, and corbicular pollen metabarcoding. ",
-  "Floral diversity survey results were significantly different (P < 0.001) from each of the interaction methodologies."
-))
-nmds.cap.wrap <- str_wrap(NMDS.cap, width = 150)
 
 NMDS.method.comparisons <- ggplot(nmds_points, aes(x = MDS1, y = MDS2, color = methodology, shape = methodology)) +
   geom_polygon(data = polygon_data, 
@@ -339,7 +331,8 @@ NMDS.method.comparisons <- ggplot(nmds_points, aes(x = MDS1, y = MDS2, color = m
   theme(plot.title = element_text(hjust=0.5),
         legend.position.inside = c(0.13, 0.85))
 
-NMDS.method.comparisons
+
+
 
 
 #statistical analysis using PERMANOVA
