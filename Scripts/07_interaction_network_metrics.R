@@ -1,17 +1,23 @@
 #Interaction network metrics analyzed using 2023 data from field transects
 #Here we calculate and visualize:
-#d' specialization of Bombus pascuorum and centrality of plants in the BP interaction network
+#d' specialization of Bombus pascuorum and importantity of plants in the BP interaction network
 
 #packages ---------------------------------------------------------------------
 #library(here)
 #library(tidyverse)
 #library(tidyr)
+library(ggplot2)
 library(bipartite)
 library(treemap)
 library(viridis)
+library(viridisLite)
+library(grid)
+library(treemapify)
+library(shadowtext)
 
 
 #prepare data -----------------------------------------------------------------
+
 #the data in this script all come from clean4stats.bp23.all.binary, created in 05
 
 int.networks.x.methodology <- clean4stats.bp23.all.binary %>% 
@@ -27,12 +33,10 @@ methods_reorder <- c("interaction", "gut.metabarcoding", "pollen.metabarcoding")
 dp.methods <- dp.methods[order(match(dp.methods, methods_reorder))]
 dp.periods <- int.networks.x.methodology$period
 
-
 #create principal interaction dataset for analysis
 int.networks.x.methodology <- as.data.frame(int.networks.x.methodology)
 rownames(int.networks.x.methodology) <- int.networks.x.methodology[,1]
 int.networks.x.methodology <- int.networks.x.methodology[,-c(1:3)]
-
 
 #make interaction matrices for calculating d' over 6 periods
 int.web <- as.matrix(int.networks.x.methodology[7:12, 1:209])
@@ -116,39 +120,34 @@ fig.dprime <- ggplot(specialization, aes(x = period, y = dprime, group = method,
   )
 
 
-fig.dprime
+#calculate importance for plant taxa in interaction networks ------------
 
-
-
-#calculate network centrality for plant taxa within interaction networks as characterized by methodologies ------------
+#set up analysis
 
 #Isolate all interactions for all plants for the 3 methodologies
-centr.interactions <- clean4stats.bp23.all.binary %>% 
+interaction.importance <- clean4stats.bp23.all.binary %>% 
   group_by(method) %>% 
   filter(method != "count") %>% 
   summarise(across(Lathyrus:last_col(), ~ sum(.)))
 
-#calculate total interactions for each methodology
-m.int <- sum(centr.interactions[2, 2:209]) #number of interactions from interactions
-m.gmb <- sum(centr.interactions[1, 2:209]) #gut 
-m.pmb <- sum(centr.interactions[3, 2:209]) #pollen
+#calculate total interaction number for each methodology
+m.int <- sum(interaction.importance[2, 2:209]) #number of interactions from interactions
+m.gmb <- sum(interaction.importance[1, 2:209]) #gut 
+m.pmb <- sum(interaction.importance[3, 2:209]) #pollen
 
-#calculate centrality for each plant genera for each methodology
-gmb.centralities <-centr.interactions[1,2:209]/m.gmb
-int.centralities <- centr.interactions[2,2:209]/m.int
-pmb.centralities <- centr.interactions[3,2:209]/m.pmb
-
-
-#some color settings before making 3 plots
-start_col <- "#440154FF"
-end_col <- "#FDE725FF"
-custom_viridis <- viridis(100)
+#calculate importance value for each plant genera for each methodology
+gmb.importance <-interaction.importance[1,2:209]/m.gmb
+int.importance <- interaction.importance[2,2:209]/m.int
+pmb.importance <- interaction.importance[3,2:209]/m.pmb
 
 
-#analyze "importance" results for gut contents
-gmb.centralities_vec <- as.numeric(gmb.centralities)
-names(gmb.centralities_vec) <- colnames(gmb.centralities)
-gmb_nonzero <- gmb.centralities_vec[gmb.centralities_vec != 0]
+
+#Importance visualization setup ----------------------------------------------------
+
+#prep gut metabarcoding data
+gmb.importance_vec <- as.numeric(gmb.importance)
+names(gmb.importance_vec) <- colnames(gmb.importance)
+gmb_nonzero <- gmb.importance_vec[gmb.importance_vec != 0]
 gmb_sorted_nonzero <- sort(gmb_nonzero, decreasing = TRUE)
 
 gmb_df <- data.frame(
@@ -158,35 +157,15 @@ gmb_df <- data.frame(
   stringsAsFactors = FALSE
 )
 
-gmb.most.central <- gmb_df[1:27,1:2]
-gmb.most.central$label <- paste0(gmb.most.central$genus, "\n", round(gmb.most.central$Importance, 4))
-
-fig.centrality.gmb <- treemap(gmb.most.central,
-        index = "label",      
-        vSize = "Importance",
-        vColor = "Importance",
-        type = "value",
-        palette = custom_viridis,
-        range = c(0.0126, 0.133),
-        fontface.labels = "italic",
-        fontcolor.labels = "black",
-        title = "
-        ")
-
-grid.text(
-  expression(paste("B. Gut Content Metabarcoding")),
-  x = unit(0.01, "npc"),   
-  y = unit(0.99, "npc"),  
-  just = c("left", "top"),
-  gp = gpar(fontsize = 14, fontface = "bold")
-)
+gmb.most.important <- gmb_df[1:27,1:2]
+gmb.most.important$Importance <- round(gmb.most.important$Importance, 3)
+gmb.most.important$label <- paste0(gmb.most.important$genus, "\n", round(gmb.most.important$Importance, 4))
 
 
-
-#analyze centrality results for interactions
-int.centralities_vec <- as.numeric(int.centralities)
-names(int.centralities_vec) <- colnames(int.centralities)
-int_nonzero <- int.centralities_vec[int.centralities_vec != 0]
+#prep interaction importance data
+int.importance_vec <- as.numeric(int.importance)
+names(int.importance_vec) <- colnames(int.importance)
+int_nonzero <- int.importance_vec[int.importance_vec != 0]
 int_sorted_nonzero <- sort(int_nonzero, decreasing = TRUE)
 
 
@@ -197,35 +176,15 @@ int_df <- data.frame(
   stringsAsFactors = FALSE
 )
 
-int.most.central <- int_df[1:27,1:2]
-int.most.central$label <- paste0(int.most.central$genus, "\n", round(int.most.central$Importance, 4))
-
-fig.centrality.int <- treemap(int.most.central,
-        index = "label",      
-        vSize = "Importance",
-        vColor = "Importance",
-        type = "value",
-        palette = custom_viridis,
-        range = c(0.0136, 0.133),
-        fontface.labels = "italic",
-        fontcolor.labels = "black",
-        title = "
-        ")
-grid.text(
-  expression(paste("A. Importance of plant taxa within the", italic(" B. pascuorum "), "interaction network revealed by interaction transects")),
-  x = unit(0.01, "npc"),   
-  y = unit(0.99, "npc"),  
-  just = c("left", "top"),
-  gp = gpar(fontsize = 14, fontface = "bold")
-)
+int.most.important <- int_df[1:27,1:2]
+int.most.important$Importance <- round(int.most.important$Importance, 3)
+int.most.important$label <- paste0(int.most.important$genus, "\n", round(int.most.important$Importance, 4))
 
 
-
-
-#analyze centrality results for pollen metabarcoding
-pmb.centralities_vec <- as.numeric(pmb.centralities)
-names(pmb.centralities_vec) <- colnames(pmb.centralities)
-pmb_nonzero <- pmb.centralities_vec[pmb.centralities_vec != 0]
+#prep pollen metabarcoding importance data
+pmb.importance_vec <- as.numeric(pmb.importance)
+names(pmb.importance_vec) <- colnames(pmb.importance)
+pmb_nonzero <- pmb.importance_vec[pmb.importance_vec != 0]
 pmb_sorted_nonzero <- sort(pmb_nonzero, decreasing = TRUE)
 
 pmb_df <- data.frame(
@@ -235,31 +194,83 @@ pmb_df <- data.frame(
   stringsAsFactors = FALSE
 )
 
-pmb.most.central <- pmb_df[1:27,1:2]
-pmb.most.central$label <- paste0(pmb.most.central$genus, "\n", round(pmb.most.central$Importance, 4))
+pmb.most.important <- pmb_df[1:27,1:2]
+pmb.most.important$Importance <- round(pmb.most.important$Importance, 3)
+pmb.most.important$label <- paste0(pmb.most.important$genus, "\n", round(pmb.most.important$Importance, 4))
 
-fig.centrality.pmb <- treemap(pmb.most.central,
-        index = "label",      
-        vSize = "Importance",
-        vColor = "Importance",
-        type = "value",
-        palette = custom_viridis,
-        range = c(0.0136, 0.133),
-        fontface.labels = "italic",
-        fontcolor.labels = "black",
-        title = "
-        ")
-grid.text(
-  expression(paste("C. Corbicular Pollen Metabarcoding")),
-  x = unit(0.01, "npc"),   
-  y = unit(0.99, "npc"),  
-  just = c("left", "top"),
-  gp = gpar(fontsize = 14, fontface = "bold")
+
+#establish boundaries for a healthy relationship (with your data)
+global_min <- min(
+  gmb.most.important$Importance,
+  int.most.important$Importance,
+  pmb.most.important$Importance)
+
+global_max <- max(
+  gmb.most.important$Importance,
+  int.most.important$Importance,
+  pmb.most.important$Importance)
+
+
+#some color settings that work with these boundaries in ggplot
+my_palette <- viridisLite::viridis(
+  n = 60,
+  begin = 0.53,   # low end of the viridis range
+  end   = 1.0    # high end
 )
 
 
 
+#analyze importance results for interactions -------------------------------
 
+fig.int.importance <- ggplot(int.most.important,
+       aes(area = Importance, fill = Importance, label = label)) +
+  geom_treemap() +
+  geom_treemap_text(
+    colour   = "grey30",
+    fontface = "italic",
+    place    = "centre",
+    reflow   = TRUE,
+    size     = 6) +
+  scale_fill_gradientn(
+    colours = my_palette,
+    limits  = c(global_min, global_max)) +
+  ggtitle("A. Importance of plant taxa in interaction network")
+
+
+#visualize "importance" results for gut contents ------------------------
+
+fig.gmb.importance <- ggplot(gmb.most.important,
+                             aes(area = Importance, fill = Importance, label = label)) +
+  geom_treemap() +
+  geom_treemap_text(
+    colour   = "white",
+    fontface = "italic",
+    place    = "centre",
+    reflow   = TRUE,
+    size     = 6) +
+  scale_fill_gradientn(
+    colours = my_palette,
+    limits  = c(global_min, global_max)) +
+  ggtitle("B. Gut Content Metabarcoding")
+
+
+#analyze importance results for pollen metabarcoding ----------------------------
+fig.pmb.importance <- ggplot(pmb.most.important,
+       aes(area = Importance, fill = Importance, label = label)) +
+  geom_treemap() +
+  geom_treemap_text(
+    colour   = "white",
+    fontface = "italic",
+    place    = "centre",
+    reflow   = TRUE,
+    size     = 6) +
+  scale_fill_gradientn(
+    colours = my_palette,
+    limits  = c(global_min, global_max)) +
+  ggtitle("C. Corbicular Pollen Metabarcoding")
+
+
+#the end ---------------------------
 
 save.image(file = here("Data/07_output.RData"))
 
