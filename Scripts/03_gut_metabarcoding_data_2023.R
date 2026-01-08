@@ -16,10 +16,9 @@ library(DHARMa)
 library(phyloseq) ; packageVersion("phyloseq")
 
 
-#Load Data -----
-#For now we are going to work with Bell db analyzed results @ genus level
+#Load Data ----
 
-# Original load data flow directly from dada2 CSVs: ------
+# Original load data flow directly from dada2 CSVs:
 
 #bp.2023 <- read_tsv(here("Data/2023_BP_metab_sample_info.tsv")) #bp sample info
 #bp.2023 <- bp.2023 %>% rename(sample = sample_name)
@@ -34,13 +33,17 @@ library(phyloseq) ; packageVersion("phyloseq")
 #bp.asv.genus.2023 <- bp.asv.tax.2023 %>% 
     #select(asv_id,genus)
 
-#Working with data cleaned with decontam
+
+#Now what we actually do it bring the data into R in the decontam step
+#the data used in this script are outputs from decontam_gut_plant_2023.R
 
 plant.decontam0.5 <- readRDS(here("Data/gbp23.plant.decontam.0.5.RDS")) #all data in phyloseq format from strict decontam filter (th = 0.5) THESE ARE THE DATA USED IN THE FINAL ANALYSIS
 plant.decontam0.1 <- readRDS(here("Data/gbp23.plant.decontam.0.1.RDS")) #all data in phyloseq format from less strict decontam filter (th = 0.1)
 long.plant.decontam0.5 <- readRDS(here("Data/long.gbp23.plant.decontam.0.5.RDS")) #all data from ITS2 specific dada2 analysis in phyloseq format from strict decontam filter (th = 0.5)
 
-#split into dataframes used in this analysis
+
+
+#split decontam output of choice into dataframes used in this analysis
 
 bp.asv.counts.2023 <- as.data.frame(otu_table(plant.decontam0.5))
 asvs <- rownames(bp.asv.counts.2023)
@@ -69,25 +72,15 @@ single.ASVs <- ASVs.per.Genus %>%
 single.ASVs <- left_join(single.ASVs, bp.asv.genus.2023, by = 'genus')
 
 
-#add intertegular distances to data 
-
-bp23.size <- read_csv(here("Data/2023_bombus_size_data.csv")) #this has values for samples that were not in metabarcoding
-bp23.size <- bp23.size %>% filter(sample != is.na(sample)) #clean up
-
-#for unite or other db results where the tax lvel is written as k__,p__ ....
-#bp.asv.genus.2023 <- bp.asv.tax.2023 %>% 
-#  select(asv_id,genus) %>% 
-#  mutate(genus = str_remove(genus, "g__"))
-
-
 #condense two of these to have genera names assigned to asvs in samples
-
-load(file = here("Data/known.misIDs.RData")) #list of taxa that are either known contaminants or mistakenly identified ASVs
-
 bp.plant.asvNs.w.genus.2023 <- right_join(bp.asv.counts.2023,bp.asv.genus.2023, by = "asv_id")
+
+#screen even more for contaminats based on expert knowledge reveiw of results
+load(file = here("Data/known.misIDs.RData")) #list of taxa that are either known contaminants or mistakenly identified ASVs
 bp.plant.asvNs.w.genus.2023 <- bp.plant.asvNs.w.genus.2023 %>% relocate(genus, .after = asv_id) %>%  #this is just to look and make sure it worked
   filter(!genus %in% known.misIDs) #remove taxa from the loaded list 
 
+#create binary version
 binary.plant.asvNs.w.genus.2023 <- bp.plant.asvNs.w.genus.2023 %>% 
   relocate(genus, .after = asv_id) %>% 
   mutate(across(GBP23010301M_ITS_P48:last_col(), ~ifelse(. > 0, 1, 0))) %>% 
@@ -108,15 +101,11 @@ bp23.genomic.specs <- bp23.genomic.specs %>%
   mutate(period = str_extract(period, "\\d+"), period = as.integer(period)) %>% 
   mutate(site = str_extract(site, "\\d+"), site = as.integer(site)) %>% 
   select(-last_col()) #Check that this is removing the NA column and not something important
-#this dataset does not contain Bombus size, see bp23.genomic.analys below
 
 
 #manipulate and analyze data ------
 
-#extract genus hits from here. 
-#Go through this list with Brais and Xabi and remove obvious remaining taxa that should be cleaned
-#include them above in known.misIDs
-
+#extract all interaction genera from gut metabarcoding
 genus.hits.23 <- bp.plant.asvNs.w.genus.2023 %>%
   #select(!asv_id) %>% #simplify working data
   group_by(genus) %>% 
@@ -133,14 +122,9 @@ paste("Metabarcoding detected", nrow(genus.hits.23),"plant genera across all of 
 
 bp23.genomic.analys <- bp23.genomic.specs #a copy for manipulation
 bp23.genomic.analys$sample <- str_split_fixed(bp23.genomic.analys$sample, "_", 2)[,1] #remove sequencing plate labels
-#bp23.genomic.analys <- right_join(bp23.genomic.analys, bp23.size, by = "sample") #This step is duplicating some samples and removing others
-#bp23.genomic.analys <- bp23.genomic.analys %>% relocate(intertegular_dist_mm, .after = quant_reading) %>% 
- # relocate(abdomen_length_mm, .after = intertegular_dist_mm) %>% 
-  #relocate(total_length_mm, .after = abdomen_length_mm) %>% 
-  #filter(specimen != is.na(specimen))
-#NOTE: NAs exist for bombus measurements
-#use df %>% na.replace(0) if needed
 
+
+#create a dataset aggregated by sampling day
 bp23.genomic.xday <- bp23.genomic.analys %>%
   group_by(period, site) %>%
   summarise(across(Abelmoschus:last_col(), sum), .groups = "drop") %>% 
@@ -148,17 +132,20 @@ bp23.genomic.xday <- bp23.genomic.analys %>%
   relocate(day)
   
 
-#make binary versions of 2023 data
-
+#make presence/absence reduced version of 2023 data
 bp23.genomic.binary <- bp23.genomic.analys %>% 
   mutate(across(Abelmoschus:last_col(), ~ifelse(. > 0, 1, 0))) %>% #read count data to presence absence 1s and 0s
   mutate(genera.by.indiv = rowSums(across(Abelmoschus:last_col()))) %>%  #add a sum of genera for diversity by inv sample
   relocate(genera.by.indiv, .after = quant_reading)
 
+#day aggregated
 bp23.genomic.xday.binary <- bp23.genomic.xday %>% 
   mutate(across(Abelmoschus:last_col(), ~ifelse(. > 0, 1, 0))) %>% #read count data to presence absence 1s and 0s
   mutate(genera.xday = rowSums(across(Abelmoschus:last_col()))) %>%  #add a sum of genera for diversity by inv sample
   relocate(genera.xday, .after = site)
+
+
+
 
 #Quickly visualize MB results by SAMPLES
 mb.genus.detections <- as.data.frame(colSums(bp23.genomic.binary[16:ncol(bp23.genomic.binary)])) %>% #THR COLUMNS SELECTED HERE ARE IMPORTANT FOR THE RESULTS YOU SEE. Make sure that they include all taxa
@@ -233,20 +220,6 @@ bp23.genomic.periods <- bp23.genomic.analys %>%
   summarise(n_samples = n_distinct(sample),
             n.genera.gmb = n_distinct(genus),
             .groups = 'drop')
-  
-#is there a significant diference in genera by period detected by stats?
-#boxplot(genera.by.indiv ~ period, data = bp23.genomic.binary)
-#dist_alphadiv <- vegdist(bp23.genomic.binary$genera.by.indiv, method = 'jaccard') #there may be two rows that sum to zero from the samples with 0 reads
-#disp_anova_a_period <- betadisper(d = dist_alphadiv, group = bp23.genomic.binary$period)
-#anova_a_period <- anova(disp_anova_a_period)
-#report(anova_a_period)
-#looks like the answer is no, but composition yes could change between periods right? 
-#(ie. LJ's figure from ecoflor poster)
-#could explore with permanova/NMDS:
-#I repeated this for samples grouped by day and there is no change to the conclusion
-
-
-
 
 #Analysis by site -----
 
@@ -260,76 +233,3 @@ bp23.genomic.sites <- bp23.genomic.analys %>%
        summarise(n_samples = n_distinct(sample),
                  n.genera = n_distinct(genus),
                  .groups = 'drop')
-
-
-
-
-#Analysis by period and site using various stat methods 
-#Analyses of metabarcoding community data by site/period using nMDS, PERMANOVA, manyGLM  --------
-
-
-#can do for data with read counts (bp23.genomic.analys) or presence absence (bp23.genomic.binary)
-#just change these lines
-#simplify factors/data involved
-#stat.clean.bp23.genomic.binary <- bp23.genomic.binary[rowSums(bp23.genomic.binary[, 16:ncol(bp23.genomic.binary)], na.rm = TRUE) > 0, ]
-#site <- as.factor(stat.clean.bp23.genomic.binary$site)
-#period <- as.factor(stat.clean.bp23.genomic.binary$period)
-#gut.plants <- stat.clean.bp23.genomic.binary %>% select(Abelmoschus:last_col()) 
-
-#There is a problematic sample that makes an outlier point because it only has read counts for the ASV of Iberis. Take it out.
-#gut.plants <- gut.plants[-c(39),]
-#gut.plants <- gut.plants %>%  select(!Iberis)
-
-#NMDS visualization
-#dist.gut.plants <- vegdist(gut.plants, method = "raup", binary = TRUE) #calc distance between communities for later stat analysis
-#gut.plants.mds <- metaMDS(gut.plants, distance = "raup", binary = TRUE)
-#plot(gut.plants.mds$points, col = site, pch = 16, main = "Plant taxa in GBP23 gut DNA visualized by site")
-#plot(gut.plants.mds$points, col = period, pch = 16, main = "Plant taxa in GBP23 gut DNA visualized by period")
-
-
-#permanova test (play with ~ variables to understand more)
-#permanova.gut.plants <- adonis2(gut.plants ~ period*site, permutations = 9999, method = "jaccard", by = "terms")
-#summary(permanova.gut.plants)
-#permanova.gut.plantss
-
-
-# Alternative analysis: many glm 
-#extracting effect of site or period for each species using multiple glm
-#CSG: did this in sevilla as a test of using our data with mult glm, would have to revise to do anything with this
-
-#gut.plants.spp <- mvabund(gut.plants)
-#mglm.gut.flowers <- manyglm(gut.flowers.spp ~ bp23.genomic.analys$period, family = "")
-#anova(mglm.gut.flowers, p.uni="adjusted") #this takes a lot of computing power
-#should show deviation and probable significance of effect for each species
-
-
-
-#Analysis by bee size ---------
-
-#plant DNA diversity by bombus size (using intertegular distance)
-# fig.diversity.pd.intglr <- ggplot(data = bp23.genomic.binary, aes(period, genera.by.indiv, size = intertegular_dist_mm)) +geom_point(alpha = 0.6, color = "skyblue4") + theme(legend.key.size = unit(1, 'cm')) + scale_x_continuous(breaks = 1:6, labels = 1:6) + scale_size_continuous(range = c(1, 6)) + labs(x = "Period", y = "Detected plant genera", size = "Intertegular Distance (mm)")
-
-#This isn't as informative as I had hoped
-
-#fig.diversity.x.intglr <- ggplot(data = bp23.genomic.binary, aes(intertegular_dist_mm, genera.by.indiv)) + geom_point(alpha = 0.6, color = "skyblue4") + geom_smooth(method = "lm", color = "forestgreen") + theme_classic()
-
-#model.diversity.x.size <- lm(genera.by.indiv ~ intertegular_dist_mm, data = bp23.genomic.binary)
-#summary(model.diversity.x.size) #in this model a bee with intertegular of 0 would have
-#37 plant genera in its gut. Biologically doesn't make sense - center data
-
-#c.bp23.genomic.binary <-  bp23.genomic.binary %>% mutate(c_intertegular_dist_mm = intertegular_dist_mm - 4.91) #4.91 is the mean intertegular distance for 2023
-#above step moved up in code
-#c.model.diversity.x.size <- lm(genera.by.indiv ~ c_intertegular_dist_mm, data = c.bp23.genomic.binary)
-#report(c.model.diversity.x.size) #intercept corresponding to an int_dist of 4.91 in reality
-#relationship weak but significant, but is the model worthy?
-#check_model(c.model.diversity.x.size) #Looks decent, but maybe there are other factors...
-#DHARMa::testResiduals(c.model.diversity.x.size)
-
-  
-
-
-
-
-
-
-

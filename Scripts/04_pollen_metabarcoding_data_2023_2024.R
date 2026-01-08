@@ -43,6 +43,8 @@ poln.asv.tax.2023.24 <- poln.tax_table.cl%>%
 poln.asv.genus.2023.24 <- poln.asv.tax.2023.24 %>% 
   select(asv_id,genus)
 
+
+
 #Look for genera that only correspond to one ASV. These could be contaminants/misidentified sequences
 #These can be confirmed by BLASTing the ASV sequence
 poln.ASVs.per.Genus <- as.data.frame(table(poln.asv.genus.2023.24$genus))
@@ -50,6 +52,7 @@ poln.single.ASVs <- poln.ASVs.per.Genus %>%
   filter(Freq == 1) %>% 
   rename(genus = Var1)
 poln.single.ASVs <- left_join(poln.single.ASVs, poln.asv.genus.2023.24, by = 'genus')
+
 
 
 #create a table of ASV counts corresponding to genera names 
@@ -90,10 +93,7 @@ poln.2023.genomic.specs <- poln23.24.genomic.specs %>%
 
 #manipulate and analyze data ------
 
-#extract genus hits from here. 
-#Go through this list with Brais and Xabi and remove obvious remaining taxa that should be cleaned
-#include them above in known.misIDs
-
+#Identify all interaction genera from pollen metabarcoding
 poln.genus.hits.23.24 <- poln.asvNs.w.genus.2023.24 %>%
   #select(-starts_with("Y24")) %>% #only 2023
   group_by(genus) %>% 
@@ -143,7 +143,11 @@ poln.2023.genomic.xday.binary <- poln.genomic.xday.2023 %>%
   mutate(genera.xday = rowSums(across(Achillea:last_col()))) %>%  #add a sum of genera for diversity by inv sample
   relocate(genera.xday, .after = site)
 
-#Quickly visualize MB results by poln.samples
+
+
+
+
+#Quickly visualize MB results by pollen samples
 poln.mb.genus.detections <- as.data.frame(colSums(poln.genomic.binary.2023[13:ncol(poln.genomic.binary.2023)])) %>% #THR COLUMNS SELECTED HERE ARE IMPORTANT FOR THE RESULTS YOU SEE. Make sure that they include all taxa
   rownames_to_column(var = "genus") %>% 
   rename(n.sample.detections = "colSums(poln.genomic.binary.2023[13:ncol(poln.genomic.binary.2023)])")

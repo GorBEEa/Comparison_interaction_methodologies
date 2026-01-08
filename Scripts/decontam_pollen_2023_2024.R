@@ -1,4 +1,6 @@
-###
+#script for using decontam with dada2 outputs to clean ASV taxonomy
+#uses sequence data from gut content metabarcoding
+#Squences from 2023 Bombus pascuorum DNA extracts
 
 
 # Load libraries

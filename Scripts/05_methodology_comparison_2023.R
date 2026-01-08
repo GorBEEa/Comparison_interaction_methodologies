@@ -100,22 +100,12 @@ paste("Of the", nrow(poln.genus.hits.2023),"taxa detected in pollen metabarcodin
 
 #Venn diagram visualization of detection overlap ------------------------------------------------------
 
-
-#just add another part to the list once we have pollen
 taxa.all.methodologies <- list(
   "Gut content\nMetabarcoding\n131 genera" = genus.hits.23$genus,
   "Interactions\n27 genera" = gut.detected.int.genus$genus, #this works to give the correct N, but it's sketchy. There is probably a better way
   "Flower Count\n117 genera" = flower.count.genera$flower_genus,
   "Pollen\nMetabarcoding\n123 genera" = poln.genus.hits.2023$genus)
 
-venn.cap <- expression(paste(bold("Figure 1: "),"Number of plant genera detected within interation networks 
-                             constructed for", italic(" B. pascuorum "), "using three interaction observation methodologies:
-                             interaction field transects, corbicular pollen metabarcoding, and gut content metabarcoding
-                             Flower count floral diversity survey results are represented within the analysis to provide 
-                             environmental context. All results are aggregated from samples and surveys taken from April to 
-                             August of 2023. Degree of ", italic(" B. pascuorum "), " as a network node is represented by the
-                             total number of genera detected by each methodology (N = ). Overlap with other methodologies, and
-                             uniquely detected genera are shown within the venn diagram."))
 
 fig.venn <- ggvenn(taxa.all.methodologies,
                show_percentage = FALSE,
@@ -124,9 +114,6 @@ fig.venn <- ggvenn(taxa.all.methodologies,
                set_name_size = 5,
                text_size = 8) + 
   coord_cartesian(clip = "off") +
- # ggtitle("Interaction network degree and
-  #  overlap by methodology") +
- # labs(caption = venn.cap) +
   theme(plot.title = element_text(face="bold", vjust = 2, hjust = 0.01))
 
 ggsave(here("results/venn.figure.jpeg"),fig.venn, width=10, height=9.35, units="in", dpi=300)
@@ -213,23 +200,6 @@ fig.methods.x.periods <- ggplot(long.gen.by.periods, aes(period, n.genera, fill 
 fig.methods.x.periods
 
 
-#Diversity by site ------------------------------------------------------------------------------
-
-#compare.gen.by.sites <- right_join(int.genus.by.site, bp23.genomic.sites, by = "site") %>%right_join(., flower.genus.by.site, by = "site") %>% right_join(., poln23.genomic.sites, by = "site") 
-#compare.gen.by.sites <- compare.gen.by.sites %>% rename(b_n_genera_gut_metabarcoding = n.genera.y) %>% rename(a_n_genera_interactions = n.genera.x) %>% rename(c_n_genera_flower_count = n.flower.count.genera) %>% rename(d_n_genera_pollen_metabarcoding = n.genera.poln) %>% select(c(site, b_n_genera_gut_metabarcoding, a_n_genera_interactions, c_n_genera_flower_count, d_n_genera_pollen_metabarcoding))
-#long.gen.by.sites <- compare.gen.by.sites %>% pivot_longer(!site) %>% rename(method = name) %>% rename(n.genera = value)
-#ggplot(long.gen.by.sites, aes(site, n.genera, fill = method)) + geom_col(position = "Dodge") + scale_x_continuous(breaks = 1:16, labels = 1:16) + scale_fill_manual(values = method.colors) + theme(axis.ticks.x = element_blank())
-#looks like sites missing pollen samples hav just been omitted from the analysis in general, coiuld fix but not a priority
-
-
-
-
-
-#Another basic analysis of diveristy by method (over space and time) ------
-#could do linear models relating diversity (n.genera) to method*site*period
-
-
-
 #Statistical analysis of methodologies --------------------------------------------------------------
 
 #bring together binary presence absence data from interactions and metabarcoding into one table
@@ -253,7 +223,6 @@ clean4stats.bp23.all.binary <- bp23.all.binary[rowSums(bp23.all.binary[, 4:ncol(
 clean4stats.bp23.all.binary <- clean4stats.bp23.all.binary %>% 
   select(1:3, # keep metadata columns unchanged
          where(~ is.numeric(.) && sum(., na.rm = TRUE) > 0)) #remove 0 sum columns
-#removes Avenella and Mentha
 
 
 
@@ -266,22 +235,17 @@ all.plants <- clean4stats.bp23.all.binary %>%
   select(!c(site, period, method))
 
 
-#NMDS visualization of data
+#nMDS visualization of data
 
-#prepare NMDS data with vegan
+#prepare nMDS data with vegan
 
 dist.all.plants <- vegdist(all.plants, method = "raup", binary = TRUE) #calc distance between communities for later stat analysis
 set.seed(123) #this should make it so that the nmds results are always the same despite permutations
 all.plant.mds <- metaMDS(all.plants, distance = "raup", trace = FALSE) 
 
 
-#Quick plot option - the colors are probably deceiving right now
-#plot(all.plant.mds$points, col = method.colors, pch = 16)
-#legend("topleft", legend = levels(methodology), col = method.colors, pch = 16, title = "Methodology")
-#that outlier point is from interactions, P2S14
+#build nMDS visualization
 
-
-#Nice plot option - as used in EcoFlor poster
 nmds_points <- as.data.frame(all.plant.mds$points)
 nmds_points <- nmds_points %>% 
   mutate(methodology = methodology) # %>% 

@@ -10,6 +10,7 @@
 #Load Data -----
 
 flower.count.2023 <- read_csv(here("Data/flower_count_2023_int_trnsect_clean.csv")) #ty Estefanía for cleaning this already
+
 flower.count.2023 <- flower.count.2023 %>% 
   mutate(flower_genus = sapply(strsplit(as.character(Planta), " "), `[`, 1)) %>% 
   rename(period = Periodo) %>% 
@@ -33,6 +34,7 @@ flower.genus.by.site <-  flower.count.2023 %>%
 #organize flower count data for all in 1 analysis with interaction and mb data ------
 bp23.fc4stats <- flower.count.2023 %>% #isolate the data of interest from all fc data
   select(period, site, flower_genus) 
+
 bp23.fc4stats.wide <- bp23.fc4stats %>% #transpose to match the mb data format
   group_by(period, site, flower_genus) %>% 
   summarise(count = n(), .groups = "drop") %>% 

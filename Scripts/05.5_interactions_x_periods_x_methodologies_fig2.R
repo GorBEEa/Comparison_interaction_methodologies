@@ -44,7 +44,7 @@ fig.int.methods.x.periods <- ggplot(int.gen.x.periods, aes(period, n.genera, fil
 
 
 
-#Manuscript Figure 2: pertiod breakdown of diversity by all surveys ---------------
+#Manuscript Figure 2: period breakdown of diversity by all surveys ---------------
 
 fc.line <- mean.lines %>% filter(LineType == "Flower Count")
 

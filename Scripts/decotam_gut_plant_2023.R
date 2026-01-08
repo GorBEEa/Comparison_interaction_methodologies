@@ -1,4 +1,6 @@
-###
+#script for using decontam with dada2 outputs to clean ASV taxonomy
+#uses sequence data from gut content metabarcoding
+#Squences from 2023 Bombus pascuorum DNA extracts
 
 
 # Load libraries
@@ -7,7 +9,7 @@ library(decontam); packageVersion("decontam")
 library(phyloseq) ; packageVersion("phyloseq")
 library(ggplot2); packageVersion("ggplot2")
 
-# Load data
+#Load data
 count_tab <- read.table(here("Data/dada2_outputs/2023_plant_GorBEEa_ASVs_counts.tsv"), header=T, row.names=1,
                         check.names=F, sep="\t")
 

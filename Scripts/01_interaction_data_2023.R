@@ -26,35 +26,16 @@ source(here("Scripts/plant_taxa_names_cleaning/BP_flower_w_interactions_cleaning
 
 
 # Observed species interactions -----
-#prep figure features
+#visualize by number of observed interactions
 title.bpasc.int <- expression(paste("Total ", italic("B. pascuorum"), " interactions with flower species 2023 season")) #new plot, give it a title
-cap.bpasc.int <- expression(paste(bold("Figure X. "), "From April to June, 2023, we surveyed plant-pollinator interactions of 16 transcets in Gorbea Natural Park. Across the field survey season, the bumblebee species,", italic(" B. pascuorum,"), " interacted with X distinct flower species.The most visited flower species was ", italic("Prunella vulgaris.") ))
 
-#make figure
-fig.x <- ggplot(data = bp.interactions.clean, aes(x = reorder(Planta, -table(Planta)[Planta]))) + geom_bar() + 
-  labs(x = "Floral species", y = "Interaction count 2023 Season", title = title.bpasc.int, caption = cap.bpasc.int) + 
+ggplot(data = bp.interactions.clean, aes(x = reorder(Planta, -table(Planta)[Planta]))) + geom_bar() + 
+  labs(x = "Floral species", y = "Interaction count 2023 Season", title = title.bpasc.int) + 
   theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust = 1, size = 12),plot.title = element_text(hjust=0.5))
-
-
-
-# Top observed floral interactions ----- 
-
-flor_summary <-table(bp.interactions.clean$Planta) #get sums of interactions for 2023 by species
-topflor <- which(flor_summary > 1) #filter out single interaction species
-topflor_df <- data.frame(Species = names(topflor), interactions = as.integer(topflor)) #turn into a nice clean dataframe
-
-#make figure.y
-title.topflor.int <- expression(paste("Top floral species for ", italic("B. pascuorum"), " interactions (2023) ")) #new plot, give it a title
-
-fig.y <- ggplot(topflor_df, aes(x = Species, y = interactions))+
-  geom_bar(stat = "identity") +
-  labs(x = "Floral species", y = "Interaction count 2023 Season", title = title.topflor.int) +
-  theme(axis.text.x = element_text(angle = 50, vjust = 1, hjust = 1, size = 12),plot.title = element_text(hjust=0.5))
-
 
 #interactions by genus -----
 
-# with metabarcoding it looks like everything ahs to be done at genus level
+# with metabarcoding it looks like everything has to be done at genus level
 # redo all of this just for genus level
 
 title.int.genus <- expression(paste("Total ", italic("B. pascuorum"), " flower interactions by plant genus 2023 season")) #new plot, give it a title
@@ -118,25 +99,4 @@ bp23.int4stats.wide.binary <- bp23.int4stats.wide %>% #make binary version
 
 
 save(bp23.int4stats.wide.binary, file = here("Data/gbp23.interaction.data4analysis.RData") )
-
-
-
-#try a GLM to see if there is interaction between diversity, period, and site -------
-#genera.mixd.glm <- glm(n.genera ~ site * period, data = gen.ev, family = 'poisson')
-#summary(genera.mixd.glm)
-#right now nothing looks good because there are very few data only for BP
-#Poisson is an acceptable start for family, us DHarma or model_dashboard 
-#to check residuals and see if model should be adjusted
-
-
-#Natxo's feedback is that a gaussian approach could also be appropriate
-#but that otherwise this is a valid way of looking at the data
-
-#fig.s <- boxplot(n.genera ~ period, data = gen.ev)
-
-#try anova way, e.g.
-#dist_gen <- vegdist(gen.ev$n.genera, method = 'bray')
-#genova <- betadisper(d = dist_gen, group = gen.ev$period)
-#genova.out <- anova(genova)
-
 

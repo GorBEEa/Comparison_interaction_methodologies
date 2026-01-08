@@ -1,5 +1,5 @@
-#Script for looking at individual level differences in taxa detected by 2 metabarcoding methodologies
-
+#Script for looking at differences in taxa detected by metabarcoding methodologies
+#analysis at individual specimen level
 
 #library(here)
 #library(tidyverse)
@@ -173,18 +173,6 @@ mb2x.2023.indv.plants <- clean4stats.mb2x.2023.indv %>%
 sample_blocks <- as.factor(clean4stats.mb2x.2023.indv$ID)
 
 
-
-
-#Test
-permanova.mb.2023.indv <- adonis2(mb.2023.indv.plants ~ mb.2023.indv.methodology,
-                                  permutations = 9999,
-                                  binary = TRUE,
-                                  method = "raup",
-                                  pairwise = TRUE)
-
-permanova.mb.2023.indv.kbl <- permanova.mb.2023.indv %>% 
-  kbl(caption = "PERMANOVA analysis of metabarcoding methodology's effect on observed plant community") %>% 
-  kable_minimal(full_width = F, html_font = "Cambria")
 
 
 

@@ -1,8 +1,4 @@
 ---
-title: "Assessing the Complementarity of Gut-Content and Pollen-Load Metabarcoding with Field Surveys for Inferring Plant–Pollinator Interactions"
-
-subtitle: "Christian Gostout, Luis J. Chueca, Jon Poza, Xabier Salgado-Irazabal, Estefanía Tobajas, Jennifer Rose, Brais Hermosilla, Marion Donald, Manpreet K. Dhami, Ainhoa Magrach"
-
 format:
   pdf:
     pdf-engine: lualatex
@@ -210,9 +206,5 @@ Our comparative analyses understate the resolution of the metabarcoding derived 
 The similarities between interaction data suggest robustness between each methodology, and the inherent implications of the sample sources of each provide varied means of interpreting different interactions. Interaction transects provide a valuable field-based perspective, although given their lower sampling efficiency, incorporating them as a validation of other surveys may be the best way to integrate this methodology into future studies. Field observations can fill gaps left by metabarcoding methodologies, such as confirmation of pollination efficacy, interaction frequency, and species-level resolution. As a direct observation of the pollen transported to the nest, corbicular pollen may also be a good starting point for identifying plants that may provide pollen with optimal macronutrients for larval development. Similarly, gut content metabarcoding provides an important perspective on the nutritional needs of actively foraging pollinators, identifying taxa that provide pollen as food for supporting this activity [@li2025]. Knowing which taxa are actually ingested by pollinators is especially useful for identifying taxa that facilitate microbiota exchange and acquisition during plant interactions [@cullen2021; @keller2021], including parasite and disease transfer [@lignon2024]. Although they are not equal, our research highlights overall that each methodology offers advantages and disadvantages in terms of sensitivity, sampling effort, and perspective.
 
 While most of the methodologies we applied, aside from gut-content metabarcoding, have previously been used independently to characterize plant–pollinator networks [e.g., @devriese2024; @magrach2023], our findings highlight the added value of integrating them. Gut-content metabarcoding emerges as a promising new tool, but its greatest potential is realized when combined with established approaches. A key next step is improving our ability to quantify interaction frequencies at the individual level using metabarcoding, whether from gut contents or pollen. Overall, methodological advances are likely to come from linking complementary data sources to fill the informational gaps left by any single approach.
-
-*Data and code availability*
-
-All amplicon sequencing data will be deposited in the European Nucleotide Archive project: PRJEB105453. Other data and code will be available in the GorBEEa public GitHub repository, Comparison_interaction_methodologies. Data and code will be made publicly available upon acceptance of the manuscript.
 
 **References**

@@ -1,6 +1,6 @@
-#Interaction network metrics analyzed using 2023 data from field transects
+#Interaction network metrics analyzed using 2023 data for Bombus pascuorum
 #Here we calculate and visualize:
-#d' specialization of Bombus pascuorum and importantity of plants in the BP interaction network
+#d' specialization of B. pascuorum and "importance" of plants in the BP interaction network
 
 #packages ---------------------------------------------------------------------
 #library(here)

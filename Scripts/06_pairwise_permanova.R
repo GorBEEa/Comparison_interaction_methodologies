@@ -1,6 +1,6 @@
 #Script for performing a pairwise analysis of permanova data between methodologies
 #pairwiseAdonis has not worked for my data
-#depends on R data from prior scripts
+#depends on R data from prior scripts up to 05
 
 #library(vegan)
 library(knitr)
@@ -56,7 +56,7 @@ pairwise_permanova <- function(sp_matrix, group_var, dist = "raup", adj = "holm"
 #execute pairwise permanova using all data -----
 
 #load and prepare my data for using this function
-load(here("Data/05_output.RData"))
+#load(here("Data/05_output.RData"))
 
 all.plants.matrix <- as.matrix(all.plants)
 
@@ -86,6 +86,9 @@ ppermanova.kbl <- kable(clean_results,
       col.names = c("Methodology 1", "Methodology 2", "DF1", "DF2", "R\u00B2", "F", "p", "Adjusted p"),
       digits = 3) %>% 
   kable_minimal(full_width = F, html_font = "Cambria")
+
+
+
 
 
 #execute pairwise permanova using only interaction methodology data (no flower counts) -----
