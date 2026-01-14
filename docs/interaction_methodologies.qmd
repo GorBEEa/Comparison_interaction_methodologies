@@ -26,7 +26,7 @@ Our understanding of plant-pollinator interaction networks hinges on the methods
 
 **Data and Code for peer-review**
 
-All amplicon sequencing data will be deposited in the European Nucleotide Archive project: PRJEB105453. Other data and code will be available in the GorBEEa GitHub repository, Comparison_interaction_methodologies, which will be made available to peer-reviewers upon acceptance for review.
+All data and code used for the analyses in this manuscript are provided on an Anonymous GitHub repository (<https://anonymous.4open.science/r/B_pascuorum_interaction_networks>). All raw amplicon sequencing data will be deposited in a project in the European Nucleotide Archive upon final manuscript acceptance.
 
 **1. Introduction**
 
