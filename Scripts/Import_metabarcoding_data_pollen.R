@@ -8,7 +8,7 @@ library(phyloseq)
 
 
 #import data output from dada2 to R
-p.taxa.table <- readRDS(here("Data/dada2_outputs/2023_24_pollen_GorBEEa_tax_assignation.rds"))
+p.taxa.table <- readRDS(here("Data/dada2_outputs/2023_24_pollen_tax_assignation.rds"))
 
 p.taxa.df <-as.data.frame(p.taxa.table)
 

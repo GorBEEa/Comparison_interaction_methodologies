@@ -23,10 +23,10 @@ library(phyloseq) ; packageVersion("phyloseq")
 #bp.2023 <- read_tsv(here("Data/2023_BP_metab_sample_info.tsv")) #bp sample info
 #bp.2023 <- bp.2023 %>% rename(sample = sample_name)
 
-#bp.asv.counts.2023 <- read_tsv(here("Data/2023_plant_GorBEEa_ASVs_counts.tsv")) #asv counts
+#bp.asv.counts.2023 <- read_tsv(here("Data/2023_plant_ASVs_counts.tsv")) #asv counts
 #bp.asv.counts.2023 <- bp.asv.counts.2023 %>% rename(asv_id = ...1)
 
-#bp.asv.tax.2023 <- read_tsv(here("Data/2023_plant_GorBEEa_ASVs_taxonomy.tsv")) #taxa associated with asvs
+#bp.asv.tax.2023 <- read_tsv(here("Data/2023_plant_ASVs_taxonomy.tsv")) #taxa associated with asvs
 #bp.asv.tax.2023 <- bp.asv.tax.2023 %>% 
  # rename(asv_id = ...1) %>% 
   #rename(genus = Genus)

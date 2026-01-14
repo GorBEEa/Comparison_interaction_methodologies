@@ -10,10 +10,10 @@ library(phyloseq) ; packageVersion("phyloseq")
 library(ggplot2); packageVersion("ggplot2")
 
 #Load data
-count_tab <- read.table(here("Data/dada2_outputs/2023_plant_GorBEEa_ASVs_counts.tsv"), header=T, row.names=1,
+count_tab <- read.table(here("Data/dada2_outputs/2023_plant_ASVs_counts.tsv"), header=T, row.names=1,
                         check.names=F, sep="\t")
 
-tax_tab <- as.matrix(read.table(here("Data/dada2_outputs/2023_plant_GorBEEa_ASVs_taxonomy.tsv"), header=T,
+tax_tab <- as.matrix(read.table(here("Data/dada2_outputs/2023_plant_ASVs_taxonomy.tsv"), header=T,
                                 row.names=1, check.names=F, sep="\t"))
 
 sample_info_tab <- read.delim(here("Data/dada2_outputs/2023_BP_metab_sample_info.tsv"),

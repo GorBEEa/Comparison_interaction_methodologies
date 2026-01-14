@@ -1,4 +1,6 @@
 ## Script for importing taxonomic assignation data from dada2
+#This method of bringing the data to R has been abandoned for this project
+
 # data must be downloaded from cluster
 # they can be found in dada2_plant_**ANALISIS_ID**/data/dada2/03_taxonomy/**ID**/**ID**_tax_assignation.rds"
 # download to project Data/dada2_outputs

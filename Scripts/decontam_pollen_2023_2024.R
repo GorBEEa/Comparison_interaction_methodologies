@@ -10,13 +10,13 @@ library(ggplot2); packageVersion("ggplot2")
 library(readxl)
 
 # Load data
-count_tab <- read.table(here("Data/dada2_outputs/2023_24_pollen_GorBEEa_ASVs_counts.tsv"), header=T, row.names=1,
+count_tab <- read.table(here("Data/dada2_outputs/2023_24_pollen_ASVs_counts.tsv"), header=T, row.names=1,
                         check.names=F, sep="\t")
 
-tax_tab <- as.matrix(read.table(here("Data/dada2_outputs/2023_24_pollen_GorBEEa_ASVs_taxonomy.tsv"), header=T,
+tax_tab <- as.matrix(read.table(here("Data/dada2_outputs/2023_24_pollen_ASVs_taxonomy.tsv"), header=T,
                                 row.names=1, check.names=F, sep="\t"))
 
-sample_info_tab <- read.delim(here("Data/dada2_outputs/2023_24_pollen_GorBEEa_sample_info.tsv"),
+sample_info_tab <- read.delim(here("Data/dada2_outputs/2023_24_pollen_sample_info.tsv"),
                               header=T, row.names=1, check.names=F, sep="\t")
 sample_info_tab$type[rownames(sample_info_tab) != "PBLANKP0101I_ITS"] <- "sample" #a correction. for some reason they all read as a negative control in type
 sample_info_tab <- sample_info_tab %>%

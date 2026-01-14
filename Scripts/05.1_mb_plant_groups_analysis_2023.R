@@ -1,7 +1,5 @@
-#Script to analyze groups of plant types relevant to pollinators detected by metabarcoding
-#chatGPT used to identify which of metabarcoding taxa were anemophilpous, which from groups:
-#grasses, woody plants, other herbaceous
-#results organized here
+#Script to analyze functional groups of plant types relevant to pollinators detected by metabarcoding
+
 
 #packages -------------------------------------------------------------
 #library(tidyverse)
@@ -159,9 +157,8 @@ pmb.taxa.sites <- get_nonzero_cols(smry.pmb.taxa.site, id_col = "site")
 pmb.taxa.periods <- get_nonzero_cols(smry.pmb.taxa.period, id_col = "period")
 
 
-#ask AI which of the resulting names are from anemophilous taxa - 
 
-#Luisja suggested analysis representing functional groups in a boxplot within the bar
+#LJ suggested analysis representing functional groups in a boxplot within the bar
 
 #guts
 #p1 woody: (4) Betula, Fagus, Platanus, Quercus

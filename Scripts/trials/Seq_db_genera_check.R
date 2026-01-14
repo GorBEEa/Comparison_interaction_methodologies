@@ -50,7 +50,7 @@ all.int.taxa.clean <- all.int.taxa.clean %>% distinct(Planta)
 #See which interaction taxa are in the metabarcoding results and the database taxa list
 #int_taxa_check$in_seq_db <- as.integer(all.int.taxa.clean$Planta %in% seq_db_df$taxa)
 #colnames(int_taxa_check) <- c("Plant", "Occurrence_in_mb_results","occurrence_in_ref_database")
-#write.csv(int_taxa_check, "Data/output/ref_seq_database_check.csv")
+#write.csv(int_taxa_check, "Data/ref_seq_database_check.csv")
 #head(int_taxa_check)
 
 
