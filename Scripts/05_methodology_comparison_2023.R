@@ -16,7 +16,7 @@ library(ggvenn)
 
 
 #Load data from methodologies (Scripts 01-04)
-load(file = here("Data/methodologies_data.RData"))
+#load(file = here("Data/methodologies_data.RData"))
 #or run 00_quickstart script or all scripts 01-04, 1 by 1
 
 
@@ -101,7 +101,7 @@ paste("Of the", nrow(poln.genus.hits.2023),"taxa detected in pollen metabarcodin
 #Venn diagram visualization of detection overlap ------------------------------------------------------
 
 taxa.all.methodologies <- list(
-  "Gut content\nMetabarcoding\n131 genera" = genus.hits.23$genus,
+  "Gut-content\nMetabarcoding\n131 genera" = genus.hits.23$genus,
   "Interactions\n27 genera" = gut.detected.int.genus$genus, #this works to give the correct N, but it's sketchy. There is probably a better way
   "Flower Count\n117 genera" = flower.count.genera$flower_genus,
   "Pollen\nMetabarcoding\n123 genera" = poln.genus.hits.2023$genus)
@@ -116,9 +116,9 @@ fig.venn <- ggvenn(taxa.all.methodologies,
   coord_cartesian(clip = "off") +
   theme(plot.title = element_text(face="bold", vjust = 2, hjust = 0.01))
 
-ggsave(here("results/venn.figure.jpeg"),fig.venn, width=10, height=9.35, units="in", dpi=300)
+ggsave(here("results/venn.figure.png"),fig.venn, width=10, height=9.35, units="in", dpi=300)
 
-fig.venn <- here("results/venn.figure.jpeg")
+fig.venn <- here("results/venn.figure.png")
 
 
 
@@ -248,8 +248,8 @@ all.plant.mds <- metaMDS(all.plants, distance = "raup", trace = FALSE)
 
 nmds_points <- as.data.frame(all.plant.mds$points)
 nmds_points <- nmds_points %>% 
-  mutate(methodology = methodology) # %>% 
-  #slice(-8) #if you want to remove the outlier for whatever reason
+  mutate(methodology = methodology)  %>% 
+  slice(-8) #if you want to remove the outlier for whatever reason
 method.colors2 <- c("count" ="slategrey",
                     "interaction" = "lightblue",
                     "gut.metabarcoding" = "forestgreen",
@@ -259,7 +259,7 @@ polygon_data <- nmds_points %>%
   group_by(methodology) %>%
   slice(chull(MDS1, MDS2))
 
-NMDS.title <- expression(paste("Composition of interaction plant community by methodology"))
+#NMDS.title <- expression(paste("Composition of interaction plant community by methodology"))
 
 NMDS.method.comparisons <- ggplot(nmds_points, aes(x = MDS1, y = MDS2, color = methodology, shape = methodology)) +
   geom_polygon(data = polygon_data, 
@@ -271,7 +271,7 @@ NMDS.method.comparisons <- ggplot(nmds_points, aes(x = MDS1, y = MDS2, color = m
                      labels = c(
                       "count" = "Flower count",
                       "interaction" = "Visitation observations",
-                      "gut.metabarcoding" = "Gut metabarcoding",
+                      "gut.metabarcoding" = "Gut-content metabarcoding",
                       "pollen.metabarcoding" = "Pollen metabarcoding")
                      ) + 
   scale_shape_manual(values = c(
@@ -282,18 +282,15 @@ NMDS.method.comparisons <- ggplot(nmds_points, aes(x = MDS1, y = MDS2, color = m
     labels = c(
       "count" = "Flower count",
       "interaction" = "Visitation observations",
-      "gut.metabarcoding" = "Gut metabarcoding",
+      "gut.metabarcoding" = "Gut-content metabarcoding",
       "pollen.metabarcoding" = "Pollen metabarcoding")) + 
   scale_fill_manual(values = method.colors2) +
   theme_classic() +  
-  labs(
-    title = NMDS.title,
-    x = "NMDS1",
+  labs(x = "NMDS1",
     y = "NMDS2",
     color = "Methodology",
     shape = "Methodology") +
-  theme(plot.title = element_text(hjust=0.5),
-        legend.position.inside = c(0.13, 0.85))
+  theme(legend.position.inside = c(0.13, 0.85))
 
 
 

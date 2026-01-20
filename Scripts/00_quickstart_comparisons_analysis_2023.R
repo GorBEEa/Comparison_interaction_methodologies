@@ -19,7 +19,7 @@ source(here("Scripts/04_pollen_metabarcoding_data_2023_2024.R"), echo = FALSE)
 #maybe there will be some errors and slow things
 #there is code that is not essential to continuing with further analysis
 
-save.image(file = here("Data/methodologies_data.RData"))
+#save.image(file = here("Data/methodologies_data.RData"))
 
 print("You may now close the quickstart script and open 05_methodology_comparison_2023.R. From there, you may proceed to analyze and compare all methodologies using data prepared from each.")
 

@@ -74,22 +74,20 @@ int.method.colors <- c("interaction" = "lightblue",
 
 
 #Figure comparing d' evolution over season by methodology
-fig.dprime.title <- expression(paste("Specialization of", italic(" B. pascuorum "), "over time as indicated by interaction methodology"))
-
 
 fig.dprime <- ggplot(specialization, aes(x = period, y = dprime, group = method,
                                          color = method, linetype = method, shape = method)) + 
   geom_line(size = 1.2) +
   geom_point(size = 3, alpha = 0.9) + 
   xlab("Sampling Period") +
-  ylab("d' specialization") +
+  ylab("d' Specialization") +
   scale_x_continuous(breaks = 1:6, labels = 1:6) + 
   scale_color_manual(
     values = int.method.colors,
     labels = c(
       "interaction" = "Interactions Transects",
       "pollen.metabarcoding" = "Pollen Metabarcoding",
-      "gut.metabarcoding" = "Gut Content Metabarcoding")) +
+      "gut.metabarcoding" = "Gut-content Metabarcoding")) +
   scale_shape_manual(
     values = c(
       "gut.metabarcoding" = 17,   
@@ -98,7 +96,7 @@ fig.dprime <- ggplot(specialization, aes(x = period, y = dprime, group = method,
     labels = c(
       "interaction" = "Interactions Transects",
       "pollen.metabarcoding" = "Pollen Metabarcoding",
-      "gut.metabarcoding" = "Gut Content Metabarcoding")) +
+      "gut.metabarcoding" = "Gut-content Metabarcoding")) +
   scale_linetype_manual(
     values = c(
       "gut.metabarcoding" = "solid",   
@@ -108,12 +106,11 @@ fig.dprime <- ggplot(specialization, aes(x = period, y = dprime, group = method,
     labels = c(
       "interaction" = "Interactions Transects",
       "pollen.metabarcoding" = "Pollen Metabarcoding",
-      "gut.metabarcoding" = "Gut Content Metabarcoding" )) +
+      "gut.metabarcoding" = "Gut-content Metabarcoding" )) +
   labs(color = "Methodology", shape = "Methodology", linetype = "Methodology") +
   geom_hline(yintercept = 1, linetype = "dashed", color = "black") + 
-  annotate("text", x = Inf, y = 0.9, label = "perfect specialist", 
+  annotate("text", x = Inf, y = 0.95, label = "perfect specialist", 
            hjust = 1.1, vjust = -0.5, color = "black", size = 4) +
-  ggtitle(fig.dprime.title) +
   theme_minimal() +
   theme(
     plot.title = element_text(face = "bold", hjust = 0.8)
@@ -234,7 +231,7 @@ fig.int.importance <- ggplot(int.most.important,
   scale_fill_gradientn(
     colours = my_palette,
     limits  = c(global_min, global_max)) +
-  ggtitle("A. Importance of plant taxa in interaction network")
+  ggtitle("A. Interaction transect-based network")
 
 
 #visualize "importance" results for gut contents ------------------------
@@ -251,7 +248,7 @@ fig.gmb.importance <- ggplot(gmb.most.important,
   scale_fill_gradientn(
     colours = my_palette,
     limits  = c(global_min, global_max)) +
-  ggtitle("B. Gut Content Metabarcoding")
+  ggtitle("B. Gut-content metabarcoding")
 
 
 #analyze importance results for pollen metabarcoding ----------------------------
@@ -267,7 +264,7 @@ fig.pmb.importance <- ggplot(pmb.most.important,
   scale_fill_gradientn(
     colours = my_palette,
     limits  = c(global_min, global_max)) +
-  ggtitle("C. Corbicular Pollen Metabarcoding")
+  ggtitle("C. Corbicular pollen metabarcoding")
 
 
 #the end ---------------------------

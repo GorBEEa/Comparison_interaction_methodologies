@@ -83,7 +83,7 @@ clean_results <- pairwise.results %>%
 
 # Create a markdown/HTML table suitable for reporting
 ppermanova.kbl <- kable(clean_results, 
-      col.names = c("Methodology 1", "Methodology 2", "DF1", "DF2", "R\u00B2", "F", "p", "Adjusted p"),
+      col.names = c("Methodology 1", "Methodology 2", "DF1", "DF2", "R\u00B2", "F", "\\textit{p}", "Adjusted \\textit{p}"),
       digits = 3) %>% 
   kable_minimal(full_width = F, html_font = "Cambria")
 

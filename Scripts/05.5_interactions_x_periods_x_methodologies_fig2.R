@@ -55,13 +55,12 @@ fig.methods.w.fc <- ggplot(int.gen.x.periods, aes(period, n.genera, fill = metho
   ylab("Number of Genera") +
   scale_x_continuous(breaks = 1:6, labels = 1:6) + 
   scale_fill_manual(values = method.colors, labels = c(
-    "n.genera.int" = "Interactions Transects",
-    "n.genera.pmb" = "Pollen Metabarcoding",
-    "n.genera.gmb" = "Gut Content Metabarcoding")) +
+    "n.genera.int" = "Interactions transects",
+    "n.genera.pmb" = "Pollen metabarcoding",
+    "n.genera.gmb" = "Gut-content metabarcoding")) +
   labs(fill = "Methodology", color = NULL , linetype = NULL) +
   theme(plot.title = element_text(hjust = 0.6),
-        axis.ticks.x = element_blank()) +
-  ggtitle("Interaction diversity by methodology") + 
+        axis.ticks.x = element_blank()) + 
   geom_line(
     data = fc.line,
     aes(x = period, y = mean.genera, linetype = "Flower Count"),
