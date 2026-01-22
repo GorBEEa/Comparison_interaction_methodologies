@@ -20,7 +20,7 @@ poln.2023.indv <- poln.2023.indv %>% relocate(ID) %>%
 gut.2023.indv <- bp23.genomic.analys #copy the existing gut mb data and clean it up for this analysis
 gut.2023.indv <- gut.2023.indv %>% 
   select(!c(year, specimen, color_p, color_s, type, plate, quant_reading, is.neg)) %>% 
-  mutate(type = rep("gut", 126)) %>% 
+  mutate(type = rep("gut", 122)) %>% 
   relocate(type, .after = sample)
 
 #Need to be able to match gut/pollen samples by specimen
@@ -28,6 +28,8 @@ IDS <- as.data.frame(read.csv2(here("Data/pollen_gut_id_match.csv"), sep = ","))
 IDS <- IDS %>% 
   rename(sample = Bombus_sample) %>% 
   rename(ID = sample_ID)
+#band-aid patch for removing two samples with 0 gut ASVs
+IDS <- IDS %>% filter(!sample %in% c("GBP23050403M","GBP23061405M"))
 
 #Isolate data for specimens with both sample types by reducing gut samples in analysis
 gut.w.poln.2023 <- left_join(IDS,gut.2023.indv, by = "sample")
@@ -89,15 +91,6 @@ n_by_sample_all_guts <- data.frame(
 n_by_sample_all_guts <- n_by_sample_all_guts %>% 
   mutate(period = as.integer(str_sub(ID, 6, 7)),
          site   = as.integer(str_sub(ID, 8, 9)))
-
-#summary of these data:
-individual.period.data <- n_by_sample_all_guts %>% group_by(period) %>% summarise(mean(n.taxa.g), sd(n.taxa.g))
-ggplot(individual.period.data, aes(x = factor(period), y = `mean(n.taxa.g)`)) +
-  geom_bar(stat = "identity") +
-  geom_errorbar(aes(ymin = `mean(n.taxa.g)` - `sd(n.taxa.g)`, ymax = `mean(n.taxa.g)` + `sd(n.taxa.g)`), 
-                width = 0.2, linewidth = 1) +
-  labs(x = "Period", y = "Mean taxa per sample", title = "Mean taxa per individual gut sample and standard deviation by period (2023)") +
-  theme_minimal()
 
 
 #Create a df that shows the number of shared taxa between the two methodologies by sample

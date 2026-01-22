@@ -63,6 +63,19 @@ bp.asv.tax.2023 <- tax_table.cl%>%
 bp.asv.genus.2023 <- bp.asv.tax.2023 %>% 
   select(asv_id,genus)
 
+#General sequencing data stats and information
+gbp.reads.23 <- read_tsv(here("Data/dada2_outputs/2023_ITS2_GBP23_R1_read_summary.tsv"))
+gbp.reads.23 <- as.data.frame(gbp.reads.23[1:126,])
+
+
+fig.gbp23.read.coverage <- ggplot(gbp.reads.23, aes(x = sample, y = reads)) +
+  geom_col(fill = "forestgreen", alpha = 0.8, width = 0.7) +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 80, hjust = 1)) +
+  labs(x = "Sample", y = "Reads") +
+  scale_y_continuous(labels = scales::comma) +
+  ggtitle("A.")
+
 #Look for genera that only correspond to one ASV. These could be contaminants/misidentified sequences
 #These can be confirmed by BLASTing the ASV sequence
 ASVs.per.Genus <- as.data.frame(table(bp.asv.genus.2023$genus))
@@ -80,6 +93,9 @@ load(file = here("Data/known.misIDs.RData")) #list of taxa that are either known
 bp.plant.asvNs.w.genus.2023 <- bp.plant.asvNs.w.genus.2023 %>% relocate(genus, .after = asv_id) %>%  #this is just to look and make sure it worked
   filter(!genus %in% known.misIDs) #remove taxa from the loaded list 
 
+#some samples have 0 ASVs - remove from analysis
+bp.plant.asvNs.w.genus.2023 <- bp.plant.asvNs.w.genus.2023 %>% select(!c(GBP23020802M_ITS_P96, GBP23021103M_ITS_P96, GBP23050403M_ITS_P48, GBP23061405M_ITS_P48))
+
 #create binary version
 binary.plant.asvNs.w.genus.2023 <- bp.plant.asvNs.w.genus.2023 %>% 
   relocate(genus, .after = asv_id) %>% 
@@ -94,6 +110,14 @@ bp.plant.asvgn.wide.2023 <- bp.plant.asvNs.w.genus.2023 %>%
   summarise(Count = sum(Count), .groups = "drop") %>%
   pivot_wider(names_from = genus, values_from = Count, values_fill = 0)
 
+#version of above for sampling completeness
+bp.plant.asv.reads.2023 <- bp.plant.asvNs.w.genus.2023 %>%
+  pivot_longer(cols = starts_with(c("GBP")), names_to = "sample", values_to = "Count") %>%
+  group_by(sample, asv_id) %>%
+  summarise(Count = sum(Count), .groups = "drop") %>%
+  pivot_wider(names_from = asv_id, values_from = Count, values_fill = 0)
+
+
 #combine all
 bp23.genomic.specs <- right_join(bp.2023, bp.plant.asvgn.wide.2023, by = "sample")
 bp23.genomic.specs <- bp23.genomic.specs %>%  
@@ -101,6 +125,63 @@ bp23.genomic.specs <- bp23.genomic.specs %>%
   mutate(period = str_extract(period, "\\d+"), period = as.integer(period)) %>% 
   mutate(site = str_extract(site, "\\d+"), site = as.integer(site)) %>% 
   select(-last_col()) #Check that this is removing the NA column and not something important
+
+
+# Look at sampling completeness
+
+gbp23.asv.list <- apply(bp.plant.asv.reads.2023, 1, function(x) as.numeric(x))
+#`apply` returns a matrix for numeric input, so convert to list
+gbp23.asv.list <- split(gbp23.asv.list, seq(nrow(bp.plant.asv.reads.2023)))
+# But `split` won’t work properly here; better do:
+gbp23.asv.list <- lapply(1:nrow(bp.plant.asv.reads.2023), function(i) as.numeric(bp.plant.asv.reads.2023[i, ]))
+names(gbp23.asv.list) <- rownames(bp.plant.asv.reads.2023)
+#NA control
+gbp23.asv.list <- lapply(gbp23.asv.list, function(x) {
+  x[is.na(x)] <- 0
+  x})
+
+# Now run iNEXT
+#some samples have 0 ASVs?
+z.rows <- bp.plant.asv.reads.2023 %>% filter(rowSums(across(2:last_col()), na.rm = TRUE) == 0)
+#they are low read count samples, but not the 0 ones...
+#actually, these are totally blank rows in the paper analysis
+
+#once you get it:
+#gbp23.asv.inext <- iNEXT(gbp23.asv.list, q = 0, datatype = "abundance", size = NULL)
+saveRDS(poln.asv.inext, file = here("Data/gbp23_inext_out"))
+
+# Plot results
+ggiNEXT(gbp23.asv.inext) +
+  theme(legend.position = "none")
+
+# Plot the rarefaction curves
+
+gbp23.rarefaction <- ggiNEXT(gbp23.asv.inext, type = 1) +
+  xlab("read count") +
+  ylab("ITS2 ASV diversity") +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  scale_color_viridis_d(option = "D", end = 0.9)
+
+
+gbp23.rarefaction$layers <- lapply(gbp23.rarefaction$layers, function(layer) {
+  if ("GeomLine" %in% class(layer$geom)) {
+    layer$aes_params$linewidth <- 1
+  }
+  layer})
+
+gbp23.rarefaction$layers <- gbp23.rarefaction$layers[
+  !sapply(gbp23.rarefaction$layers, function(l) inherits(l$geom, "GeomPoint"))
+]
+
+ggsave(here("results/gbp23_sampling_completeness.png"),
+       plot = gbp23.rarefaction,
+       width = 4,
+       height = 5,
+       dpi = 400)
+
+
+
 
 
 #manipulate and analyze data ------
@@ -233,3 +314,4 @@ bp23.genomic.sites <- bp23.genomic.analys %>%
        summarise(n_samples = n_distinct(sample),
                  n.genera = n_distinct(genus),
                  .groups = 'drop')
+

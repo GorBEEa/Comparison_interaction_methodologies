@@ -1,18 +1,19 @@
 #Script for manipulating and processing 2023 B. pascuorum ITS2 plant metabarcoding data
 
 #unblock these packages if not running after interaction_data (Recommended to run first)
-#library(readr)
-#library(here)
-#library(tidyverse)
-#library(tidyr)
-#library(tidyselect)
-#library(easystats)
-#library(visreg)
-#library(vegan)
-#library(viridis)
-#library(report)
-#library(DHARMa)
-#library(phyloseq) ; packageVersion("phyloseq")
+library(readr)
+library(here)
+library(tidyverse)
+library(tidyr)
+library(tidyselect)
+library(easystats)
+library(visreg)
+library(vegan)
+library(viridis)
+library(report)
+library(DHARMa)
+library(phyloseq) ; packageVersion("phyloseq")
+library(iNEXT)
 
 
 #Load Data -----
@@ -44,6 +45,18 @@ poln.asv.genus.2023.24 <- poln.asv.tax.2023.24 %>%
   select(asv_id,genus)
 
 
+#General sequencing data stats and information
+poln.reads.23 <- read_tsv(here("Data/dada2_outputs/2023_pollen_R1_read_summary.tsv"))
+poln.reads.23 <- as.data.frame(poln.reads.23[1:25,])
+
+
+fig.poln.read.coverage <- ggplot(poln.reads.23, aes(x = sample, y = reads)) +
+  geom_col(fill = "goldenrod1", alpha = 0.8, width = 0.7) +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 80, hjust = 1)) +
+  labs(x = "Sample", y = "Reads") +
+  scale_y_continuous(labels = scales::comma) +
+  ggtitle("B.")
 
 #Look for genera that only correspond to one ASV. These could be contaminants/misidentified sequences
 #These can be confirmed by BLASTing the ASV sequence
@@ -77,6 +90,13 @@ poln.asvgn.wide.2023.24 <- poln.asvNs.w.genus.2023.24 %>%
   summarise(Count = sum(Count), .groups = "drop") %>%
   pivot_wider(names_from = genus, values_from = Count, values_fill = 0)
 
+#version of above for sampling completeness
+poln.asvgn.wide.2023 <- poln.asvNs.w.genus.2023 %>%
+  pivot_longer(cols = starts_with(c("Y2")), names_to = "sample", values_to = "Count") %>%
+  group_by(sample, asv_id) %>%
+  summarise(Count = sum(Count), .groups = "drop") %>%
+  pivot_wider(names_from = asv_id, values_from = Count, values_fill = 0)
+
 #combine all
 poln23.24.genomic.specs <- right_join(poln.2023.24, poln.asvgn.wide.2023.24, by = "sample")
 poln23.24.genomic.specs <- poln23.24.genomic.specs %>% 
@@ -90,6 +110,56 @@ poln23.24.genomic.specs <- poln23.24.genomic.specs %>%
 #Just 2023
 poln.2023.genomic.specs <- poln23.24.genomic.specs %>% 
   filter(year == 2023)
+
+
+#look at sampling completeness ------------------------------------
+
+poln.asv.list <- apply(poln.asvgn.wide.2023, 1, function(x) as.numeric(x))
+#`apply` returns a matrix for numeric input, so convert to list
+poln.asv.list <- split(poln.asv.list, seq(nrow(poln.asvgn.wide.2023)))
+# But `split` won’t work properly here; better do:
+poln.asv.list <- lapply(1:nrow(poln.asvgn.wide.2023), function(i) as.numeric(poln.asvgn.wide.2023[i, ]))
+names(poln.asv.list) <- rownames(poln.asvgn.wide.2023)
+#NA control
+poln.asv.list <- lapply(poln.asv.list, function(x) {
+  x[is.na(x)] <- 0
+  x})
+# Now run iNEXT
+#poln.asv.inext <- iNEXT(poln.asv.list, q = 0, datatype = "abundance", size = NULL)
+saveRDS(poln.asv.inext, file = here("Data/poln_inext_out"))
+
+# Plot results
+ggiNEXT(poln.asv.inext) +
+  theme(legend.position = "none")
+
+# Plot the rarefaction curves
+
+poln23.rarefaction <- ggiNEXT(poln.asv.inext, type = 1) +
+  xlab("read count") +
+  ylab("ITS2 ASV diversity") +
+  theme_minimal() +
+  theme(legend.position = "none") +
+  scale_color_viridis_d(option = "D", end = 0.9)
+
+
+poln23.rarefaction$layers <- lapply(poln23.rarefaction$layers, function(layer) {
+  if ("GeomLine" %in% class(layer$geom)) {
+    layer$aes_params$linewidth <- 1
+    }
+  layer})
+
+poln23.rarefaction$layers <- poln23.rarefaction$layers[
+  !sapply(poln23.rarefaction$layers, function(l) inherits(l$geom, "GeomPoint"))
+]
+
+ggsave(here("results/poln23_sampling_completeness.png"),
+       plot = poln23.rarefaction,
+       width = 4,
+       height = 5,
+       dpi = 400)
+
+
+
 
 #manipulate and analyze data ------
 
