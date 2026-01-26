@@ -46,15 +46,16 @@ poln.asv.genus.2023.24 <- poln.asv.tax.2023.24 %>%
 
 
 #General sequencing data stats and information
-poln.reads.23 <- read_tsv(here("Data/dada2_outputs/2023_pollen_R1_read_summary.tsv"))
+poln.reads.23 <- read_tsv(here("Data/dada2_outputs/2023_pollen_R1_read_summary.tsv"), show_col_types = FALSE)
 poln.reads.23 <- as.data.frame(poln.reads.23[1:25,])
 
 
 fig.poln.read.coverage <- ggplot(poln.reads.23, aes(x = sample, y = reads)) +
   geom_col(fill = "goldenrod1", alpha = 0.8, width = 0.7) +
   theme_classic() +
-  theme(axis.text.x = element_text(angle = 80, hjust = 1)) +
-  labs(x = "Sample", y = "Reads") +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x=element_blank()) +
+  labs(x = "Samples (N = 25)", y = "Reads") +
   scale_y_continuous(labels = scales::comma) +
   ggtitle("B.")
 
@@ -72,6 +73,7 @@ poln.single.ASVs <- left_join(poln.single.ASVs, poln.asv.genus.2023.24, by = 'ge
 poln.asvNs.w.genus.2023.24 <- right_join(poln.asv.counts.2023.24,poln.asv.genus.2023.24, by = "asv_id")
 poln.asvNs.w.genus.2023.24 <- poln.asvNs.w.genus.2023.24 %>% relocate(genus, .after = asv_id) %>%  #this is just to look and make sure it worked
   filter(!genus %in% known.misIDs)
+poln.asvNs.w.genus.2023.24$genus[poln.asvNs.w.genus.2023.24$genus == "Chaetopogon"] <- "Agrostis"
 #Just 2023
 poln.asvNs.w.genus.2023 <- poln.asvNs.w.genus.2023.24 %>% select(asv_id, genus, starts_with("Y23"))
 
@@ -126,20 +128,19 @@ poln.asv.list <- lapply(poln.asv.list, function(x) {
   x})
 # Now run iNEXT
 #poln.asv.inext <- iNEXT(poln.asv.list, q = 0, datatype = "abundance", size = NULL)
-saveRDS(poln.asv.inext, file = here("Data/poln_inext_out"))
+#saveRDS(poln.asv.inext, file = here("Data/poln_inext_out")) #better to just save and reload if it is ok
+poln.asv.inext <- readRDS(here("Data/poln_inext_out"))
 
-# Plot results
-ggiNEXT(poln.asv.inext) +
-  theme(legend.position = "none")
-
-# Plot the rarefaction curves
+# Plot rarefaction curves
 
 poln23.rarefaction <- ggiNEXT(poln.asv.inext, type = 1) +
-  xlab("read count") +
-  ylab("ITS2 ASV diversity") +
+  xlab("read count") + 
+  ylab("") +
   theme_minimal() +
   theme(legend.position = "none") +
-  scale_color_viridis_d(option = "D", end = 0.9)
+  scale_color_viridis_d(option = "D", end = 0.9)+
+  ggtitle("B.")
+
 
 
 poln23.rarefaction$layers <- lapply(poln23.rarefaction$layers, function(layer) {
@@ -151,6 +152,8 @@ poln23.rarefaction$layers <- lapply(poln23.rarefaction$layers, function(layer) {
 poln23.rarefaction$layers <- poln23.rarefaction$layers[
   !sapply(poln23.rarefaction$layers, function(l) inherits(l$geom, "GeomPoint"))
 ]
+
+#poln23.rarefaction #peek
 
 ggsave(here("results/poln23_sampling_completeness.png"),
        plot = poln23.rarefaction,

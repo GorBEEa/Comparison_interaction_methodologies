@@ -9,7 +9,7 @@
 
 #Load Data -----
 
-flower.count.2023 <- read_csv(here("Data/flower_count_2023_int_trnsect_clean.csv")) #ty Estefanía for cleaning this already
+flower.count.2023 <- read_csv(here("Data/flower_count_2023_int_trnsect_clean.csv"), show_col_types = FALSE) #ty Estefanía for cleaning this already
 
 flower.count.2023 <- flower.count.2023 %>% 
   mutate(flower_genus = sapply(strsplit(as.character(Planta), " "), `[`, 1)) %>% 

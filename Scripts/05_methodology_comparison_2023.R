@@ -25,6 +25,7 @@ library(ggvenn)
 
 #Overlap in methodology communities ------------------------------------------------------------
 
+
 #Which interaction transect species were detected by gut metabarcoding 
 gut.detected.int.genus <- df.int.genus %>% distinct(genus) #Clean list of genera (27) from BP interactions
 gut.detected.int.genus$mb.detected <- as.integer(gut.detected.int.genus$genus %in% genus.hits.23$genus) #presence absence comparison
@@ -102,9 +103,9 @@ paste("Of the", nrow(poln.genus.hits.2023),"taxa detected in pollen metabarcodin
 
 taxa.all.methodologies <- list(
   "Gut-content\nMetabarcoding\n131 genera" = genus.hits.23$genus,
-  "Interactions\n27 genera" = gut.detected.int.genus$genus, #this works to give the correct N, but it's sketchy. There is probably a better way
+  "Interactions\n27 genera" = gut.detected.int.genus$genus, #this works to give the correct data, but it's sketchy. There is probably a better way
   "Flower Count\n117 genera" = flower.count.genera$flower_genus,
-  "Pollen\nMetabarcoding\n123 genera" = poln.genus.hits.2023$genus)
+  "Pollen\nMetabarcoding\n122 genera" = poln.genus.hits.2023$genus)
 
 
 fig.venn <- ggvenn(taxa.all.methodologies,
@@ -118,7 +119,6 @@ fig.venn <- ggvenn(taxa.all.methodologies,
 
 ggsave(here("results/venn.figure.png"),fig.venn, width=10, height=9.35, units="in", dpi=300)
 
-fig.venn <- here("results/venn.figure.png")
 
 
 
@@ -195,9 +195,7 @@ fig.methods.x.periods <- ggplot(long.gen.by.periods, aes(period, n.genera, fill 
     color = guide_legend(order = 2),
     linetype = guide_legend(order = 2)
   )
-  
 
-fig.methods.x.periods
 
 
 #Statistical analysis of methodologies --------------------------------------------------------------

@@ -8,6 +8,7 @@ library(tidyr)
 library(bipartite)
 library(treemap)
 library(viridis)
+library(circlize)
 
 #load data needed for analysis: 3 lists of detections
 # add flower count data for emphasis?
@@ -134,7 +135,7 @@ orderd.genera <- membership.orderd$genus
 
 
 circos.clear()
-circos.par(gap.after = c(rep(1, length(all_taxa) - 1), 5))
+circos.par(gap.after = c(rep(1, length(all.taxa) - 1), 5))
 
 circos.par(cell.padding = c(0, 0, 0, 0))
 circos.initialize(

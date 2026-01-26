@@ -48,6 +48,8 @@ fig.int.methods.x.periods <- ggplot(int.gen.x.periods, aes(period, n.genera, fil
 
 fc.line <- mean.lines %>% filter(LineType == "Flower Count")
 
+png(here("docs/manuscript_figures/interaction.diversity.periods.png"), width =2000, height = 1000, res = 300) 
+
 fig.methods.w.fc <- ggplot(int.gen.x.periods, aes(period, n.genera, fill = method)) + 
   geom_col(position = "Dodge", alpha = 0.8) + 
   theme_minimal() + 
@@ -68,9 +70,12 @@ fig.methods.w.fc <- ggplot(int.gen.x.periods, aes(period, n.genera, fill = metho
     linewidth = 1,
     inherit.aes = FALSE) +
   scale_linetype_manual(values = c("Flower Count" = "dotdash"))
-  
 
-ggsave(here("results/interaction.diversity.periods.png"),fig.methods.w.fc)
+fig.methods.w.fc
+
+dev.off()
+
+
 
 
 

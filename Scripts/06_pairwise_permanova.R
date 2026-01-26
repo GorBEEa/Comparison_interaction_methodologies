@@ -83,7 +83,7 @@ clean_results <- pairwise.results %>%
 
 # Create a markdown/HTML table suitable for reporting
 ppermanova.kbl <- kable(clean_results, 
-      col.names = c("Methodology 1", "Methodology 2", "DF1", "DF2", "R\u00B2", "F", "\\textit{p}", "Adjusted \\textit{p}"),
+      col.names = c("Methodology 1", "Methodology 2", "DF1", "DF2", "R\u00B2", "F", "p", "Adjusted p"),
       digits = 3) %>% 
   kable_minimal(full_width = F, html_font = "Cambria")
 
@@ -94,39 +94,39 @@ ppermanova.kbl <- kable(clean_results,
 #execute pairwise permanova using only interaction methodology data (no flower counts) -----
 
 #load and prepare my data for using this function
-load(here("Data/05.4_output.RData"))
+#load(here("Data/05.4_output.RData"))
 
-int3.plants.matrix <- as.matrix(int3.plants)
+#int3.plants.matrix <- as.matrix(int3.plants)
 
-int3.pairwise.results <- pairwise_permanova(int3.plants.matrix, methodology)
+#int3.pairwise.results <- pairwise_permanova(int3.plants.matrix, methodology)
 
 #Make a cleaner visual of results
-int3_clean_results <- int3.pairwise.results %>%
+#int3_clean_results <- int3.pairwise.results %>%
   # Remove rows with NA in p_value or F_value (likely redundant summary rows)
-  filter(!is.na(p_value) & !is.na(F_value)) %>%
+ # filter(!is.na(p_value) & !is.na(F_value)) %>%
   
   # Round numeric columns nicely for display
-  mutate(
-    R2 = round(R2, 3),
-    F_value = round(F_value, 2),
-    p_value = signif(p_value, 3),
-    p_adj = signif(p_adj, 3)
-  ) %>%
+#  mutate(
+ #   R2 = round(R2, 3),
+  #  F_value = round(F_value, 2),
+   # p_value = signif(p_value, 3),
+    #p_adj = signif(p_adj, 3)
+#  ) %>%
   
   # Add significance stars
-  mutate(significance = case_when(
-    p_adj <= 0.001 ~ "***",
-    p_adj <= 0.01 ~ "**",
-    p_adj <= 0.05 ~ "*",
-    TRUE ~ ""
-  ))
+#  mutate(significance = case_when(
+ #   p_adj <= 0.001 ~ "***",
+  #  p_adj <= 0.01 ~ "**",
+   # p_adj <= 0.05 ~ "*",
+    #TRUE ~ ""
+#  ))
 
 # Create a markdown/HTML table suitable for reporting
-int3.ppermanova.kbl <- kable(int3_clean_results, 
-                        col.names = c("Group 1", "Group 2", "R\u00B2", "F value", "df1", "df2", "p value", "Adjusted p value", "Significance"),
-                        caption = "Pairwise PERMANOVA Results",
-                        digits = 3) %>% 
-  kable_minimal(full_width = F, html_font = "Cambria")
+#int3.ppermanova.kbl <- kable(int3_clean_results, 
+                        #col.names = c("Group 1", "Group 2", "R\u00B2", "F value", "df1", "df2", "p value", "Adjusted p value", "Significance"),
+                        #caption = "Pairwise PERMANOVA Results",
+                       # digits = 3) %>% 
+ # kable_minimal(full_width = F, html_font = "Cambria")
 
 
 

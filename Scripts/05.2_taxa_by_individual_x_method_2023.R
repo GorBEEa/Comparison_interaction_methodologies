@@ -15,6 +15,7 @@ poln.2023.indv <- poln.2023.indv %>% relocate(ID) %>%
   select(!c(sample, year, period, site, specimen, color_p, color_s, type, plate, quant_reading, is.neg)) %>% 
   mutate(type = rep("pollen", 25))%>% 
   relocate(type, .after = ID)
+poln.2023.indv <- poln.2023.indv %>% filter(!ID %in% c("Y23050403P","Y23061405P")) #rm 2 samples with no gut pair
 
 #Bring gut metabarcoding data in and format for this analysis
 gut.2023.indv <- bp23.genomic.analys #copy the existing gut mb data and clean it up for this analysis
@@ -176,6 +177,11 @@ permanova.2023.indv.x.sample <- adonis2(mb2x.2023.indv.plants ~ mb2x.2023.indv.m
   method = "raup",
   strata = sample_blocks)
 
+#chatgpt thinks I should do this: adonis2(mb2x.2023.indv.plants ~ mb2x.2023.indv.methodology + ID, permutations = 999,binary = TRUE, method = "raup",by = "margin")
+#it answers a different question: “After accounting for how different specimens are overall, does method still explain a meaningful fraction of remaining multivariate variance?”
+#current code asks: “Are communities from method A and B consistently different within specimens, regardless of how different specimens are from each other?”
+
+
 indv.permanova.kbl <- permanova.2023.indv.x.sample %>% 
   kbl(caption = "Specimen level comparison of plant community between metabarcoding methodologies") %>% 
   kable_minimal(full_width = F, html_font = "Cambria")
@@ -184,6 +190,34 @@ indv.permanova.kbl <- permanova.2023.indv.x.sample %>%
 dist.mb2x.2023.indv.plants <- vegdist(mb2x.2023.indv.plants, method = "raup", binary = TRUE)
 indiv.disp <- betadisper(dist.mb2x.2023.indv.plants, clean4stats.mb2x.2023.indv$type)
 permutest(indiv.disp)
+
+
+#Per MKD recommendation - visualize this with a paired nMDS
+
+set.seed(123)
+
+nmds_mb2x <- metaMDS(
+  dist.mb2x.2023.indv.plants,
+  k = 2,
+  trymax = 100,
+  autotransform = FALSE,
+  trace = FALSE)
+
+nmds_mb2x$stress 
+#kinda high, be very clear about this
+
+nmds_mb2x_points <- as.data.frame(nmds_mb2x$points)
+nmds_mb2x_points <- nmds_mb2x_points %>%
+  mutate(methodology = mb2x.2023.indv.methodology)
+
+fig_nmds_mb2x <- ggplot(nmds_mb2x_points, aes(x = MDS1, y = MDS2, color = methodology)) +
+  geom_point(size = 3)
+
+
+scores_df$ID     <- clean4stats.mb2x.2023.indv$ID
+scores_df$method <- clean4stats.mb2x.2023.indv$type
+scores_df <- scores_df %>% filter(!ID %in% c("Y23050403P","Y23061405P"))#removal of unpaired samples didn't propagate to here
+
 
 save.image(file = here("Data/05.2_output.RData"))
 

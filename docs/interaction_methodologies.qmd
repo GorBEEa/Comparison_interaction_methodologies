@@ -1,5 +1,5 @@
 ---
-format:
+format: 
   pdf:
     pdf-engine: lualatex
     mainfont: "Times New Roman"
@@ -18,7 +18,7 @@ execute:
   warning: false
 ---
 
-**Key-words:** *Apidae*, Amplicon sequencing, Interaction, Metabarcoding, Network, Pollinator, Plant-pollinator interaction, Gut microbiome
+**Key-words:** Apidae, Amplicon sequencing, Interaction, Metabarcoding, Network, Pollinator, Plant-pollinator interaction, Gut microbiome
 
 **Abstract**
 
@@ -48,7 +48,7 @@ Our objective is to determine whether a combined methodological approach can pro
 
 **2. Methods**
 
-Our sample collection was conducted in Gorbeia Natural Park (coord: 43.068, -2.796) , a protected area in northern Spain. Within Gorbeia, we selected 16 sampling sites located within the mixed zones of meadows and shrublands found at higher elevations. We conducted fieldwork from early April to the end of July, 2023 covering the main flowering period and peak annual pollinator activity in Gorbeia. On each sampling day during this timeframe, we visited field sites in pairs. Sampling days were organized into six periods, in which we sampled each site pair once per period. We conducted three types of surveys during daily peaks of pollinator activity, including floral diversity surveys (“flower counts”), interaction transect surveys, and *Bombus pascuorum* specimen collection for amplicon sequencing analyses.
+Our sample collection was conducted in Gorbeia Natural Park (coord: 43.068, -2.796) , a protected area in northern Spain, under permission from local authorities (Bizkaiko foru aldundia, Reference: 2023AM36 ). Within Gorbeia, we selected 16 sampling sites located within the mixed zones of meadows and shrublands found at higher elevations. We conducted fieldwork from early April to the end of July, 2023 covering the main flowering period and peak annual pollinator activity in Gorbeia. On each sampling day during this timeframe, we visited field sites in pairs. Sampling days were organized into six periods, in which we sampled each site pair once per period. We conducted three types of surveys during daily peaks of pollinator activity, including floral diversity surveys (“flower counts”), interaction transect surveys, and *Bombus pascuorum* specimen collection for amplicon sequencing analyses.
 
 *Interaction transects and floral resource availability surveys* 
 
@@ -68,7 +68,7 @@ DNA was extracted from pollen pellets (N = 25) using the Machery-Nagel NucleoSpi
 
 *Amplicon sequencing* 
 
-We used a dual-indexed amplicon multiplexing approach to generate our metabarcoding library, as described previously by @donald2022. Briefly, we performed a first step amplification using the Nex-F & Nex-R tagged internal transcribed spacer 2 primer pair, ITS-S2F [@chen2010] and ITS4R [@white1990], with the following modifications: (1) 3-6 N-mers to increase sequence base diversity and (2) linker sequences that complement index linker. Amplified products were checked on a 1% agarose gel for successful amplification. The resulting amplicons were used as template in the second-step PCR where unique 8-mer indices and illumina p5/p7 sequencing primers were attached. Amplicons were checked for successful amplification as above, purified, normalised and size selected using SPRI-beads, and pooled equi-volume to generate the amplicon library. The resulting library was quantified using Qubit HS kit and functional library was estimated using Colibri qPCR assay. Final library was sequenced on the illumina MiSeq 3000 instrument for 300 cycles in paired-end mode at the Ecological Genetics laboratory, Bioeconomy Science Institute, Auckland, New Zealand. Detailed methods provided in Supporting Information
+We used a dual-indexed amplicon multiplexing approach to generate our metabarcoding library, as described previously by @donald2022. Briefly, we performed a first step amplification using the Nex-F & Nex-R tagged internal transcribed spacer 2 primer pair, ITS-S2F [@chen2010] and ITS4R [@white1990], with the following modifications: (1) 3-6 N-mers to increase sequence base diversity and (2) linker sequences that complement index linker. Amplified products were checked on a 1% agarose gel for successful amplification. The resulting amplicons were used as template in the second-step PCR where unique 8-mer indices and illumina p5/p7 sequencing primers were attached. Amplicons were checked for successful amplification as above, purified, normalised and size selected using SPRI-beads, and pooled equi-volume to generate the amplicon library. The resulting library was quantified using Qubit HS kit and functional library was estimated using Colibri qPCR assay. Final library was sequenced on the illumina MiSeq 3000 instrument for 300 cycles in paired-end mode at the Ecological Genetics laboratory, Bioeconomy Science Institute, Auckland, New Zealand (Detailed methods provided in Supporting Information).
 
 *Bioinformatics: taxonomic assignment and contaminant analysis*
 
@@ -106,11 +106,7 @@ Within our flower count surveys we registered a total of 117 flowering herbaceou
 
 *Comparison of interaction detection by methodology* 
 
-Pollen metabarcoding detected 5,160 ASVs within 2,506,925 reads
-
-Gut-content metabarcoding detected 2,302 ASVs
-
-Both metabarcoding methodologies detected multiple unique taxa (33 taxa for gut contents and 30 for corbicular pollen), while interaction transects did not detect any unique interactions (Fig. 1). The two metabarcoding methodologies shared `{r} nrow(genus.hits.23)-nrow(in.gmb.not.pmb)` common plant genera, representing `{r}  trunc(((nrow(poln.genus.hits.2023)-nrow(in.pmb.not.gmb))/nrow(poln.genus.hits.2023))*100)`% of the total corbicular pollen diversity and `{r} trunc(((nrow(genus.hits.23)-nrow(in.gmb.not.pmb))/nrow(genus.hits.23))*100)`% of the gut content diversity.
+Between all pollen metabarcoding samples, we obtained 5,160 ASVs within 2,506,925 reads, while in 122 of the gut-content metabarcoding samples, we identified 2,302 ASVs from 2,973,224 reads (See Supporting Information). Before quality screening of results, 251 taxa were identified by both metabarcoding methodologies in total. After screening, 170 total taxa remained identified within our data. Both metabarcoding methodologies detected multiple unique taxa (33 taxa for gut contents and 30 for corbicular pollen), while interaction transects did not detect any unique interactions (Fig. 1). The two metabarcoding methodologies shared `{r} nrow(genus.hits.23)-nrow(in.gmb.not.pmb)` common plant genera, representing `{r}  trunc(((nrow(poln.genus.hits.2023)-nrow(in.pmb.not.gmb))/nrow(poln.genus.hits.2023))*100)`% of the total corbicular pollen diversity and `{r} trunc(((nrow(genus.hits.23)-nrow(in.gmb.not.pmb))/nrow(genus.hits.23))*100)`% of the gut content diversity.
 
 ```{r, echo=FALSE, out.width="100%"}
 include_graphics("manuscript_figures/venn.figure.png")
@@ -128,7 +124,7 @@ include_graphics("manuscript_figures/interaction.diversity.periods.png")
 
 *Functional diversity observations*
 
-The design of interaction transects only included taxa from the entomophilous community, while both metabarcoding methodologies detected taxa from the anemophilous community as well, representing 28% (N = 41) of the total identified plant genera between the two methodologies. Among these were 20 genera from *Poaceae*, nine tree or woody plant genera, and 12 other herbaceous genera (See Supporting Information Fig. S2). During periods one, two, and six—when gut-content metabarcoding detected more taxa than the entomophilous community recorded in transects—an average of 13% of those taxa were anemophilous or partially anemophilous (See Supporting Information).
+The design of interaction transects only included taxa from the entomophilous community, while both metabarcoding methodologies detected taxa from the anemophilous community as well, representing 28% (N = 41) of the total identified plant genera between the two methodologies. Among these were 20 genera from *Poaceae*, nine tree or woody plant genera, and 12 other herbaceous genera (See Supporting Information Fig. S3). During periods one, two, and six—when gut-content metabarcoding detected more taxa than the entomophilous community recorded in transects—an average of 13% of those taxa were anemophilous or partially anemophilous (See Supporting Information, Fig. S4).
 
 *Plant community composition across methodologies*
 
@@ -148,7 +144,7 @@ include_graphics("manuscript_figures/nMDS.method.comparisons.png")
 
 *Gut-content vs. pollen-derived plant communities from paired samples*
 
-Comparing metabarcoding results from the same specimens, gut contents yielded fewer taxa (mean = `{r} trunc(mean(total.taxa.specimen$n.taxa.g))` genera, sd = `{r} trunc(sd(total.taxa.specimen$n.taxa.g))`) than pollen samples (mean = `{r} trunc(mean(total.taxa.specimen$n.taxa.p))` genera, sd = `{r} trunc(sd(total.taxa.specimen$n.taxa.p))`). On average, only `{r} trunc((mean(total.taxa.specimen$shared_count)/mean(total.taxa.specimen$total.per.specimen))*100)`% of taxa (mean = `{r} trunc(mean(total.taxa.specimen$shared_count))` genera, sd = `{r} trunc(sd(total.taxa.specimen$shared_count))`) were shared between the two sample types. A PERMANOVA with specimen as a blocking factor indicated a difference in the plant community observed by both sample types (See Supporting Information Table S2) explaining 18% of the variation between gut- and pollen-based detections. Data used in this comparison were similarly dispersed (distance to centroid = 0.08), with no difference between the two groups observed by a permutest.
+Comparing metabarcoding results from the same specimens, gut contents yielded fewer taxa (mean = `{r} trunc(mean(total.taxa.specimen$n.taxa.g))` genera, sd = `{r} trunc(sd(total.taxa.specimen$n.taxa.g))`) than pollen samples (mean = `{r} trunc(mean(total.taxa.specimen$n.taxa.p))` genera, sd = `{r} trunc(sd(total.taxa.specimen$n.taxa.p))`). On average, only `{r} trunc((mean(total.taxa.specimen$shared_count)/mean(total.taxa.specimen$total.per.specimen))*100)`% of taxa (mean = `{r} trunc(mean(total.taxa.specimen$shared_count))` genera, sd = `{r} trunc(sd(total.taxa.specimen$shared_count))`) were shared between the two sample types. A PERMANOVA with specimen as a blocking factor indicated a difference in the plant community observed by both sample types (See Supporting Information Table S2) explaining 16% of the variation between gut- and pollen-based detections. Data used in this comparison were similarly dispersed (distance to centroid = 0.08), with no difference between the two groups observed by a permutest.
 
 *Species level interaction network*
 
@@ -170,13 +166,13 @@ fig.pmb.importance
 
 *Combined interaction network*
 
-We combined the results from each interaction methodology to create an interaction network for *B. pascuorum* with links defined by interaction outcomes, including consumption, transport, and visitation (Fig. 6). This single species network included 169 nodes, increasing the number of taxa included in the network compared to individual methodology constructed networks. Additionally, each plant taxa received up to three links, including link metadata for interaction outcomes in the network. In total, the network contained 281 descriptive links.
+We combined the results from each interaction methodology to create an interaction network for *B. pascuorum* with links defined by interaction outcomes, including consumption, transport, and visitation (Fig. 6). This single species network included 170 nodes, increasing the number of taxa included in the network compared to individual methodology constructed networks. Additionally, each plant taxa received up to three links, including link metadata for interaction outcomes in the network. In total, the network contained 281 descriptive links.
 
 ```{r, echo=FALSE, out.width="100%"}
 include_graphics("manuscript_figures/THE_GBP_composite_network.jpg")
 ```
 
-***Figure 6.** Combined interaction network for Bombus pascuorum including all interaction plant taxa detected by three methodologies. Interaction transect observations are represented by visitation, corbicular pollen metabarcoding observation by transport, and gut-content metabarcoding observations by consumption. The network includes 169 plant genera, each with up to three links describing the outcomes of interactions with the single pollinator species. Interactions providing links represent the presence or absence of any interaction observation within the dataset of a given methodology.*
+***Figure 6.** Combined interaction network for Bombus pascuorum including all interaction plant taxa detected by three methodologies. Interaction transect observations are represented by visitation, corbicular pollen metabarcoding observation by transport, and gut-content metabarcoding observations by consumption. The network includes 170 plant genera, each with up to three links describing the outcomes of interactions with the single pollinator species. Interactions providing links represent the presence or absence of any interaction observation within the dataset of a given methodology.*
 
 **4. Discussion**
 
@@ -192,9 +188,7 @@ Between the two metabarcoding approaches, gut-content metabarcoding captured gre
 
 *Metabarcoding observes forage across functional groups*
 
-The diversity of plant groups observed within our metabarcoding data, especially the temporal changes in diversity observed by gut-content metabarcoding, indicated that *B. pascuorum* forages on different plant taxa than previously expected. Our reference database for metabarcoding allowed us to identify taxa from functional groups beyond the floral community sampled in our transects (See Supporting Information). Through metabarcoding, we observed interactions with a variety of taxa outside of the entomophilous meadow and shrubland plant community, including trees and shrubs, grasses, and other herbaceous plants. 
-
-Our observations of anemophilous plant interactions are supported by previously documented records for *Bombus* species [@ibiyemi2025; @selva2024; @milla2022; @wood2022; @timberlake2024; @devere2017; @tanaka2020; @terrell1984; @pojar1973], and have especially intriguing implications for bumblebee forage behavior. Previous studies using external pollen metabarcoding have removed wind-pollinated taxa from their analyses under the argument that wind-borne pollen in samples may represent false positive interactions [@tanaka2020; @pornon2017; @negri2015]. Our gut-content results, however, caution against the practice of removing these taxa as contaminants, especially if using external pollen loads as standalone proxies for forage networks. 
+The diversity of plant groups observed within our metabarcoding data, especially the temporal changes in diversity observed by gut-content metabarcoding, indicated that *B. pascuorum* forages on different plant taxa than previously expected. Through metabarcoding, we observed interactions with a variety of taxa outside of the entomophilous meadow and shrubland plant community, including trees and shrubs, grasses, and other herbaceous plants. Our observations of anemophilous plant interactions are supported by previously documented records for *Bombus* species [@ibiyemi2025; @selva2024; @milla2022; @wood2022; @timberlake2024; @devere2017; @tanaka2020; @terrell1984; @pojar1973], and have especially intriguing implications for bumblebee forage behavior. Previous studies using external pollen metabarcoding have removed wind-pollinated taxa from their analyses under the argument that wind-borne pollen in samples may represent false positive interactions [@tanaka2020; @pornon2017; @negri2015]. Our gut-content results, however, caution against the practice of removing these taxa as contaminants, especially if using external pollen loads as standalone proxies for forage networks. 
 
 The presence of DNA from anemophilous taxa within gut samples suggests that interactions with these taxa may be more than coincidental interactions with pollen in the environment. Indeed, beyond consumption for adult nutrition, there are previous indications that pollen from flowering trees supports colony establishment success and low larval mortality [@wood2022]. Our results support the hypothesis that most bumblebees forage selectively for consumption and transport of high quality pollen [@ruedenauer2016; @timberlake2024], adapting their forage to take advantage of the best available resources as they change with environmental variability [@selva2024]. While it is possible that some plant material may be transported or consumed incidentally [@arstingstall2021], the taxa detected within *B. pascuorum* gut contents and corbicular pollen form part of the web of biodiversity that supports the species and possibly other pollinators. Our detection of anemophilous plant DNA in both metabarcoding methodologies indicates that *B. pascuorum,* and perhaps other bumblebee species, may intentionally forage on these taxa to meet nutritional needs at various life stages.
 
@@ -202,7 +196,9 @@ Existing hypotheses for pollinator forage adaptations in response to environment
 
 *Metabarcoding offers individual level analysis*
 
-Our comparative analyses understate the resolution of the metabarcoding derived data. We aggregated detections by sampling day to balance effort across methods, overlooking the individual-level detail that metabarcoding can provide. When we compared taxa detected from paired pollen and gut samples at the individual level, overlap was low, revealing a difference between sample sources that was not apparent in comparisons of aggregated data. This difference likely reflects the different roles of corbicular pollen and immediately consumed pollen in the nutrition needed for different life-cycle stages [@vaudo2015]. Taxa repeatedly detected by both methods increased confidence in their importance. For instance, the consistent appearance of *Vicia* in both sample types early in the season supports field observations of a strong association between *B. pascuorum* and *Vicia* species (Artamendi et al., unpublished data), underscoring the value of integrating field surveys with laboratory-based methods.
+Our comparative analyses understate the resolution of the metabarcoding derived data. We aggregated detections by sampling day to balance effort across methods, overlooking the individual-level detail that metabarcoding can provide. When we compared taxa detected from paired pollen and gut samples at the individual level, overlap was low, revealing a difference between sample sources that was not apparent in comparisons of aggregated data. This difference likely reflects the different roles of corbicular pollen and immediately consumed pollen in the nutrition needed for different life-cycle stages [@vaudo2015]. Taxa repeatedly detected by both methods increased confidence in their importance. For instance, the consistent appearance of *Vicia* in both sample types early in the season supports field observations of a strong association between *B. pascuorum* and *Vicia* species (Artamendi et al., unpublished data), again underscoring the value of integrating field surveys with laboratory-based methods.
+
+Despite the greater depth and resolution that metabarcoding provides to network characterization, it must be acknowledged that the methodology is imperfect. Primer and marker biases result in preferential amplification of certain sequences, making some taxa more or less likely to appear in final results. We also chose to use the ITS2 region as a target for amplicon sequencing, while other viable marker genes provided competitive options for targeting plant taxa [@espinosaprieto2024], and could have yielded different results. Finally our reference database was inevitably likely to have been incomplete or unbalanced in terms of available sequences for matching our data to ASVs and taxa. In response to these limitations, we further suggest that combination with other interaction methodologies is likely to be the most effective way to overcome inherent methodological oversights.
 
 *Conclusions*
 

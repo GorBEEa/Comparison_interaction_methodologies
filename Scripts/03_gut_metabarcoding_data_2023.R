@@ -14,6 +14,7 @@ library(viridis)
 library(report)
 library(DHARMa)
 library(phyloseq) ; packageVersion("phyloseq")
+library(iNEXT)
 
 
 #Load Data ----
@@ -38,8 +39,8 @@ library(phyloseq) ; packageVersion("phyloseq")
 #the data used in this script are outputs from decontam_gut_plant_2023.R
 
 plant.decontam0.5 <- readRDS(here("Data/gbp23.plant.decontam.0.5.RDS")) #all data in phyloseq format from strict decontam filter (th = 0.5) THESE ARE THE DATA USED IN THE FINAL ANALYSIS
-plant.decontam0.1 <- readRDS(here("Data/gbp23.plant.decontam.0.1.RDS")) #all data in phyloseq format from less strict decontam filter (th = 0.1)
-long.plant.decontam0.5 <- readRDS(here("Data/long.gbp23.plant.decontam.0.5.RDS")) #all data from ITS2 specific dada2 analysis in phyloseq format from strict decontam filter (th = 0.5)
+#plant.decontam0.1 <- readRDS(here("Data/gbp23.plant.decontam.0.1.RDS")) #all data in phyloseq format from less strict decontam filter (th = 0.1)
+#long.plant.decontam0.5 <- readRDS(here("Data/long.gbp23.plant.decontam.0.5.RDS")) #all data from ITS2 specific dada2 analysis in phyloseq format from strict decontam filter (th = 0.5)
 
 
 
@@ -64,15 +65,16 @@ bp.asv.genus.2023 <- bp.asv.tax.2023 %>%
   select(asv_id,genus)
 
 #General sequencing data stats and information
-gbp.reads.23 <- read_tsv(here("Data/dada2_outputs/2023_ITS2_GBP23_R1_read_summary.tsv"))
+gbp.reads.23 <- read_tsv(here("Data/dada2_outputs/2023_ITS2_GBP23_R1_read_summary.tsv"), show_col_types = FALSE)
 gbp.reads.23 <- as.data.frame(gbp.reads.23[1:126,])
 
 
 fig.gbp23.read.coverage <- ggplot(gbp.reads.23, aes(x = sample, y = reads)) +
   geom_col(fill = "forestgreen", alpha = 0.8, width = 0.7) +
   theme_classic() +
-  theme(axis.text.x = element_text(angle = 80, hjust = 1)) +
-  labs(x = "Sample", y = "Reads") +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x=element_blank()) +
+  labs(x = "Samples (N = 126)", y = "Reads") +
   scale_y_continuous(labels = scales::comma) +
   ggtitle("A.")
 
@@ -100,7 +102,7 @@ bp.plant.asvNs.w.genus.2023 <- bp.plant.asvNs.w.genus.2023 %>% select(!c(GBP2302
 binary.plant.asvNs.w.genus.2023 <- bp.plant.asvNs.w.genus.2023 %>% 
   relocate(genus, .after = asv_id) %>% 
   mutate(across(GBP23010301M_ITS_P48:last_col(), ~ifelse(. > 0, 1, 0))) %>% 
-  mutate(indiv.w.signal = rowSums(across(GBP23010301M_ITS_P48:GBP23061405M_ITS_P48))) %>% 
+  mutate(indiv.w.signal = rowSums(across(GBP23010301M_ITS_P48:last_col()))) %>% # a column that counts asv occurence across samples
   relocate(indiv.w.signal, .after = genus) 
 
 #transpose to be able to combine with other BP data
@@ -109,13 +111,6 @@ bp.plant.asvgn.wide.2023 <- bp.plant.asvNs.w.genus.2023 %>%
   group_by(sample, genus) %>%
   summarise(Count = sum(Count), .groups = "drop") %>%
   pivot_wider(names_from = genus, values_from = Count, values_fill = 0)
-
-#version of above for sampling completeness
-bp.plant.asv.reads.2023 <- bp.plant.asvNs.w.genus.2023 %>%
-  pivot_longer(cols = starts_with(c("GBP")), names_to = "sample", values_to = "Count") %>%
-  group_by(sample, asv_id) %>%
-  summarise(Count = sum(Count), .groups = "drop") %>%
-  pivot_wider(names_from = asv_id, values_from = Count, values_fill = 0)
 
 
 #combine all
@@ -127,8 +122,17 @@ bp23.genomic.specs <- bp23.genomic.specs %>%
   select(-last_col()) #Check that this is removing the NA column and not something important
 
 
-# Look at sampling completeness
+# Look at sampling completeness -------------------
 
+#organize data as above to look at ASVs instead of taxa
+bp.plant.asv.reads.2023 <- bp.plant.asvNs.w.genus.2023 %>%
+  pivot_longer(cols = starts_with(c("GBP")), names_to = "sample", values_to = "Count") %>%
+  group_by(sample, asv_id) %>%
+  summarise(Count = sum(Count), .groups = "drop") %>%
+  pivot_wider(names_from = asv_id, values_from = Count, values_fill = 0)
+
+
+#format for iNEXT
 gbp23.asv.list <- apply(bp.plant.asv.reads.2023, 1, function(x) as.numeric(x))
 #`apply` returns a matrix for numeric input, so convert to list
 gbp23.asv.list <- split(gbp23.asv.list, seq(nrow(bp.plant.asv.reads.2023)))
@@ -140,28 +144,21 @@ gbp23.asv.list <- lapply(gbp23.asv.list, function(x) {
   x[is.na(x)] <- 0
   x})
 
-# Now run iNEXT
-#some samples have 0 ASVs?
-z.rows <- bp.plant.asv.reads.2023 %>% filter(rowSums(across(2:last_col()), na.rm = TRUE) == 0)
-#they are low read count samples, but not the 0 ones...
-#actually, these are totally blank rows in the paper analysis
-
-#once you get it:
+# Now run iNEXT (takes a while)
 #gbp23.asv.inext <- iNEXT(gbp23.asv.list, q = 0, datatype = "abundance", size = NULL)
-saveRDS(poln.asv.inext, file = here("Data/gbp23_inext_out"))
+#saveRDS(gbp23.asv.inext, file = here("Data/gbp23_inext_out")) #better to just save and reload if it is ok
+gbp23.asv.inext <- readRDS(here("Data/gbp23_inext_out"))
 
-# Plot results
-ggiNEXT(gbp23.asv.inext) +
-  theme(legend.position = "none")
 
-# Plot the rarefaction curves
-
+# Plot rarefaction curves
 gbp23.rarefaction <- ggiNEXT(gbp23.asv.inext, type = 1) +
   xlab("read count") +
   ylab("ITS2 ASV diversity") +
   theme_minimal() +
   theme(legend.position = "none") +
-  scale_color_viridis_d(option = "D", end = 0.9)
+  scale_color_viridis_d(option = "A", end = 0.9) +
+  ggtitle("A.")
+
 
 
 gbp23.rarefaction$layers <- lapply(gbp23.rarefaction$layers, function(layer) {
@@ -173,6 +170,8 @@ gbp23.rarefaction$layers <- lapply(gbp23.rarefaction$layers, function(layer) {
 gbp23.rarefaction$layers <- gbp23.rarefaction$layers[
   !sapply(gbp23.rarefaction$layers, function(l) inherits(l$geom, "GeomPoint"))
 ]
+
+gbp23.rarefaction #peek
 
 ggsave(here("results/gbp23_sampling_completeness.png"),
        plot = gbp23.rarefaction,

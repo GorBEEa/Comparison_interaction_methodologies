@@ -14,7 +14,7 @@ library(visreg)
 library(vegan)
 
 #load interaction transect data ------
-Interaction_transect <- read_csv(here("Data/Interaction_transect.csv")) 
+Interaction_transect <- read_csv(here("Data/Interaction_transect.csv"), show_col_types = FALSE) 
 
 #extract Bombus pascuorum interactions
 bp.interactions.2023 <- Interaction_transect %>% filter(Polinizador == "Bombus pascuorum")
