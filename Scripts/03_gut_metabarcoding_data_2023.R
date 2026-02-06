@@ -122,7 +122,7 @@ bp23.genomic.specs <- bp23.genomic.specs %>%
   select(-last_col()) #Check that this is removing the NA column and not something important
 
 
-# Look at sampling completeness -------------------
+# Look at sampling completeness ------------------------------------
 
 #organize data as above to look at ASVs instead of taxa
 bp.plant.asv.reads.2023 <- bp.plant.asvNs.w.genus.2023 %>%
@@ -148,7 +148,10 @@ gbp23.asv.list <- lapply(gbp23.asv.list, function(x) {
 #gbp23.asv.inext <- iNEXT(gbp23.asv.list, q = 0, datatype = "abundance", size = NULL)
 #saveRDS(gbp23.asv.inext, file = here("Data/gbp23_inext_out")) #better to just save and reload if it is ok
 gbp23.asv.inext <- readRDS(here("Data/gbp23_inext_out"))
-
+#gbp23_covg <- estimateD(gbp23.asv.list, datatype = "abundance") #again, better to just save and reload if it is ok
+saveRDS(gbp23_covg, file = here("Data/gbp23_estimateD_out"))
+gbp23_covg_obs <- gbp23_covg[gbp23_covg$Method == "Rarefaction", ]
+#median(gbp23_covg_obs$SC) #median sampling completeness value
 
 # Plot rarefaction curves
 gbp23.rarefaction <- ggiNEXT(gbp23.asv.inext, type = 1) +

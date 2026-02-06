@@ -130,6 +130,11 @@ poln.asv.list <- lapply(poln.asv.list, function(x) {
 #poln.asv.inext <- iNEXT(poln.asv.list, q = 0, datatype = "abundance", size = NULL)
 #saveRDS(poln.asv.inext, file = here("Data/poln_inext_out")) #better to just save and reload if it is ok
 poln.asv.inext <- readRDS(here("Data/poln_inext_out"))
+#poln23_covg <- estimateD(poln.asv.list, datatype = "abundance")
+saveRDS(poln23_covg, file = here("Data/poln23_estimateD_out"))#better to just save and reload if it is ok
+poln23_covg_obs <- poln23_covg[poln23_covg$Method == "Rarefaction", ]
+#median(poln23_covg_obs$SC) #median sampling completeness value
+
 
 # Plot rarefaction curves
 

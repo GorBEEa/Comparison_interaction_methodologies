@@ -162,6 +162,7 @@ mb.2023.indv.plants <- clean4stats.mb.2023.indv %>%
 
 #same for only specimens with shared samples
 mb2x.2023.indv.methodology <- as.factor(clean4stats.mb2x.2023.indv$type)
+mb2x.2023.indv.sample<- as.factor(clean4stats.mb2x.2023.indv$ID)
 mb2x.2023.indv.plants <- clean4stats.mb2x.2023.indv %>% 
   select(!c(ID,sample,type,period,site))
 sample_blocks <- as.factor(clean4stats.mb2x.2023.indv$ID)
@@ -208,10 +209,25 @@ nmds_mb2x$stress
 
 nmds_mb2x_points <- as.data.frame(nmds_mb2x$points)
 nmds_mb2x_points <- nmds_mb2x_points %>%
-  mutate(methodology = mb2x.2023.indv.methodology)
+  mutate(
+    sample = mb2x.2023.indv.sample,
+    methodology = mb2x.2023.indv.methodology)
+
+nmds_mb2x_polygon <- nmds_mb2x_points %>%
+  group_by(methodology) %>%
+  slice(chull(MDS1, MDS2))
 
 fig_nmds_mb2x <- ggplot(nmds_mb2x_points, aes(x = MDS1, y = MDS2, color = methodology)) +
-  geom_point(size = 3)
+  geom_point(size = 3) +
+  geom_polygon(data = nmds_mb2x_polygon, 
+               aes(fill = methodology, color = NULL), 
+               alpha = 0.2, 
+               show.legend = FALSE) +
+  geom_line(
+    aes(group = sample),
+    color = "grey40",
+    linewidth = 0.6,
+    alpha = 0.7)
 
 
 scores_df$ID     <- clean4stats.mb2x.2023.indv$ID
