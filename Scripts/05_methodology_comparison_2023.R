@@ -12,11 +12,12 @@ library(easystats)
 library(mvabund)
 library(kableExtra)
 library(ggvenn)
+library(ComplexUpset)
 
 
 
 #Load data from methodologies (Scripts 01-04)
-#load(file = here("Data/methodologies_data.RData"))
+load(file = here("Data/methodologies_data.RData"))
 #or run 00_quickstart script or all scripts 01-04, 1 by 1
 
 
@@ -223,7 +224,6 @@ clean4stats.bp23.all.binary <- clean4stats.bp23.all.binary %>%
          where(~ is.numeric(.) && sum(., na.rm = TRUE) > 0)) #remove 0 sum columns
 
 
-
 #simplify factors and data for nMDS 
 site.all <- as.factor(clean4stats.bp23.all.binary$site)
 period.all <- as.factor(clean4stats.bp23.all.binary$period)
@@ -252,6 +252,11 @@ method.colors2 <- c("count" ="slategrey",
                     "interaction" = "lightblue",
                     "gut.metabarcoding" = "forestgreen",
                     "pollen.metabarcoding" = "goldenrod1")
+method_labels <- c("count" = "Flower count",
+                   "interaction" = "Visitation observations",
+                   "gut.metabarcoding" = "Gut-content metabarcoding",
+                   "pollen.metabarcoding" = "Pollen metabarcoding")
+
 
 polygon_data <- nmds_points %>%
   group_by(methodology) %>%
@@ -277,11 +282,7 @@ NMDS.method.comparisons <- ggplot(nmds_points, aes(x = MDS1, y = MDS2, color = m
     "gut.metabarcoding" = 17,   
     "interaction" = 15,         
     "pollen.metabarcoding" = 3),
-    labels = c(
-      "count" = "Flower count",
-      "interaction" = "Visitation observations",
-      "gut.metabarcoding" = "Gut-content metabarcoding",
-      "pollen.metabarcoding" = "Pollen metabarcoding")) + 
+    labels = method_labels) + 
   scale_fill_manual(values = method.colors2) +
   theme_classic() +  
   labs(x = "NMDS1",
@@ -324,6 +325,61 @@ disp.anova <- anova(metodology.disp) #are the differences in dispersal significa
 pairwise.disp.anova <- TukeyHSD(metodology.disp)
 
 
+
+
+
+# try upset plot instead of ggvenn --------------------------------------------------------
+taxa_cols <- clean4stats.bp23.all.binary %>%
+  select(-period, -site, -method) %>%
+  colnames()
+
+
+bp23_all_binary_4upset <- clean4stats.bp23.all.binary %>%
+  group_by(method) %>%
+  summarise(across(all_of(taxa_cols), ~ as.integer(any(. == 1))),
+            .groups = "drop")
+
+upset_bp23_all <- bp23_all_binary_4upset %>%
+  pivot_longer(
+    cols = -method,
+    names_to = "genus",
+    values_to = "present") %>%
+  pivot_wider(
+    names_from = method,
+    values_from = present,
+    values_fill = 0)
+
+upset_bp23_all <- as.data.frame(upset_bp23_all)
+rownames(upset_bp23_all) <- upset_bp23_all$genus
+upset_bp23_all <- upset_bp23_all[, names(method.colors2)]
+upset_bp23_all$genus <- NULL
+colnames(upset_bp23_all) <- c(
+  "Flower count",
+  "Visitation observations",
+  "Gut-content metabarcoding",
+  "Pollen metabarcoding"
+)
+
+
+upset_fig <- UpSetR::upset(
+  upset_bp23_all,
+  sets = colnames(upset_bp23_all),
+  order.by = "degree",
+  keep.order = TRUE,
+  empty.intersections = "on",
+  
+  # colors
+  sets.bar.color = unname(method.colors2),
+  matrix.color = "black",
+  main.bar.color = adjustcolor("grey30", alpha.f = 0.4),
+  
+  # axis labels
+  mainbar.y.label = "Overlapping taxa",
+  sets.x.label = "Total taxa",
+  
+  show.numbers = "yes",   # make sure it is "yes" as string in older versions
+  text.scale = c(2, 1.6, 1.6, 1.6, 1.4, 1.4)
+)
 
 
 
