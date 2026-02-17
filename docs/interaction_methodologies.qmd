@@ -1,50 +1,58 @@
 ---
-format:  
+format:   
   pdf:
     pdf-engine: lualatex
+    documentclass: article
+    classoption: [12pt, english]
     mainfont: "Times New Roman"
-    sansfont: "Georgia"
-    linestretch: 2
+    sansfont: "Times New Roman"
+    fontsize: 12pt
+    geometry:
+      - verbose
+      - letterpaper
+      - tmargin=2.54cm
+      - bmargin=2.54cm
+      - lmargin=2.54cm
+      - rmargin=2.54cm
+    linestretch: 1.9   # ≈ 3 lines per inch via setspace
     include-in-header:
       text: |
+        \usepackage{setspace}
         \usepackage{lineno}
         \linenumbers
+        \usepackage{ragged2e}
+        \raggedright
 editor: visual
 bibliography: references.bib
-csl: methods-in-ecology-and-evolution2.csl
+reference-location: document
+csl: ecology.csl
 execute: 
   echo: false
   messages: false
   warning: false
 ---
 
-**Key-words:** Apidae, Amplicon sequencing, Interaction, Metabarcoding, Network, Pollinator, Plant-pollinator interaction, Gut microbiome
-
 **Abstract**
 
 Our understanding of plant-pollinator interaction networks hinges on the methods used to describe their nodes and links. Most networks are built from field observations that may overlook many consumer–resource links, and these networks lack descriptive links that characterize interaction types and outcomes. Towards a more complete approach for building interaction networks, we compare plant interactions from the wild pollinator species, *Bombus pascuorum*, recorded by three methodologies with different implications for interaction outcomes. We compare floral visitation interactions obtained from field observations, plant consumption interactions revealed by metabarcoding of gut contents, and pollen transport interactions detected by metabarcoding of corbicular pollen loads. Our approach adds functional context to plant–pollinator network links and reveals new interactions. We show that both metabarcoding approaches increase the number of interactions and reveal links that were overlooked by field observations of visitation, highlighting plant taxa that are not pollinator-dependent, yet constitute important dietary resources. Paired with floral diversity surveys, gut-content results also reveal seasonal patterns in the spatial extent and functional diversity included in forage, which other methodologies fail to demonstrate. Metabarcoding data analyzed at the individual specimen level further contribute heterogeneity in plant resource use between pollen transport and consumption. Metabarcoding methodologies capture greater spatial, temporal, and taxonomic ranges, while field observations provide validating datasets with higher taxonomic precision. Our results show that integrating visitation, transport, and consumption data changes network topology and the roles of plant nodes, offering a more nuanced and complete map of interactions with clearer priorities for management. We advocate for defining links explicitly by their functions and combining methods to account for hidden structure in ecological networks.
 
-**Data and Code for peer-review**
-
-All data and code used for the analyses in this manuscript are provided on an Anonymous GitHub repository (<https://anonymous.4open.science/r/B_pascuorum_interaction_networks>). All raw amplicon sequencing data will be deposited in a project in the European Nucleotide Archive upon final manuscript acceptance.
-
 **1. Introduction**
 
-Pollination is a critical ecosystem service that is currently threatened by global anthropogenic change, including habitat loss, intensifying agriculture, pathogens, and invasive species [@klein2006]. Pollinators crucially support the reproduction of 94% of wild flowering plants and 75% of crop species [@vanbergen2013], contributing to 35% of global food production [@klein2006]. Despite the clear importance of understanding plant-pollinator interactions, our knowledge of interaction diversity remains incomplete, as the methodological approach to studying plant-pollinator interactions has historically been biased towards the plants [@evans2020; @bosch2009]. As a consequence, the well-established relationship between pollinator diversity and the productivity of plant communities [@artamendi2025; @woodcock2019; @katumo2022] lacks an equally developed mirrored perspective, describing the floral diversity that supports pollinator populations. 
+Pollination is a critical ecosystem service that is currently threatened by global anthropogenic change, including habitat loss, intensifying agriculture, pathogens, and invasive species [@klein2006]. Pollinators crucially support the reproduction of 94% of wild flowering plants and 75% of crop species [@vanbergen2013], contributing to 35% of global food production [@klein2006]. Despite the clear importance of understanding plant-pollinator interactions, our knowledge of interaction diversity remains incomplete, as the methodological approach to studying plant-pollinator interactions has historically been biased towards the plants [@evans2020; @bosch2009]. As a consequence, the well-established relationship between pollinator diversity and the productivity of plant communities [@artamendi2025; @katumo2022] lacks an equally developed mirrored perspective, describing the floral diversity that supports pollinator populations. 
 
 Network theory provides a useful framework to summarize patterns of plant–pollinator interaction [@burkle2011], but most studies under this framework have yet to account for how the scope of networks is influenced by the interaction types that define links. Existing methodologies for reconstructing interaction networks tend to emphasize structural patterns, while overlooking the functional outcomes of interactions that are critical for understanding how plant communities support pollinators [@quintero2022]. In *Apidae* species, for example, plant interactions may have several outcomes. Bees consume plant material, including pollen, nectar, or even plant tissue [@vaudo2015; @pashalidou2020]. They also collect pollen on their corbicula for transport to the nest for feeding drones and larvae [@leach2018; @vaudo2015]. Finally, visitation of the reproductive parts of flowers can have various outcomes for both the plant and pollinator, including pollen transfer [@emer2023] and pathogen transfer [@lignon2024]. Interaction networks generally represent only one of these outcomes, although each is important to understanding how plant taxa support pollinators.
 
 The importance of different outcomes in plant-pollinator interactions becomes clear when considering the biodiversity necessary to support pollinators across life stages. Because the resources needed for foraging adult pollinators are different from those needed by larvae or other colony members [@leach2018; @vaudo2015], transported pollen may not completely represent the interactions necessary to sustain adult pollinators. This is especially true for bumblebees (*Bombus spp.*), which are able to evaluate pollen resource quality to discern foraging choices [@leonhardt2012; @timberlake2024]. Bumblebees make trial-and-error floral visits in order to find adequate forage [@selva2024], which may result in pollen transport without consumption. Conversely, consumption, or simply visitation, may occur without resulting in transport [@popic2012]. Accounting for different interaction outcomes, such as visitation, transport, and consumption, is a critical next step in representing the network of plant diversity used by pollinators.
 
-Incorporating the pollinator-perspective by leveraging complimentary methodologies can produce a comprehensive understanding of the contexts of plant-pollinator interactions. Microscopy and DNA analyses of pollen load samples sourced from insect specimens often identify greater plant species diversity within interaction networks compared to only field observations of floral visitation [@baksay2022; @bosch2009]. Additionally, studies adopting a pollinator-centeric view have revealed greater detail in forage preference trends, such as how pollinators use quality or quantity-based forage strategies [@timberlake2024; @selva2024], seasonal changes [@leponiemi2023], life cycle timing, and metabolic specialization [@vaudo2015]
+Incorporating the pollinator-perspective by leveraging complimentary methodologies can produce a comprehensive understanding of the contexts of plant-pollinator interactions. Microscopy and DNA analyses of pollen load samples sourced from insect specimens often identify greater plant species diversity within interaction networks compared to only field observations of floral visitation [@baksay2022; @bosch2009]. Additionally, studies adopting a pollinator-centeric view have revealed greater detail in forage preference trends, such as how pollinators use quality or quantity-based forage strategies [@timberlake2024; @selva2024], seasonal changes [@leponiemi2023], life cycle timing, and metabolic specialization [@vaudo2015].
 
 Genetic tools can detect plant-pollinator interactions that may be unobserved in pollen microscopy and field surveys [@lowe2022; @arstingstall2021; @pornon2017; @bell2016], and target specific interaction types. Metabarcoding of conserved gene regions from pollen samples can complement field observations of visitation [@arstingstall2021; @bell2017], increasing species detection by 9 - 144% [@milla2022; @baksay2022; @smart2017] and network sampling completeness up to 30%, while reducing exaggeration of specialization [@arstingstall2021] and revealing interactions beyond the traditionally surveyed floral community [@milla2022; @devere2017]. Advances in the reliability and accessibility of sequencing technologies have made these approaches more feasible for studying plant-pollinator interactions.
 
 Most pollinator interaction network studies that apply metabarcoding focus on the external pollen loads of bees or pollen stored in nest reserves of honey and beebread [@selva2024; @devriese2024; @leponiemi2023; @baksay2022; @leontidou2021], despite limitations of these sampling targets. Pollen in these samples can come from the environment, even including accumulation of windborne material [@negri2015]. To account for this, past studies have ignored detections of wind-pollinated taxa [@tanaka2020; @pornon2017], potentially biasing results, given that many plant taxa are both wind- and insect-pollinated [@saunders2018]. A more fundamental issue with externally carried pollen and nest reserves is their restricted ability to represent interaction types. Corbicular pollen provides an easily obtained sample, containing pollen from one or more plant species collected for transport to the nest for brood feeding [@leach2018; @vaudo2015], only directly representing pollen transport interactions [@arstingstall2021]. This pollen is often the central sample type used to represent foraging networks, where it is considered synonymous with diet and successful pollination interactions [@shi2025], likely overstating the function of corbicular pollen.
 
-Pollinator intestinal tracts (hereafter: guts) represent a source for observing consumption of pollen and other plant material [@li2025; @haag2023; @mayr2021]. Plant DNA detected in gut contents can reveal interactions with consumption as the exclusive outcome, which can include nectar robbing [@popic2012] and occasional herbivory [@pashalidou2020]. The gut-content approach can also account for environmental contamination in external pollen and nest stores by highlighting oversights resulting from the exclusion of interactions with the anemophilous and partially-anemophilous plant taxa in external pollen studies. There is an accumulating body of evidence supporting the idea that pollinators regularly search across functional groups of the plant community to meet their nutritional needs [@ibiyemi2025; @selva2024; @milla2022; @wood2022; @timberlake2024; @devere2017; @tanaka2020; @terrell1984; @pojar1973], although little attention has been given to these observations as a potentially important part of plant-pollinator networks [@saunders2018]. This understudied component of pollinator foraging together with the surprising lack of genetic analyses of pollinator gut contents, represents a clear knowledge gap and an opportunity to uncover finer detail in plant-pollinator interaction networks.
+Pollinator intestinal tracts (hereafter: guts) represent a source for observing consumption of pollen and other plant material [@li2025; @haag2023; @mayr2021]. Plant DNA detected in gut contents can reveal interactions with consumption as the exclusive outcome, which can include nectar robbing [@popic2012] and occasional herbivory [@pashalidou2020]. The gut-content approach can also account for environmental contamination in external pollen and nest stores by highlighting oversights resulting from the exclusion of interactions with the anemophilous and partially-anemophilous plant taxa in external pollen studies. There is an accumulating body of evidence supporting the idea that pollinators regularly search across functional groups of the plant community to meet their nutritional needs [@ibiyemi2025; @selva2024; @milla2022; @wood2022; @timberlake2024; @devere2017; @tanaka2020], although little attention has been given to these observations as a potentially important part of plant-pollinator networks [@saunders2018]. This understudied component of pollinator foraging together with the surprising lack of genetic analyses of pollinator gut contents, represents a clear knowledge gap and an opportunity to uncover finer detail in plant-pollinator interaction networks.
 
-We assess how metabarcoding of pollinator gut contents can complement or challenge the characterization of plant-pollinator interaction networks described by more common methodologies, including field surveys of plant-pollinator interactions, and external pollen load metabarcoding. To this end, we compare interaction networks constructed from each of these methodologies for a single model pollinator, *Bombus pascuorum*, an easily identified bumblebee common to most of Europe [@lecocq2015]. Our focus on a single pollinator species holds pollinator identity constant and attributes differences in network structure to methodology, rather than to variation among pollinator species. We hypothesize that the consumption interactions detected in gut metabarcoding will include a network of plant taxa distinct from those detected by other methodologies. Although we expect overlap between networks constructed by different methodologies, we expect to observe previously overlooked interaction network structure, including new links and significance of network links. Ideally, the resulting combination of observations will generate a network that will elevate our capacity to detect meaningful plant-pollinator interactions, and learn more about interaction types and implications for pollinator health.
+We assess how metabarcoding of pollinator gut contents can complement or challenge the characterization of plant-pollinator interaction networks described by more common methodologies, including field surveys of plant-pollinator interactions, and external pollen load metabarcoding. To this end, we compare interaction networks constructed from each of these methodologies for a single model pollinator, *Bombus pascuorum*, an easily identified bumblebee common to most of Europe. Our focus on a single pollinator species holds pollinator identity constant and attributes differences in network structure to methodology, rather than to variation among pollinator species. We hypothesize that the consumption interactions detected in gut metabarcoding will include a network of plant taxa distinct from those detected by other methodologies. Although we expect overlap between networks constructed by different methodologies, we expect to observe previously overlooked interaction network structure, including new links and significance of network links. Ideally, the resulting combination of observations will generate a network that will elevate our capacity to detect meaningful plant-pollinator interactions, and learn more about interaction types and implications for pollinator health.
 
 **2. Methods**
 
@@ -60,19 +68,19 @@ For every period visit at each site, we collected up to five *B. pascuorum* spec
 
 *Gut-content DNA extraction*
 
-Genomic DNA was extracted from *B. pascuorum* guts using the NucleoSpin® 96 Soil kit (Macherey-Nagel, Düren, Germany). We followed the kit manufacturer protocol, only adjusting centrifuge spin duration to account for differing maxiumum velocity available within our centrifuge (See Supporting Information). Nanodrop spectrophotometry was used to quantify DNA concentration and purity of the extracts by measuring reflectance at 260/230 nm wavelengths. To avoid site and period bias, all samples were randomized before the DNA extraction.
+Genomic DNA was extracted from *B. pascuorum* guts using the NucleoSpin® 96 Soil kit (Macherey-Nagel, Düren, Germany). We followed the kit manufacturer protocol, only adjusting centrifuge spin duration to account for differing maxiumum velocity available within our centrifuge (Appendix S1: Section 1). Nanodrop spectrophotometry was used to quantify DNA concentration and purity of the extracts by measuring reflectance at 260/230 nm wavelengths. To avoid site and period bias, all samples were randomized before the DNA extraction.
 
 *DNA extraction from corbicular pollen pellets*
 
-DNA was extracted from pollen pellets (N = 25) using the Machery-Nagel NucleoSpin® 8 Food kit, including additional initial steps recommended by the kit’s supplementary protocol for pollen DNA extraction (See Supporting Information). The Qubit high sensitivity dsDNA kit (Thermo Fisher Scientific) was used to quantify DNA extract concentrations for randomly selected samples.
+DNA was extracted from pollen pellets (N = 25) using the Machery-Nagel NucleoSpin® 8 Food kit, including additional initial steps recommended by the kit’s supplementary protocol for pollen DNA extraction (Appendix S1: Section 2). The Qubit high sensitivity dsDNA kit (Thermo Fisher Scientific) was used to quantify DNA extract concentrations for randomly selected samples.
 
 *Amplicon sequencing* 
 
-For gut-content samples, DNA was amplified in duplicate using the DFD forward and ASDFAS reverse primers. We used a dual-indexed amplicon multiplexing approach to generate our metabarcoding library, as described previously by @donald2022. Briefly, we performed a first step amplification using the modified (See supporting information) internal transcribed spacer 2 primer pair, ITS-S2F (ATGCGATACTTGGTGTGAAT) [@chen2010] and ITS4R (TCCTCCGCTTATTGATATGC) [@white1990], in duplicate. The final library was sequenced on an illumina MiSeq 3000 instrument for 300 cycles in paired-end mode at the Ecological Genetics laboratory, Bioeconomy Science Institute, Auckland, New Zealand (Detailed methods provided in Supporting Information). Pollen DNA samples were sequenced and processed by NOVOGENE (Planegg, Germany) using the same ITS2 primer pair on an illumina platform.
+For gut-content samples, DNA was amplified in duplicate using the DFD forward and ASDFAS reverse primers. We used a dual-indexed amplicon multiplexing approach to generate our metabarcoding library, as described previously by @donald2022. Briefly, we performed a first step amplification using the modified (Appendix S1: Section 3) internal transcribed spacer 2 primer pair, ITS-S2F (ATGCGATACTTGGTGTGAAT) [@chen2010] and ITS4R (TCCTCCGCTTATTGATATGC) [@white1990], in duplicate. The final library was sequenced on an illumina MiSeq 3000 instrument for 300 cycles in paired-end mode at the Ecological Genetics laboratory, Bioeconomy Science Institute, Auckland, New Zealand. Pollen DNA samples were sequenced and processed by NOVOGENE (Planegg, Germany) using the same ITS2 primer pair on an illumina platform.
 
 *Bioinformatics: taxonomic assignment and contaminant analysis*
 
-For all samples, raw reads were processed using the DADA2 bioinformatics pipeline [@callahan2016], producing two key datasets: a sample x ASV counts matrix and reference ASV fasta file. Reference ASVs were used to call taxonomic identities using DADA2 in conjunction with the published ITS2 reference database of @bell2021. Taxonomy data were combined with the sample x ASV matrix and sample metadata using phyloseq [@phyloseq] and downstream quality control and statistical analyses were performed in the R analysis environment. We used iNEXT to quantify sampling completeness for our data using sample coverage [@iNEXT]. Coverage summaries were calculated at the observed sample size only, excluding extrapolated values. For contaminant and misidentified ASV removal, we used a three-step screening process. First, ASVs were analyzed for contaminants using the R package, decontam [@davis2018]. Second, we conducted a BLAST search using ITS2 Database [@ankenbrand2015] to verify taxa that were identified by singleton ASVs within our results. Finally, the remaining list of taxa was screened against a locally specific herbarium [@agut2025].
+For all samples, raw reads were processed using the DADA2 bioinformatics pipeline [@callahan2016], producing two key datasets: a sample x ASV counts matrix and reference ASV fasta file (Appendix S1: Section 4). Reference ASVs were used to call taxonomic identities using DADA2 in conjunction with the published ITS2 reference database of @bell2021. Taxonomy data were combined with the sample x ASV matrix and sample metadata using phyloseq [@phyloseq] and downstream quality control and statistical analyses were performed in the R analysis environment. We used iNEXT to quantify sampling completeness for our data using sample coverage [@iNEXT]. Coverage summaries were calculated at the observed sample size only, excluding extrapolated values. For contaminant and misidentified ASV removal, we used a three-step screening process. First, ASVs were analyzed for contaminants using the R package, decontam [@davis2018]. Second, we conducted a BLAST search using ITS2 Database [@ankenbrand2015] to verify taxa that were identified by singleton ASVs within our results. Finally, the remaining list of taxa was screened against a locally specific herbarium [@agut2025].
 
 *Statistical analysis*
 
@@ -106,73 +114,29 @@ Within our flower count surveys we registered a total of 117 flowering herbaceou
 
 *Comparison of interaction detection by methodology* 
 
-Between all pollen metabarcoding samples, we obtained 5,160 ASVs within 2,506,925 reads, while in 122 of the gut-content metabarcoding samples, we identified 2,302 ASVs from 2,973,224 reads. Median sample coverage was 99% and 88%, for pollen and gut-content samples, respectively (See Supporting Information). Before quality screening of results, 251 taxa were identified by both metabarcoding methodologies in total. After screening, 170 total taxa remained identified within our data. Both metabarcoding methodologies detected multiple unique taxa (33 taxa for gut contents and 30 for corbicular pollen), while interaction transects did not detect any unique interactions (Fig. 1). The two metabarcoding methodologies shared `{r} nrow(genus.hits.23)-nrow(in.gmb.not.pmb)` common plant genera, representing `{r}  trunc(((nrow(poln.genus.hits.2023)-nrow(in.pmb.not.gmb))/nrow(poln.genus.hits.2023))*100)`% of the total corbicular pollen diversity and `{r} trunc(((nrow(genus.hits.23)-nrow(in.gmb.not.pmb))/nrow(genus.hits.23))*100)`% of the gut content diversity.
-
-```{r, echo=FALSE, out.width="100%"}
-include_graphics("manuscript_figures/upset.figure.png")
-```
-
-***Figure 1**: Total diversity and overlap of interaction plant genera observed by four observation methodologies: transect surveys of floral diversity (“Flower count”) and Bombus pascuorum - flower visitation, and metabarcoding of plant DNA in corbicular pollen and gut contents of B. pascuorum.*
+Between all pollen metabarcoding samples, we obtained 5,160 ASVs within 2,506,925 reads, while in 122 of the gut-content metabarcoding samples, we identified 2,302 ASVs from 2,973,224 reads. Median sample coverage was 99% and 88%, for pollen and gut-content samples, respectively (Appendix S2: Figures S1, S2). Before quality screening of results, 251 taxa were identified by both metabarcoding methodologies in total. After screening, 170 total taxa remained identified within our data. Both metabarcoding methodologies detected multiple unique taxa (33 taxa for gut contents and 30 for corbicular pollen), while interaction transects did not detect any unique interactions (Fig. 1). The two metabarcoding methodologies shared `{r} nrow(genus.hits.23)-nrow(in.gmb.not.pmb)` common plant genera, representing `{r}  trunc(((nrow(poln.genus.hits.2023)-nrow(in.pmb.not.gmb))/nrow(poln.genus.hits.2023))*100)`% of the total corbicular pollen diversity and `{r} trunc(((nrow(genus.hits.23)-nrow(in.gmb.not.pmb))/nrow(genus.hits.23))*100)`% of the gut content diversity.
 
 Taxonomic diversity varied across sampling periods, revealing distinct temporal patterns in flowering taxa and interactions (Fig. 2). Although floral and interaction diversity increased overall from the first to the last period, flowering taxa peaked in period four, whereas interactions peaked in period six. Metabarcoding consistently detected more taxa than interaction transects, with gut-content metabarcoding outperforming all other methods. In periods one, two, and six—before and after peak flowering—gut-content metabarcoding detected 59% more taxa than were recorded in flower counts, while in periods three to five floral diversity exceeded gut-content diversity.
 
-```{r}
-include_graphics("manuscript_figures/interaction.diversity.periods.png")
-```
-
-***Figure 2:** Taxonomic diversity in Bombus pascuorum interaction networks over six sampling periods (April - August, 2023) observed through floral visitation surveys and ITS2 metabarcoding of DNA extracted from bumblebee gut contents and corbicular pollen loads. The results of each methodology correspond to samples or surveys taken across the same 48 sampling days. The number of plant genera indicated is a cumulative raw value for each methodology and period, with no standardization for sampling effort. Interaction diversity for transects is represented by the total number of plant taxa observed over each transect and sampling day, for each period. For metabarcoding methodologies, interaction diversity is the total number of plant genera observed across all samples collected during the given period.* 
-
 *Functional diversity observations*
 
-The design of interaction transects only included taxa from the entomophilous community, while both metabarcoding methodologies detected taxa from the anemophilous community as well, representing 28% (N = 41) of the total identified plant genera between the two methodologies. Among these were 20 genera from *Poaceae*, nine tree or woody plant genera, and 12 other herbaceous genera (See Supporting Information Fig. S3). During periods one, two, and six—when gut-content metabarcoding detected more taxa than the entomophilous community recorded in transects—an average of 13% of those taxa were anemophilous or partially anemophilous (See Supporting Information, Fig. S4).
+The design of interaction transects only included taxa from the entomophilous community, while both metabarcoding methodologies detected taxa from the anemophilous community as well, representing 28% (N = 41) of the total identified plant genera between the two methodologies. Among these were 20 genera from *Poaceae*, nine tree or woody plant genera, and 12 other herbaceous genera (Appendix S2: Figure S3). During periods one, two, and six—when gut-content metabarcoding detected more taxa than the entomophilous community recorded in transects—an average of 13% of those taxa were anemophilous or partially anemophilous (Appendix S2: Figure S4).
 
 *Plant community composition across methodologies*
 
-PERMANOVA indicated a significant effect of methodology on the observed community (P \< 0.001, R = 0.28). In this analysis, interaction transects showed high beta-dispersal (distance to centroid = 0.62) compared to the more centered metabarcoding and flower count results (distance to centroid ≤ 0.10), and an ANOVA test of mean dispersal by methodology indicated different levels of dispersal (P \< 0.001) for each methodology. The communities detected by each of the methodologies were also visualized using non-metric Multidimensional Scaling (nMDS, stress = 0.17, Fig. 3). Pairwise comparisons (Table 1) showed that the plant communities detected by flower counts were different from those of all other methodologies (P \< 0.001, Holm-Bonferroni), although between pairs of interaction methodologies, no differences were observed. 
-
-***Table 1.** Pairwise tests comparing the community composition of plant taxa detected by four methodologies. Detected communities were compared by repeating PERMANOVA tests for each methodology pair. Tests applied Raup-Crick dissimilarity to 9999 permutations, and adjusted p-values were calculated using the Holm–Bonferroni method. The summarized test statistics include degrees of freedom for each methodology (DF), R², test F-statistics (F) and associated p-value (p), as well as the adjusted p-value.*
-
-```{r}
-ppermanova.kbl
-```
-
-```{r,echo=FALSE, out.width="100%"}
-include_graphics("manuscript_figures/nMDS.method.comparisons.png")
-```
-
-***Figure 3:** Non-metric multi-dimensional scaling plot of plant communities detected by three methodologies for observing Bombus pascuorum floral interactions and a flower diversity survey. Observations from each methodology are aggregated by sampling day, reduced to binary presence/absence data, and compared in ordination using the Raup-Crick dissimilarity index (ordination stress = 0.17).* 
+PERMANOVA indicated a significant effect of methodology on the observed community (P \< 0.001, R = 0.28). In this analysis, interaction transects showed high beta-dispersal (distance to centroid = 0.62) compared to the more centered metabarcoding and flower count results (distance to centroid ≤ 0.10), and an ANOVA test of mean dispersal by methodology indicated different levels of dispersal (P \< 0.001) for each methodology. The communities detected by each of the methodologies were also visualized using non-metric Multidimensional Scaling (nMDS, stress = 0.17, Fig. 3). Pairwise comparisons (Appendix S2: Table S1) showed that the plant communities detected by flower counts were different from those of all other methodologies (P \< 0.001, Holm-Bonferroni), although between pairs of interaction methodologies, no differences were observed. 
 
 *Gut-content vs. pollen-derived plant communities from paired samples*
 
-Comparing metabarcoding results from the same specimens, gut contents yielded fewer taxa (mean = `{r} trunc(mean(total.taxa.specimen$n.taxa.g))` genera, sd = `{r} trunc(sd(total.taxa.specimen$n.taxa.g))`) than pollen samples (mean = `{r} trunc(mean(total.taxa.specimen$n.taxa.p))` genera, sd = `{r} trunc(sd(total.taxa.specimen$n.taxa.p))`). On average, only `{r} trunc((mean(total.taxa.specimen$shared_count)/mean(total.taxa.specimen$total.per.specimen))*100)`% of taxa (mean = `{r} trunc(mean(total.taxa.specimen$shared_count))` genera, sd = `{r} trunc(sd(total.taxa.specimen$shared_count))`) were shared between the two sample types. A PERMANOVA with specimen as a blocking factor indicated a difference in the plant community observed by both sample types (See Supporting Information Table S2) explaining 16% of the variation between gut- and pollen-based detections. Data used in this comparison were similarly dispersed (distance to centroid = 0.08), with no difference between the two groups observed by a permutest.
+Comparing metabarcoding results from the same specimens, gut contents yielded fewer taxa (mean = `{r} trunc(mean(total.taxa.specimen$n.taxa.g))` genera, sd = `{r} trunc(sd(total.taxa.specimen$n.taxa.g))`) than pollen samples (mean = `{r} trunc(mean(total.taxa.specimen$n.taxa.p))` genera, sd = `{r} trunc(sd(total.taxa.specimen$n.taxa.p))`). On average, only `{r} trunc((mean(total.taxa.specimen$shared_count)/mean(total.taxa.specimen$total.per.specimen))*100)`% of taxa (mean = `{r} trunc(mean(total.taxa.specimen$shared_count))` genera, sd = `{r} trunc(sd(total.taxa.specimen$shared_count))`) were shared between the two sample types. A PERMANOVA with specimen as a blocking factor indicated a difference in the plant community observed by both sample types (Appendix S2: Table S2) explaining 16% of the variation between gut- and pollen-based detections. Data used in this comparison were similarly dispersed (distance to centroid = 0.08), with no difference between the two groups observed by a permutest.
 
 *Species level interaction network*
 
 We calculated interaction specialization of *B. pascuorum* and an importance metric for the plant taxa within interaction networks. Specialization [*d’*; @blüthgen2006] declined over the season for transect and pollen-metabarcoding data but remained relatively stable for gut-content metabarcoding (Fig. 4), with transects indicating complete specialization in the first period. Across all methods, *Lotus* emerged as the most important plant genus, though the structure of importance differed: the two metabarcoding networks showed more evenly distributed importance values (Fig. 5b-c), whereas the transect network was dominated by a few top taxa (Fig. 5a).
 
-```{r, echo=FALSE, out.width="100%"}
-include_graphics("manuscript_figures/fig.dprime.png")
-```
-
-***Figure 4:** Specialization of plant interactions for Bombus pascuorum as indicated by networks constructed from three interaction observation methodologies. Specialization was calculated as d’ using the methodology of Blüthgen et al. (2006), with d’ = 1 representing perfect specialist behavior. Specialization of B. pascuorum for each period was calculated relative to interaction data from the same species in other periods, rather than other pollinator species.*
-
-```{r}
-fig.int.importance
-fig.gmb.importance
-fig.pmb.importance
-```
-
-***Figure 5.** Plant “importance” within Bombus pascuorum interaction networks constructed from (**A**) interaction transects, (**B**) gut-content metabarcoding, and (**C**) corbicular pollen metabarcoding. Importance was calculated as the proportion of total plant interactions observed by the given methodology represented by interactions with the specific plant genus. Importance is visualized with block size proportional to importance, and color scaled to minimum and maximum values observed by each methodology.*
-
 *Combined interaction network*
 
 We combined the results from each interaction methodology to create an interaction network for *B. pascuorum* with links defined by interaction outcomes, including consumption, transport, and visitation (Fig. 6). This single species network included 171 nodes, increasing the number of taxa included in the network compared to individual methodology constructed networks. Additionally, each plant taxa received up to three links, including link metadata for interaction outcomes in the network. In total, the network contained 281 descriptive links.
-
-```{r, echo=FALSE, out.width="100%"}
-include_graphics("manuscript_figures/THE_GBP_composite_network.jpg")
-```
-
-***Figure 6.** Combined interaction network for Bombus pascuorum including all interaction plant taxa detected by three methodologies. Interaction transect observations are represented by visitation, corbicular pollen metabarcoding observation by transport, and gut-content metabarcoding observations by consumption. The network includes 170 plant genera, each with up to three links describing the outcomes of interactions. Outcome links represent the presence of any interaction observation within the dataset of the corresponding methodology.*
 
 **4. Discussion**
 
@@ -188,7 +152,7 @@ Between the two metabarcoding approaches, gut-content metabarcoding captured gre
 
 *Metabarcoding observes forage across functional groups*
 
-The diversity of plant groups observed within our metabarcoding data, especially the temporal changes in diversity observed by gut-content metabarcoding, indicated that *B. pascuorum* forages on different plant taxa than previously expected. Through metabarcoding, we observed interactions with a variety of taxa outside of the entomophilous meadow and shrubland plant community, including trees and shrubs, grasses, and other herbaceous plants. Our observations of anemophilous plant interactions are supported by previously documented records for *Bombus* species [@ibiyemi2025; @selva2024; @milla2022; @wood2022; @timberlake2024; @devere2017; @tanaka2020; @terrell1984; @pojar1973], and have especially intriguing implications for bumblebee forage behavior. Previous studies using external pollen metabarcoding have removed wind-pollinated taxa from their analyses under the argument that wind-borne pollen in samples may represent false positive interactions [@tanaka2020; @pornon2017; @negri2015]. Our gut-content results, however, caution against the practice of removing these taxa as contaminants, especially if using external pollen loads as standalone proxies for forage networks. 
+The diversity of plant groups observed within our metabarcoding data, especially the temporal changes in diversity observed by gut-content metabarcoding, indicated that *B. pascuorum* forages on different plant taxa than previously expected. Through metabarcoding, we observed interactions with a variety of taxa outside of the entomophilous meadow and shrubland plant community, including trees and shrubs, grasses, and other herbaceous plants. Our observations of anemophilous plant interactions are supported by previously documented records for *Bombus* species [@ibiyemi2025; @selva2024; @milla2022; @wood2022; @timberlake2024; @devere2017; @tanaka2020], and have especially intriguing implications for bumblebee forage behavior. Previous studies using external pollen metabarcoding have removed wind-pollinated taxa from their analyses under the argument that wind-borne pollen in samples may represent false positive interactions [@tanaka2020; @pornon2017; @negri2015]. Our gut-content results, however, caution against the practice of removing these taxa as contaminants, especially if using external pollen loads as standalone proxies for forage networks. 
 
 The presence of DNA from anemophilous taxa within gut samples suggests that interactions with these taxa may be more than coincidental interactions with pollen in the environment. Indeed, beyond consumption for adult nutrition, there are previous indications that pollen from flowering trees supports colony establishment success and low larval mortality [@wood2022]. Our results support the hypothesis that most bumblebees forage selectively for consumption and transport of high quality pollen [@ruedenauer2016; @timberlake2024], adapting their forage to take advantage of the best available resources as they change with environmental variability [@selva2024]. While it is possible that some plant material may be transported or consumed incidentally [@arstingstall2021], the taxa detected within *B. pascuorum* gut contents and corbicular pollen form part of the web of biodiversity that supports the species and possibly other pollinators. Our detection of anemophilous plant DNA in both metabarcoding methodologies indicates that *B. pascuorum,* and perhaps other bumblebee species, may intentionally forage on these taxa to meet nutritional needs at various life stages.
 
@@ -204,6 +168,65 @@ Metabarcoding also has important limitations. Primer and marker biases result in
 
 The similarities between interaction data suggest robustness between each methodology, and the inherent implications of the sample sources of each provide varied means of interpreting different interactions. Interaction transects provide a valuable field-based perspective, although given their lower sampling efficiency, incorporating them as a validation of other surveys may be the best way to integrate this methodology into future studies. Field observations can fill gaps left by metabarcoding methodologies, such as confirmation of pollination efficacy, interaction frequency, and species-level resolution. As a direct observation of the pollen transported to the nest, corbicular pollen may also be a good starting point for identifying plants that may provide pollen with optimal macronutrients for larval development. Similarly, gut-content metabarcoding provides an important perspective on the nutritional needs of actively foraging pollinators, identifying taxa that provide pollen as food for supporting this activity [@li2025]. Knowing which taxa are actually ingested by pollinators is especially useful for identifying taxa that facilitate microbiota exchange and acquisition during plant interactions [@cullen2021; @keller2021], including parasite and disease transfer [@lignon2024]. Although they are not equal, our research highlights overall that each methodology offers advantages and disadvantages in terms of sensitivity, sampling effort, and perspective.
 
-While most of the methodologies we applied, aside from gut-content metabarcoding, have previously been used independently to characterize plant–pollinator networks [e.g., @devriese2024; @magrach2023], our findings highlight the synergistic value of integrating them. Gut-content metabarcoding emerges as a promising approach, but its greatest potential is realized when combined with established approaches. A key next step is improving our ability to quantify interaction frequencies at the individual level using metabarcoding, whether from gut contents or pollen. Overall, methodological advances are likely to come from linking complementary data sources to fill the informational gaps left by any single approach.
+While most of the methodologies we applied, aside from gut-content metabarcoding, have previously been used independently to characterize plant–pollinator networks, our findings highlight the synergistic value of integrating them. Gut-content metabarcoding emerges as a promising approach, but its greatest potential is realized when combined with established approaches. A key next step is improving our ability to quantify interaction frequencies at the individual level using metabarcoding, whether from gut contents or pollen. Overall, methodological advances are likely to come from linking complementary data sources to fill the informational gaps left by any single approach.
 
-**References**
+**Acknowledgements:** AM acknowledges funding from the Ministry of Science, Innovation and Universities Grant (PID2021-127900NB-I00), the Basque Government through PIBA projects (2024RTE00060004), the European Union (ERC, GorBEEa 101086771), an Ikerbasque Research Professorship and the Spanish Ministry of Science and Innovation and the European Social Fund through the Ramón y Cajal Program (RYC2021-032351-I). Views and opinions expressed are, however, those of the author(s) only and do not necessarily reflect those of the European Union or the European Research Council. Neither the European Union nor the granting authority can be held responsible for them. This research is supported by María de Maeztu Excellence Unit 2023-2027 Ref. CEX2021-001201-M, funded by MCIN/AEI /10.13039/501100011033.
+
+**Conflict of Interest:** The authors declare no conflicts of interest.
+
+## [**References**]{style="font-weight: bold;"}
+
+::: {#refs}
+:::
+
+**Figure 1**: Total diversity and overlap of interaction plant genera observed by four observation methodologies: transect surveys of floral diversity (“Flower count”) and *Bombus pascuorum* - flower visitation, and metabarcoding of plant DNA in corbicular pollen and gut contents of *B. pascuorum.*
+
+**Figure 2:** Taxonomic diversity in *Bombus pascuorum* interaction networks over six sampling periods (April - August, 2023) observed through floral visitation surveys and ITS2 metabarcoding of DNA extracted from bumblebee gut contents and corbicular pollen loads. The results of each methodology correspond to samples or surveys taken across the same 48 sampling days. The number of plant genera indicated is a cumulative raw value for each methodology and period, with no standardization for sampling effort. Interaction diversity for transects is represented by the total number of plant taxa observed over each transect and sampling day, for each period. For metabarcoding methodologies, interaction diversity is the total number of plant genera observed across all samples collected during the given period. 
+
+**Figure 3:** Non-metric multi-dimensional scaling plot of plant communities detected by three methodologies for observing *Bombus pascuorum* floral interactions and a flower diversity survey. Observations from each methodology are aggregated by sampling day, reduced to binary presence/absence data, and compared in ordination using the Raup-Crick dissimilarity index (ordination stress = 0.17). 
+
+**Figure 4:** Specialization of plant interactions for *Bombus pascuorum* as indicated by networks constructed from three interaction observation methodologies. Specialization was calculated as d’ using the methodology of Blüthgen et al. (2006), with d’ = 1 representing perfect specialist behavior. Specialization of *B. pascuorum* for each period was calculated relative to interaction data from the same species in other periods, rather than other pollinator species.
+
+**Figure 5.** Plant “importance” within *Bombus pascuorum* interaction networks constructed from (**A**) interaction transects, (**B**) gut-content metabarcoding, and (**C**) corbicular pollen metabarcoding. Importance was calculated as the proportion of total plant interactions observed by the given methodology represented by interactions with the specific plant genus. Importance is visualized with block size proportional to importance, and color scaled to minimum and maximum values observed by each methodology.
+
+**Figure 6.** Combined interaction network for *Bombus pascuorum* including all interaction plant taxa detected by three methodologies. Interaction transect observations are represented by visitation, corbicular pollen metabarcoding observation by transport, and gut-content metabarcoding observations by consumption. The network includes 170 plant genera, each with up to three links describing the outcomes of interactions. Outcome links represent the presence of any interaction observation within the dataset of the corresponding methodology.
+
+```{r, echo=FALSE, out.width="100%"}
+include_graphics("manuscript_figures/upset.figure.png")
+```
+
+**Figure 1**
+
+```{r, echo=FALSE, out.width="70%", out.height="2in"}
+include_graphics("manuscript_figures/interaction.diversity.periods.png")
+```
+
+**Figure 2**
+
+```{r,echo=FALSE, out.width="65%", out.height="2in"}
+include_graphics("manuscript_figures/nMDS.method.comparisons.png")
+```
+
+**Figure 3**
+
+```{r, echo=FALSE, out.width="70%", out.height="2in"}
+include_graphics("manuscript_figures/fig.dprime.png")
+```
+
+**Figure 4**
+
+```{r}
+#| fig-width: 6
+#| fig-height: 2.6
+fig.int.importance
+fig.gmb.importance
+fig.pmb.importance
+```
+
+**Figure 5**
+
+```{r, echo=FALSE, out.width="100%"}
+include_graphics("manuscript_figures/THE_GBP_composite_network.jpg")
+```
+
+**Figure 6**
