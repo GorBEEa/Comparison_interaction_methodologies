@@ -169,33 +169,36 @@ mean.fc.taxa.periods$LineType <- "Flower Count"
 mean.lines <- rbind(mean.gut.taxa.periods, mean.fc.taxa.periods)
 
 
-fig.methods.x.periods <- ggplot(long.gen.by.periods, aes(period, n.genera, fill = method)) + 
+fc.line <- mean.lines %>% filter(LineType == "Flower Count")
+
+png(here("docs/manuscript_figures/interaction.diversity.periods.png"), width =2000, height = 2000, res = 350) 
+
+fig.methods.w.fc <- ggplot(int.gen.x.periods, aes(period, n.genera, fill = method)) + 
   geom_col(position = "Dodge", alpha = 0.8) + 
-  theme_minimal() + 
+  theme_classic() + 
   xlab("Sampling Period") +
-  ylab("Detected Plant Genera") +
+  ylab("Number of Genera") +
   scale_x_continuous(breaks = 1:6, labels = 1:6) + 
   scale_fill_manual(values = method.colors, labels = c(
-    "n.genera.int" = "Interactions Transects",
-    "n.genera.fc" = "Flower Count",
-    "n.genera.pmb" = "Pollen Metabarcoding",
-    "n.genera.gmb" = "Gut Content Metabarcoding")) +
-  labs(fill = "Methodology", color = NULL , linetype = NULL) +
-  theme(plot.title = element_text(hjust = 0.7),
-    axis.ticks.x = element_blank()) +
-  ggtitle("Detected plant genera by methodology across 2023 field sampling periods") +
+    "n.genera.int" = "Interactions transects",
+    "n.genera.pmb" = "Pollen metabarcoding",
+    "n.genera.gmb" = "Gut-content metabarcoding")) +
+  labs(fill = NULL, color = NULL, linetype = NULL) +
+  theme(legend.position = "bottom",
+        legend.direction = "vertical", 
+        axis.ticks.x = element_blank()) + 
   geom_line(
-    data = mean.lines,
-    aes(x = period, y = mean.genera, color = LineType, linetype = LineType),
+    data = fc.line,
+    aes(x = period, y = mean.genera, linetype = "Flower Count"),
+    color = "slategrey",
     linewidth = 1,
     inherit.aes = FALSE) +
- scale_color_manual(values = c("Gut Content Metabarcoding" = "forestgreen", "Flower Count" = "slategrey")) +
-  scale_linetype_manual(values = c("Gut Content Metabarcoding" = "dashed", "Flower Count" = "dotdash")) +
-  guides(
-    fill = guide_legend(order = 1),
-    color = guide_legend(order = 2),
-    linetype = guide_legend(order = 2)
-  )
+  scale_linetype_manual(values = c("Flower Count" = "dotdash")) +
+  ggtitle("B.")
+
+fig.methods.w.fc
+
+dev.off()
 
 
 
@@ -264,7 +267,9 @@ polygon_data <- nmds_points %>%
 
 #NMDS.title <- expression(paste("Composition of interaction plant community by methodology"))
 
-NMDS.method.comparisons <- ggplot(nmds_points, aes(x = MDS1, y = MDS2, color = methodology, shape = methodology)) +
+NMDS.method.comparisons <- ggplot(nmds_points, aes(x = MDS1, y = MDS2,
+                        color = methodology,
+                        shape = methodology)) +
   geom_polygon(data = polygon_data, 
                aes(fill = methodology, color = NULL), 
                alpha = 0.2, 
@@ -272,11 +277,11 @@ NMDS.method.comparisons <- ggplot(nmds_points, aes(x = MDS1, y = MDS2, color = m
   geom_point(size = 3) + 
   scale_color_manual(values = method.colors2,
                      labels = c(
-                      "count" = "Flower count",
-                      "interaction" = "Visitation observations",
-                      "gut.metabarcoding" = "Gut-content metabarcoding",
-                      "pollen.metabarcoding" = "Pollen metabarcoding")
-                     ) + 
+                       "count" = "Flower count",
+                       "interaction" = "Visitation observations",
+                       "gut.metabarcoding" = "Gut-content metabarcoding",
+                       "pollen.metabarcoding" = "Pollen metabarcoding")
+  ) + 
   scale_shape_manual(values = c(
     "count" = 16,               
     "gut.metabarcoding" = 17,   
@@ -286,12 +291,14 @@ NMDS.method.comparisons <- ggplot(nmds_points, aes(x = MDS1, y = MDS2, color = m
   scale_fill_manual(values = method.colors2) +
   theme_classic() +  
   labs(x = "NMDS1",
-    y = "NMDS2",
-    color = "Methodology",
-    shape = "Methodology") +
-  theme(legend.position.inside = c(0.13, 0.85))
-
-
+       y = "NMDS2",
+       color = NULL, #wrtie "Methodology" if you want the legend to specify
+       shape = NULL) + #same as above
+  theme(
+    legend.position = "bottom",        
+    legend.direction = "vertical" 
+  )+
+  ggtitle("C.")
 
 
 
