@@ -1,9 +1,8 @@
 #Analyzing interaction methodologies and floral diversity data together 
 
-library(readr)
+
 library(here)
 library(tidyverse)
-library(tidyr)
 library(tidyselect)
 library(easystats)
 library(visreg)
