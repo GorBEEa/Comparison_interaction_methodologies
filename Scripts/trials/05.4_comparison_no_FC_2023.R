@@ -1,3 +1,15 @@
+#this script mirrors the methodology comparisons of 05_, but omits flower count data
+#idea is to see if methodologies appear more different without the exaggerated contrast to FC
+
+
+#library(here)
+#library(tidyverse)
+#library(vegan)
+#library(kableExtra)
+
+#load(here("Data/05_output.RData"))
+
+
 
 #bring together binary presence absence data from interactions and metabarcoding into one table
 int3.binary <- full_join(bp23.int4stats.wide.binary, bp23.genomic.binary4stats.xday) %>% 
@@ -31,39 +43,44 @@ int3.plant.mds <- metaMDS(int3.plants, distance = "raup")
 #make figure
 int3_nmds_points <- as.data.frame(int3.plant.mds$points)
 int3_nmds_points <- int3_nmds_points %>% 
-  mutate(methodology.int3 = methodology.int3) # %>% 
-#slice(-8) #if you want to remove the outlier for whatever reason
+  mutate(methodology.int3 = methodology.int3) %>% 
+  slice(-8) #if you want to remove the outlier
 method.colors3 <- c("interaction" = "lightblue",
                     "gut.metabarcoding" = "forestgreen",
                     "pollen.metabarcoding" = "goldenrod1")
+method_labels3 <- c("interaction" = "Visitation observations",
+                   "gut.metabarcoding" = "Gut-content metabarcoding",
+                   "pollen.metabarcoding" = "Pollen metabarcoding")
+
 
 
 int3_polygon_data <- int3_nmds_points %>%
   group_by(methodology.int3) %>%
   slice(chull(MDS1, MDS2))
 
-int3.NMDS.title <- expression(paste("NMDS visualization of network composition by interaction methodology.int3"))
-
-NMDS.int3 <- ggplot(int3_nmds_points, aes(x = MDS1, y = MDS2, color = methodology.int3)) +
+NMDS.int3 <- ggplot(int3_nmds_points,
+                    aes(x = MDS1,
+                        y = MDS2,
+                        color = methodology.int3,
+                        shape = methodology.int3)) +
   geom_polygon(data = int3_polygon_data, 
-               aes(fill = methodology.int3, color = NULL), 
+               aes(fill = methodology.int3, color = NULL),
                alpha = 0.2, 
                show.legend = FALSE) +
   geom_point(size = 3) + 
   scale_color_manual(values = method.colors3,
-                     labels = c(
-                       "interaction" = "Interaction observations",
-                       "gut.metabarcoding" = "Gut metabarcoding",
-                       "pollen.metabarcoding" = "Pollen metabarcoding")
-  ) +
+                     labels = method_labels3) +
+  scale_shape_manual(values = c("interaction" = 15,
+                                "gut.metabarcoding" = 17,
+                                "pollen.metabarcoding" = 3),
+    labels = method_labels3) +
   scale_fill_manual(values = method.colors3) +
   theme_classic() +  
   labs(
-    title = int3.NMDS.title,
     x = "NMDS1",
     y = "NMDS2",
-    color = "methodology"
-  ) +
+    color = NULL, #wrtie "Methodology" if you want the legend to specify
+    shape = NULL) + #same as above
   theme(plot.title = element_text(hjust=0.5),
         legend.position.inside = c(0.13, 0.85)
   )
@@ -76,7 +93,7 @@ NMDS.int3
 permanova.int3 <- adonis2(int3.plants ~ methodology.int3, permutations = 9999, method = "raup", pairwise = TRUE)
 
 permanova.kbl <- permanova.int3 %>% 
-  kbl(caption = "PERMANOVA analysis of interaction methodology's effect on observed plant community") %>% 
+  kable() %>% 
   kable_minimal(full_width = F, html_font = "Cambria")
 
 #second check: are the groups really different in terms of how they are independently dispersed?

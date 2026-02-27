@@ -249,7 +249,7 @@ all.plant.mds <- metaMDS(all.plants, distance = "raup", trace = FALSE)
 nmds_points <- as.data.frame(all.plant.mds$points)
 nmds_points <- nmds_points %>% 
   mutate(methodology = methodology)  %>% 
-  slice(-8) #if you want to remove the outlier for whatever reason
+  slice(-8) #if you want to remove the outlier point from interactions
 method.colors2 <- c("count" ="slategrey",
                     "interaction" = "lightblue",
                     "gut.metabarcoding" = "forestgreen",
@@ -275,12 +275,7 @@ NMDS.method.comparisons <- ggplot(nmds_points, aes(x = MDS1, y = MDS2,
                show.legend = FALSE) +
   geom_point(size = 3) + 
   scale_color_manual(values = method.colors2,
-                     labels = c(
-                       "count" = "Flower count",
-                       "interaction" = "Visitation observations",
-                       "gut.metabarcoding" = "Gut-content metabarcoding",
-                       "pollen.metabarcoding" = "Pollen metabarcoding")
-  ) + 
+                     labels = method_labels) + 
   scale_shape_manual(values = c(
     "count" = 16,               
     "gut.metabarcoding" = 17,   
