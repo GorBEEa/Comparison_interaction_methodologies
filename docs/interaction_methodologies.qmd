@@ -1,27 +1,5 @@
 ---
-format:     
-  pdf:
-    pdf-engine: lualatex
-    documentclass: article
-    classoption: [12pt, english]
-    mainfont: "Times New Roman"
-    sansfont: "Times New Roman"
-    fontsize: 12pt
-    geometry:
-      - verbose
-      - letterpaper
-      - tmargin=2.54cm
-      - bmargin=2.54cm
-      - lmargin=2.54cm
-      - rmargin=2.54cm
-    linestretch: 1.9   # ≈ 3 lines per inch via setspace
-    include-in-header:
-      text: |
-        \usepackage{setspace}
-        \usepackage{lineno}
-        \linenumbers
-        \usepackage{ragged2e}
-        \raggedright
+format: docx
 editor: visual
 bibliography: references.bib
 reference-location: document
@@ -64,7 +42,7 @@ Genomic DNA was extracted from guts using the NucleoSpin® 96 Soil kit (Macherey
 
 DNA was extracted from pollen pellets (N = 25) using the Machery-Nagel NucleoSpin® 8 Food kit, including additional initial steps recommended by the kit’s supplementary protocol for pollen DNA extraction (Appendix S1: Section 2). A Qubit high sensitivity dsDNA kit (Thermo Fisher Scientific) was used to quantify DNA extract concentrations for randomly selected samples.
 
-For gut-content samples, DNA was amplified in duplicate using the DFD forward and ASDFAS reverse primers. As described previously by @donald2022, we used a dual-indexed amplicon multiplexing approach to generate our metabarcoding library. Briefly, we performed a first amplification step using the modified (Appendix S1: Section 3) internal transcribed spacer 2 primer pair, ITS-S2F (ATGCGATACTTGGTGTGAAT) [@chen2010] and ITS4R (TCCTCCGCTTATTGATATGC) [@white1990], in duplicate. The resulting amplicons were pooled in equal volumes, purified using SPRI-beads, and used as templates in the second-step PCR, where unique 8-mer indices and Illumina p5/p7 sequencing primers were attached. The final library was sequenced on an Illumina MiSeq instrument for 300 cycles in paired-end mode at the Ecological Genetics laboratory, Bioeconomy Science Institute, Auckland, New Zealand. Pollen DNA samples were sequenced and processed by NOVOGENE (Planegg, Germany) using the same primer pair on an Illumina Novaseq platform configured for PE250 sequencing for 518 cycles.
+Gut-content DNA extracts were amplified in duplicate using a dual-indexed, two-step PCR method described by @donald2022. Briefly, the ITS2 region was amplified using the primers, ITS-S2F (ATGCGATACTTGGTGTGAAT) [@chen2010] and ITS4R (TCCTCCGCTTATTGATATGC) [@white1990]. The resulting amplicons were pooled in equal volumes, purified using SPRI-beads, and used as templates in the second-step PCR to attach unique dual indices and Illumina p5/p7 sequencing primers. Amplicons were purified and size-selected using SPRI-beads and pooled in a final library (see Appendix S1 for full library preparation), which was sequenced on an Illumina MiSeq instrument for 300 cycles in paired-end mode at the Ecological Genetics laboratory, Bioeconomy Science Institute, Auckland, New Zealand. Pollen DNA samples were sequenced and processed by NOVOGENE (Planegg, Germany) using the same primer pair on an Illumina Novaseq platform configured for PE250 sequencing for 518 cycles.
 
 For all samples, raw reads were processed using the DADA2 bioinformatics pipeline [@callahan2016], producing two key datasets: a sample x ASV counts matrix and reference ASV fasta file (Appendix S1: Section 4). Reference ASVs were used to call taxonomic identities using DADA2 in conjunction with the published ITS2 reference database of @bell2021. Taxonomy data were combined with the sample x ASV matrix and sample metadata using phyloseq [@phyloseq] and downstream quality control and statistical analyses were performed in the R analysis environment. For contaminant and misidentified ASV removal, we tested our ASVs for contaminants using the R package, decontam [@davis2018]. Then, the remaining list of taxa was screened against a locally specific herbarium [@agut2025].
 
@@ -142,7 +120,7 @@ Existing hypotheses for pollinator forage adaptations in response to environment
 
 Our comparative analyses understate the resolution of the metabarcoding derived data. We aggregated detections by sampling day to balance effort across methods, overlooking the individual-level detail that metabarcoding can provide. When we compared taxa detected from paired pollen and gut samples at the individual level, overlap was low, revealing a difference between sample sources that was not apparent in comparisons of aggregated data. This difference likely reflects the different roles of corbicular pollen and immediately consumed pollen in the nutrition needed for different life-cycle stages [@vaudo2015]. Taxa repeatedly detected by both methods increased confidence in their importance. For instance, the consistent appearance of *Vicia* in both sample types early in the season supports field observations of a strong association between *B. pascuorum* and *Vicia* species (Artamendi et al., unpublished data), again underscoring the value of integrating field surveys with laboratory-based methods.
 
-Metabarcoding also has some limitations. Primer and marker biases result in preferential amplification of certain sequences, making some taxa more or less likely to appear in final results. This limits the quantification of metabarcoding data, as was reflected in our binary treatment of these data. This approach may have both exaggerated and understated the roles of certain plant taxa as food resources, given our inability to use the relative abundance of reads as reliable quantified data [@bell2018]. Additionally, we used the ITS region as a target for amplicon sequencing because of its dual utility in identifying plant and fungal taxa. Other marker genes with reference sequence databases specific to plant taxa, such as *rbcL*, may have had better coverage of available sequences for matching our data to ASVs and taxa. In response to these limitations, we further suggest that combination with other interaction methodologies is likely to be the most effective way to overcome inherent methodological oversights.
+Metabarcoding also has some limitations. We used the ITS region as a target region for amplicon sequencing because it has previously been shown to provide higher taxonomic resolution than other commonly used marker genes (e.g., trnL and rbcL) [@bell2017; @milla2022], which is important for fine-scale comparison of floral resource use. However, differences in primer affinity and number of PCR cycles can bias amplification, making some plant taxa more or less likely to appear in final results [@shneyer2019; @bell2018; @baksay2020]. This limits the quantitative use of metabarcoding data, and we treated our data as binary, accordingly. While this qualitative presence/absence approach may have both exaggerated and understated the extent of roles of certain plant taxa as food resources, it provides an important first comparison of floral resource importance for diet, pollen transfer, and visitation.
 
 *Conclusions*
 

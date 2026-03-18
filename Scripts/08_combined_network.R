@@ -134,8 +134,19 @@ membership.orderd <- membership %>%
 orderd.genera <- membership.orderd$genus
 
 
+#Create figure and save
+
+png(
+  filename = here("results/combined_network.png"),
+  width    = 6.49,   # inches
+  height   = 6.49,   # inches
+  units    = "in",
+  res      = 320
+)
+
+
 circos.clear()
-circos.par(gap.after = c(rep(1, length(all.taxa) - 1), 5))
+circos.par(gap.after = rep(1, length(all.taxa)))
 
 circos.par(cell.padding = c(0, 0, 0, 0))
 circos.initialize(
@@ -143,27 +154,7 @@ circos.initialize(
   xlim = cbind(rep(0, nrow(membership.orderd)), rep(1, nrow(membership.orderd)))
 )
 
-#track for plant names
-circos.track(
-  ylim = c(0, 1),
-  track.height = 0.12,
-  bg.border = NA,
-  panel.fun = function(x, y) {
-    tax <- get.cell.meta.data("sector.index")
-    xlim <- get.cell.meta.data("xlim")
-    ylim <- get.cell.meta.data("ylim")
-    circos.text(
-      x = mean(xlim),
-      y = ylim[2],
-      labels = tax,
-      facing = "clockwise",
-      niceFacing = TRUE,
-      cex = 0.5,
-      adj = c(0.5, 0),
-      font = 4
-    )
-  }
-)
+
 
 # Track for gut mb
 circos.track(
@@ -175,7 +166,7 @@ circos.track(
       circos.rect(xlim[1], 0, xlim[2], 1, col = "forestgreen", border = NA)
     } 
   },
-  track.height = 0.1, bg.border = NA
+  track.height = 0.025, bg.border = NA
 )
 
 
@@ -190,7 +181,7 @@ circos.track(
       circos.rect(xlim[1], 0, xlim[2], 1, col = "goldenrod1", border = NA)
     } 
   },
-  track.height = 0.1, bg.border = NA
+  track.height = 0.025, bg.border = NA
 )
 
 
@@ -204,6 +195,30 @@ circos.track(
       circos.rect(xlim[1], 0, xlim[2], 1, col = "lightblue", border = NA)
     } 
   },
-  track.height = 0.1, bg.border = NA
+  track.height = 0.025, bg.border = NA
 )
+
+#track for plant names
+circos.track(
+  ylim = c(0, 1),
+  track.height = 0.12,
+  bg.border = NA,
+  panel.fun = function(x, y) {
+    tax <- get.cell.meta.data("sector.index")
+    xlim <- get.cell.meta.data("xlim")
+    ylim <- get.cell.meta.data("ylim")
+    circos.text(
+      x = mean(xlim),
+      y = ylim[1.95],
+      labels = tax,
+      facing = "clockwise",
+      niceFacing = TRUE,
+      cex = 0.5,
+      adj = c(0.5, 0),
+      font = 4
+    )
+  }
+)
+
+dev.off()
 

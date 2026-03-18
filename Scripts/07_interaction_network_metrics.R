@@ -3,9 +3,9 @@
 #d' specialization of B. pascuorum and "importance" of plants in the BP interaction network
 
 #packages ---------------------------------------------------------------------
-#library(here)
-#library(tidyverse)
-#library(tidyr)
+library(here)
+library(tidyverse)
+library(tidyr)
 library(ggplot2)
 library(bipartite)
 library(treemap)
@@ -221,7 +221,7 @@ my_palette <- viridisLite::viridis(
 
 fig.int.importance <- ggplot(int.most.important,
        aes(area = Importance, fill = Importance, label = label)) +
-  geom_treemap() +
+  geom_treemap(colour = "#EBEBEB", size = 0.5) +
   geom_treemap_text(
     colour   = "grey30",
     fontface = "italic",
@@ -231,14 +231,23 @@ fig.int.importance <- ggplot(int.most.important,
   scale_fill_gradientn(
     colours = my_palette,
     limits  = c(global_min, global_max)) +
-  ggtitle("A. Interaction transect-based network")
+  ggtitle("A. Interaction transect-based network") +
+  theme(plot.title = element_text(size = 9, face = "bold"),
+        legend.text = element_text(size = 7))
+
+ggsave(here("docs/manuscript_figures/fig.3A.png"),
+       fig.int.importance,
+       width = 6.5,
+       height = 2.8,
+       units = "in",
+       dpi = 320)
 
 
 #visualize "importance" results for gut contents ------------------------
 
 fig.gmb.importance <- ggplot(gmb.most.important,
-                             aes(area = Importance, fill = Importance, label = label)) +
-  geom_treemap() +
+      aes(area = Importance, fill = Importance, label = label)) +
+  geom_treemap(colour = "#EBEBEB", size = 0.5) +
   geom_treemap_text(
     colour   = "white",
     fontface = "italic",
@@ -248,13 +257,22 @@ fig.gmb.importance <- ggplot(gmb.most.important,
   scale_fill_gradientn(
     colours = my_palette,
     limits  = c(global_min, global_max)) +
-  ggtitle("B. Gut-content metabarcoding")
+  ggtitle("B. Gut-content metabarcoding") +
+  theme(plot.title = element_text(size = 9, face = "bold"),
+        legend.text = element_text(size = 7))
+
+ggsave(here("docs/manuscript_figures/fig.3B.png"),
+       fig.gmb.importance,
+       width = 6.5,
+       height = 2.8,
+       units = "in",
+       dpi = 320)
 
 
 #analyze importance results for pollen metabarcoding ----------------------------
 fig.pmb.importance <- ggplot(pmb.most.important,
        aes(area = Importance, fill = Importance, label = label)) +
-  geom_treemap() +
+  geom_treemap(colour = "#EBEBEB", size = 0.5) +
   geom_treemap_text(
     colour   = "white",
     fontface = "italic",
@@ -264,7 +282,16 @@ fig.pmb.importance <- ggplot(pmb.most.important,
   scale_fill_gradientn(
     colours = my_palette,
     limits  = c(global_min, global_max)) +
-  ggtitle("C. Corbicular pollen metabarcoding")
+  ggtitle("C. Corbicular pollen metabarcoding") +
+  theme(plot.title = element_text(size = 9, face = "bold"),
+        legend.text = element_text(size = 7))
+
+ggsave(here("docs/manuscript_figures/fig.3C.png"),
+       fig.pmb.importance,
+       width = 6.5,
+       height = 2.8,
+       units = "in",
+       dpi = 320)
 
 
 #the end ---------------------------
