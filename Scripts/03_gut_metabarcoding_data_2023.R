@@ -149,7 +149,8 @@ gbp23.asv.list <- lapply(gbp23.asv.list, function(x) {
 #saveRDS(gbp23.asv.inext, file = here("Data/gbp23_inext_out")) #better to just save and reload if it is ok
 gbp23.asv.inext <- readRDS(here("Data/gbp23_inext_out"))
 #gbp23_covg <- estimateD(gbp23.asv.list, datatype = "abundance") #again, better to just save and reload if it is ok
-saveRDS(gbp23_covg, file = here("Data/gbp23_estimateD_out"))
+#saveRDS(gbp23_covg, file = here("Data/gbp23_estimateD_out"))
+gbp23_covg <- readRDS(here("Data/gbp23_estimateD_out"))
 gbp23_covg_obs <- gbp23_covg[gbp23_covg$Method == "Rarefaction", ]
 #median(gbp23_covg_obs$SC) #median sampling completeness value
 

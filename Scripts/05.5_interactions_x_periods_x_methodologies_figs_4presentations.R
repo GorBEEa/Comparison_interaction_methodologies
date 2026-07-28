@@ -21,7 +21,7 @@ fig.fc.x.periods <- ggplot(mean.fc.taxa.periods, aes(period, mean.genera)) +
 
 
 #Interaction methodologies by period -------------------------------
-int.gen.x.periods <- long.gen.by.periods %>% filter(method != "n.genera.fc")
+
   
 fig.int.methods.x.periods <- ggplot(int.gen.x.periods, aes(period, n.genera, fill = method)) + 
   geom_col(position = "Dodge", alpha = 0.8) + 

@@ -149,6 +149,9 @@ long.gen.by.periods$method <- factor(
 #Means across methodologies by period
 
 #Some data prep for making an informative bar chart
+
+int.gen.x.periods <- long.gen.by.periods %>% filter(method != "n.genera.fc")
+
 mean.taxa.periods <- long.gen.by.periods %>% 
   group_by(period) %>% 
   summarise(mean.genera = mean(n.genera))
@@ -166,6 +169,7 @@ mean.fc.taxa.periods <- long.gen.by.periods %>%
 mean.gut.taxa.periods$LineType <- "Gut Content Metabarcoding"
 mean.fc.taxa.periods$LineType <- "Flower Count"
 mean.lines <- rbind(mean.gut.taxa.periods, mean.fc.taxa.periods)
+
 
 
 fc.line <- mean.lines %>% filter(LineType == "Flower Count")
