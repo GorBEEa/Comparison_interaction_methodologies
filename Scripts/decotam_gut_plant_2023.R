@@ -20,6 +20,19 @@ tax_tab <- as.matrix(read.table(here("Data/dada2_outputs/2023_plant_ASVs_taxonom
 sample_info_tab <- read.delim(here("Data/dada2_outputs/2023_BP_metab_sample_info.tsv"),
                                    header=T, row.names=1, check.names=F, sep="\t")
 
+sample_info_pre_QC_gut23 <- read.delim(here("Data/dada2_outputs/2023_plant_GorBEEa_track_analysis.tsv"),
+                              header=T, row.names=1, check.names=F, sep="\t")
+
+
+
+#learn about data
+samples_gut23 <- sample_info_tab[-c(127:134),] #remove negatives
+samples_preQC_gut23 <- sample_info_pre_QC_gut23[-c(127:134),]
+
+total_reads_pre_QC_gut23 <-sum(samples_preQC_gut23$input) 
+total_reads_post_QC_gut23 <- sum(samples_gut23$quant_reading) #total after QC (quant reading is really reads)
+filt_reads_gut23 <- total_reads_pre_QC_gut23 - total_reads_post_QC_gut23
+
 # Setting the color column to be of type "character", which helps later
 sample_info_tab$color_p <- as.character(sample_info_tab$color_p)
 sample_info_tab$color_s <- as.character(sample_info_tab$color_s)

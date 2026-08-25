@@ -24,6 +24,19 @@ sample_info_tab <- sample_info_tab %>%
   mutate(ID = sub("_.*", "", long_ID)) #some shuffling to join in concentration data
 
 
+#learn a little about dada2 processing outputs
+sample_info_pre_QC_poln2324 <- read.delim(here("Data/dada2_outputs/2023_24_pollen_GorBEEa_track_analysis.tsv"),
+                                 header=T, row.names=1, check.names=F, sep="\t")
+sample_info_pre_QC_poln23 <- sample_info_pre_QC_poln2324[-c(1,27:57),] #isolate 2023 and remove negative
+
+sample_info_postQC_poln23 <- sample_info_tab[-c(1,27:57),] #isolate 2023 and remove negative
+
+total_reads_pre_QC_poln23 <-sum(sample_info_pre_QC_poln23$input) 
+total_reads_post_QC_gut23 <- sum(sample_info_postQC_poln23$quant_reading) #total after QC (quant reading is really reads)
+filt_reads_gut23 <- total_reads_pre_QC_poln23 - total_reads_post_QC_gut23
+
+
+
 sample.conc <- as.data.frame(read_xls(here("Data/Y23.24P_sample_conc.xls")))
 sample.conc <- sample.conc %>% 
   select(c(`Sample name`,`Concentartionng/ul`)) %>% 
@@ -162,6 +175,7 @@ ggplot(data=df.pa, aes(x=pa.neg, y=pa.pos, color=contaminant)) + geom_point() +
 ps.nocont <- prune_taxa(!contamdf.prev$contaminant, physeq)
 # create a phyloseq object with only contaminant ASVs
 ps.cont <- prune_taxa(contamdf.prev$contaminant, physeq)
+#there are none - error because of this
 
 ## 1.d) Remove negative controls from phyloseq object     ####
 

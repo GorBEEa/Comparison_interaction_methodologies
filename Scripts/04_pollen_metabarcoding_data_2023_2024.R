@@ -60,7 +60,7 @@ fig.poln.read.coverage <- ggplot(poln.reads.23, aes(x = sample, y = reads)) +
   ggtitle("B.")
 
 #Look for genera that only correspond to one ASV. These could be contaminants/misidentified sequences
-#These can be confirmed by BLASTing the ASV sequence
+#These can be confirmed by BLASTing the ASV sequence, but technically this is redundant
 poln.ASVs.per.Genus <- as.data.frame(table(poln.asv.genus.2023.24$genus))
 poln.single.ASVs <- poln.ASVs.per.Genus %>% 
   filter(Freq == 1) %>% 
@@ -71,11 +71,15 @@ poln.single.ASVs <- left_join(poln.single.ASVs, poln.asv.genus.2023.24, by = 'ge
 
 #create a table of ASV counts corresponding to genera names 
 poln.asvNs.w.genus.2023.24 <- right_join(poln.asv.counts.2023.24,poln.asv.genus.2023.24, by = "asv_id")
+poln.asvNs.w.genus.2023 <- poln.asvNs.w.genus.2023.24[,-c(27:57)] #just 2023, at this point there are 186 unique genera
 poln.asvNs.w.genus.2023.24 <- poln.asvNs.w.genus.2023.24 %>% relocate(genus, .after = asv_id) %>%  #this is just to look and make sure it worked
   filter(!genus %in% known.misIDs)
+poln.asvNs.w.genus.2023 <- poln.asvNs.w.genus.2023 %>% relocate(genus, .after = asv_id) %>%  #this is just to look and make sure it worked
+  filter(!genus %in% known.misIDs) #just 2023, at this point there are 138 unique genera
 poln.asvNs.w.genus.2023.24$genus[poln.asvNs.w.genus.2023.24$genus == "Chaetopogon"] <- "Agrostis"
-#Just 2023
-poln.asvNs.w.genus.2023 <- poln.asvNs.w.genus.2023.24 %>% select(asv_id, genus, starts_with("Y23"))
+poln.asvNs.w.genus.2023$genus[poln.asvNs.w.genus.2023$genus == "Chaetopogon"] <- "Agrostis" #still 138
+
+
 
 #create a binary version of the above table
 #basically a genus occurence table organized by samples
@@ -173,6 +177,7 @@ ggsave(here("results/poln23_sampling_completeness.png"),
 #manipulate and analyze data ------
 
 #Identify all interaction genera from pollen metabarcoding
+#this is the last step in filtering taxa, by removing 0 rows
 poln.genus.hits.23.24 <- poln.asvNs.w.genus.2023.24 %>%
   #select(-starts_with("Y24")) %>% #only 2023
   group_by(genus) %>% 
@@ -185,11 +190,12 @@ poln.genus.hits.23.24 <- poln.asvNs.w.genus.2023.24 %>%
 
 paste("Metabarcoding detected", nrow(poln.genus.hits.23.24),"plant genera across all of the 2023 and 2024 corbicular pollen samples")
 
+
 #Just 2023
 poln.genus.hits.2023 <- poln.asvNs.w.genus.2023 %>%
-  #select(-starts_with("Y24")) %>% #only 2023
+  select(-starts_with("Y24")) %>% #only 2023
   group_by(genus) %>% 
-  summarise(across(where(is.numeric), sum)) %>% #here we already see that 160 genera were detected in 2023
+  summarise(across(where(is.numeric), sum)) %>%
   rowwise() %>% 
   filter(if_any(where(is.numeric), ~. > 0)) %>% #should already be the difinitive list, but if any genera still have 0 detections, remove them
   ungroup %>% 

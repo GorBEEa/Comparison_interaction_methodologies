@@ -62,10 +62,11 @@ bp.asv.tax.2023 <- tax_table.cl%>%
   mutate(asv_id = asvs2) %>% 
   relocate(asv_id)
 bp.asv.genus.2023 <- bp.asv.tax.2023 %>% 
-  select(asv_id,genus)
+  select(asv_id,genus) #at this point there aare 172 unique genera
 
 #General sequencing data stats and information
-gbp.reads.23 <- read_tsv(here("Data/dada2_outputs/2023_ITS2_GBP23_R1_read_summary.tsv"), show_col_types = FALSE)
+gbp.reads.23 <- read_tsv(here("Data/dada2_outputs/2023_ITS2_GBP23_R1_read_summary.tsv"),
+                         show_col_types = FALSE)
 gbp.reads.23 <- as.data.frame(gbp.reads.23[1:126,])
 
 
@@ -97,6 +98,7 @@ bp.plant.asvNs.w.genus.2023 <- bp.plant.asvNs.w.genus.2023 %>% relocate(genus, .
 
 #some samples have 0 ASVs - remove from analysis
 bp.plant.asvNs.w.genus.2023 <- bp.plant.asvNs.w.genus.2023 %>% select(!c(GBP23020802M_ITS_P96, GBP23021103M_ITS_P96, GBP23050403M_ITS_P48, GBP23061405M_ITS_P48))
+#at this point 132 genera remain, one more gets removed later
 
 #create binary version
 binary.plant.asvNs.w.genus.2023 <- bp.plant.asvNs.w.genus.2023 %>% 
