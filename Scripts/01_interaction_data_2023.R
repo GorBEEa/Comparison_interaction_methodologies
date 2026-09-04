@@ -72,6 +72,23 @@ int.genus.by.period <-  bp23.genus.int %>%
   mutate(period = as.integer(period)) %>% 
   summarise(n.genera.int = as.integer(n_distinct(genus)))
 
+#what about mean genera per sampling day by period?
+int.mean.gnra.by.period <- bp23.genus.int %>% 
+  group_by(period, site) %>% 
+  summarise(
+    n_taxa = n_distinct(genus),
+    .groups = "drop"
+  ) %>% 
+  group_by(period) %>% 
+  summarise(
+    mean_taxa = mean(n_taxa),
+    se_taxa = sd(n_taxa) / sqrt(n()),
+    .groups = "drop"
+  ) %>% 
+  mutate(type = "Interaction transect")
+
+
+
 int.genus.by.site <-  bp23.genus.int %>% 
   group_by(site) %>% 
   mutate(site = as.integer(site)) %>% 

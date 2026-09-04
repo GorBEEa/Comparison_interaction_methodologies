@@ -146,8 +146,6 @@ long.gen.by.periods$method <- factor(
   levels = c("n.genera.int", "n.genera.fc", "n.genera.pmb", "n.genera.gmb")
 )
 
-#Means across methodologies by period
-
 #Some data prep for making an informative bar chart
 
 int.gen.x.periods <- long.gen.by.periods %>% filter(method != "n.genera.fc")
@@ -202,6 +200,33 @@ fig.methods.w.fc <- ggplot(int.gen.x.periods, aes(period, n.genera, fill = metho
 fig.methods.w.fc
 
 dev.off()
+
+#this is the code I have been using to compare mean taxa detections rather than totals
+#just would need to do the same for pollen
+plot_data <- bind_rows(gmb23.period.means, int.mean.gnra.by.period)
+ggplot(plot_data, aes(x = factor(period), y = mean_taxa, fill = type)) +
+  geom_col(
+    position = position_dodge(width = 0.8),
+    width = 0.7
+  ) +
+  geom_errorbar(
+    aes(
+      ymin = mean_taxa - se_taxa,
+      ymax = mean_taxa + se_taxa
+    ),
+    position = position_dodge(width = 0.8),
+    width = 0.2
+  ) +
+  labs(
+    x = "Period",
+    y = "Mean taxa detected per sampling day",
+    fill = NULL
+  ) +
+  theme_classic()
+
+
+
+
 
 
 

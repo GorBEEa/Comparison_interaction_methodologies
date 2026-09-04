@@ -1,15 +1,14 @@
 #Script for manipulating and processing 2023 B. pascuorum ITS2 plant metabarcoding data
 
 #unblock these packages if not running after interaction_data (Recommended to run first)
-#library(readr)
-#library(here)
-#library(tidyverse)
-#library(tidyr)
-#library(tidyselect)
-#library(easystats)
-#library(visreg)
-#library(vegan)
-
+library(readr)
+library(here)
+library(tidyverse)
+library(tidyr)
+library(tidyselect)
+library(easystats)
+library(visreg)
+library(vegan)
 library(viridis)
 library(report)
 library(DHARMa)
@@ -306,6 +305,37 @@ bp23.genomic.periods <- bp23.genomic.analys %>%
   summarise(n_samples = n_distinct(sample),
             n.genera.gmb = n_distinct(genus),
             .groups = 'drop')
+
+#what about mean genera per sample by period?
+
+gmb23.period.means <- bp23.genomic.analys %>% 
+  pivot_longer(
+    cols = Abelmoschus:last_col(),
+    names_to = "genus",
+    values_to = "count"
+  ) %>% 
+  # Calculate taxa per sample within each sampling day
+  group_by(period, site, sample) %>% 
+  summarise(
+    n_taxa = sum(count > 0),
+    .groups = "drop"
+  ) %>% 
+  # Calculate mean taxa per sampling day
+  group_by(period, site) %>% 
+  summarise(
+    mean_taxa_day = mean(n_taxa),
+    .groups = "drop"
+  ) %>% 
+  # Now aggregate sampling days within each period
+  group_by(period) %>% 
+  summarise(
+    mean_taxa = mean(mean_taxa_day),
+    sd_taxa = sd(mean_taxa_day),
+    se_taxa = sd(mean_taxa_day) / sqrt(n()),
+    n_days = n(),
+    .groups = "drop"
+  ) %>% 
+  mutate(type = "gmb")
 
 #Analysis by site -----
 

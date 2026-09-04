@@ -50,7 +50,7 @@ dprime.pmb <- dfun(pmb.web)
 
 
 
-#compare d calculations across methodologies ----------------------------------
+#compare d' calculations across methodologies ----------------------------------
 
 #make vectors for d' across periods for individual methodologies
 specvec.int <- as.vector(dprime.int$dprime)
@@ -77,7 +77,7 @@ int.method.colors <- c("interaction" = "lightblue",
 
 fig.dprime <- ggplot(specialization, aes(x = period, y = dprime, group = method,
                                          color = method, linetype = method, shape = method)) + 
-  geom_line(size = 1.2) +
+  geom_line(linewidth = 1.2) +
   geom_point(size = 3, alpha = 0.9) + 
   xlab("Sampling Period") +
   ylab("d' Specialization") +
@@ -295,6 +295,111 @@ ggsave(here("docs/manuscript_figures/fig.3C.png"),
 
 
 #the end ---------------------------
+
+
+#Instead of the previous importance metric, look at genus strength (i.e. 10.1126/science.1123412)
+
+genus_cols <- setdiff(
+  names(clean4stats.bp23.all.binary),
+  c("period", "site", "method")
+)
+
+plant_strength <- clean4stats.bp23.all.binary %>%
+  # Calculate k_i = number of plant genera detected on each sampling day (day specific degree for B. pascuorum)
+  mutate(
+    k_i = rowSums(across(all_of(genus_cols)))
+  ) %>%
+  # Calculate number genus of interactions (ALWAYS 1 or 0 with this approach) a_ij and / k_i for every genus
+  mutate(
+    across(
+      all_of(genus_cols),
+      ~ ifelse(k_i > 0, .x / k_i, 0)
+    )
+  ) %>%
+  # Sum across all sampling days, separately for each method to get strength by genus
+  group_by(method) %>%
+  summarise(
+    across(
+      all_of(genus_cols),
+      sum,
+      na.rm = TRUE
+    ),
+    .groups = "drop"
+  ) %>%
+  # Put results into long format
+  pivot_longer(
+    cols = all_of(genus_cols),
+    names_to = "genus",
+    values_to = "strength"
+  ) %>% 
+  filter(method != "count") #not interested in flower count data because it isn't interaction data
+
+strength_gmb <- plant_strength %>% filter(method == "gut.metabarcoding") %>% arrange(-strength) %>% select(c(genus,strength))
+strength_pmb <- plant_strength %>% filter(method == "pollen.metabarcoding") %>% arrange(-strength) %>% select(c(genus,strength))
+strength_int <- plant_strength %>% filter(method == "interaction") %>% arrange(-strength) %>% select(c(genus,strength))
+
+
+#treemap of strength data - interactions
+int.strongest <- strength_int[1:30,1:2]
+int.strongest$label <- paste0(int.strongest$genus, "\n", round(int.strongest$strength, 2))
+
+ggplot(int.strongest, aes(area = strength, fill = strength, label = label)) +
+  geom_treemap(colour = "#EBEBEB", size = 0.5) +
+  geom_treemap_text(
+    colour   = "grey30",
+    fontface = "italic",
+    place    = "centre",
+    reflow   = TRUE,
+    size     = 6) +
+  scale_fill_gradientn(
+    colours = my_palette,
+    limits  = c(min(int.strongest$strength), max(int.strongest$strength))) +
+  ggtitle("A. Interaction transect-based network") +
+  theme(plot.title = element_text(size = 9, face = "bold"),
+        legend.text = element_text(size = 7))
+
+
+#treemap of strength data - gut metabarcoding
+gmb.strongest <- strength_gmb[1:30,1:2]
+gmb.strongest$label <- paste0(gmb.strongest$genus, "\n", round(gmb.strongest$strength, 2))
+
+ggplot(gmb.strongest, aes(area = strength, fill = strength, label = label)) +
+  geom_treemap(colour = "#EBEBEB", size = 0.5) +
+  geom_treemap_text(
+    colour   = "grey30",
+    fontface = "italic",
+    place    = "centre",
+    reflow   = TRUE,
+    size     = 6) +
+  scale_fill_gradientn(
+    colours = my_palette,
+    limits  = c(min(gmb.strongest$strength), max(gmb.strongest$strength))) +
+  ggtitle("B. Gut-content metabarcoding") +
+  theme(plot.title = element_text(size = 9, face = "bold"),
+        legend.text = element_text(size = 7))
+
+#treemap of strength data - pollen metabarcoding
+pmb.strongest <- strength_pmb[1:30,1:2]
+pmb.strongest$label <- paste0(pmb.strongest$genus, "\n", round(pmb.strongest$strength, 2))
+
+ggplot(pmb.strongest, aes(area = strength, fill = strength, label = label)) +
+  geom_treemap(colour = "#EBEBEB", size = 0.5) +
+  geom_treemap_text(
+    colour   = "grey30",
+    fontface = "italic",
+    place    = "centre",
+    reflow   = TRUE,
+    size     = 6) +
+  scale_fill_gradientn(
+    colours = my_palette,
+    limits  = c(min(pmb.strongest$strength), max(pmb.strongest$strength))) +
+  ggtitle("C. Corbicular pollen metabarcoding") +
+  theme(plot.title = element_text(size = 9, face = "bold"),
+        legend.text = element_text(size = 7))
+
+
+
+# -----------------------------------------------------------------------------------------
 
 save.image(file = here("Data/07_output.RData"))
 
