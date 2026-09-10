@@ -339,65 +339,99 @@ strength_pmb <- plant_strength %>% filter(method == "pollen.metabarcoding") %>% 
 strength_int <- plant_strength %>% filter(method == "interaction") %>% arrange(-strength) %>% select(c(genus,strength))
 
 
-#treemap of strength data - interactions
-int.strongest <- strength_int[1:30,1:2]
+#subset data to the "strongest links"
+int.strongest <- strength_int[1:15,1:2]
 int.strongest$label <- paste0(int.strongest$genus, "\n", round(int.strongest$strength, 2))
 
-ggplot(int.strongest, aes(area = strength, fill = strength, label = label)) +
+gmb.strongest <- strength_gmb[1:15,1:2]
+gmb.strongest$label <- paste0(gmb.strongest$genus, "\n", round(gmb.strongest$strength, 2))
+
+pmb.strongest <- strength_pmb[1:15,1:2]
+pmb.strongest$label <- paste0(pmb.strongest$genus, "\n", round(pmb.strongest$strength, 2))
+
+
+#things for nice comparative plots:
+strength_min <- min(
+  int.strongest$strength,
+  gmb.strongest$strength,
+  pmb.strongest$strength)
+  
+
+strength_max <- max(
+  int.strongest$strength,
+  gmb.strongest$strength,
+  pmb.strongest$strength)
+
+#treemap of strength data - interactions
+fig.int.strength <- ggplot(int.strongest, aes(area = strength, fill = strength, label = label)) +
   geom_treemap(colour = "#EBEBEB", size = 0.5) +
   geom_treemap_text(
     colour   = "grey30",
     fontface = "italic",
     place    = "centre",
     reflow   = TRUE,
-    size     = 6) +
+    size     = 9) +
   scale_fill_gradientn(
     colours = my_palette,
-    limits  = c(min(int.strongest$strength), max(int.strongest$strength))) +
+    limits  = c(strength_min, strength_max)) +
   ggtitle("A. Interaction transect-based network") +
   theme(plot.title = element_text(size = 9, face = "bold"),
         legend.text = element_text(size = 7))
 
+ggsave(here("docs/manuscript_figures/fig.3A.strength.png"),
+       fig.int.strength,
+       width = 6.5,
+       height = 2.8,
+       units = "in",
+       dpi = 320)
 
 #treemap of strength data - gut metabarcoding
-gmb.strongest <- strength_gmb[1:30,1:2]
-gmb.strongest$label <- paste0(gmb.strongest$genus, "\n", round(gmb.strongest$strength, 2))
 
-ggplot(gmb.strongest, aes(area = strength, fill = strength, label = label)) +
+fig.gmb.strength <- ggplot(gmb.strongest, aes(area = strength, fill = strength, label = label)) +
   geom_treemap(colour = "#EBEBEB", size = 0.5) +
   geom_treemap_text(
     colour   = "grey30",
     fontface = "italic",
     place    = "centre",
     reflow   = TRUE,
-    size     = 6) +
+    size     = 9) +
   scale_fill_gradientn(
     colours = my_palette,
-    limits  = c(min(gmb.strongest$strength), max(gmb.strongest$strength))) +
+    limits  = c(strength_min, strength_max)) +
   ggtitle("B. Gut-content metabarcoding") +
   theme(plot.title = element_text(size = 9, face = "bold"),
         legend.text = element_text(size = 7))
 
-#treemap of strength data - pollen metabarcoding
-pmb.strongest <- strength_pmb[1:30,1:2]
-pmb.strongest$label <- paste0(pmb.strongest$genus, "\n", round(pmb.strongest$strength, 2))
+ggsave(here("docs/manuscript_figures/fig.3B.strength.png"),
+       fig.gmb.strength,
+       width = 6.5,
+       height = 2.8,
+       units = "in",
+       dpi = 320)
 
-ggplot(pmb.strongest, aes(area = strength, fill = strength, label = label)) +
+#treemap of strength data - pollen metabarcoding
+
+fig.pmb.strength <-ggplot(pmb.strongest, aes(area = strength, fill = strength, label = label)) +
   geom_treemap(colour = "#EBEBEB", size = 0.5) +
   geom_treemap_text(
-    colour   = "grey30",
+    colour   = "grey87",
     fontface = "italic",
     place    = "centre",
     reflow   = TRUE,
-    size     = 6) +
+    size     = 9) +
   scale_fill_gradientn(
     colours = my_palette,
-    limits  = c(min(pmb.strongest$strength), max(pmb.strongest$strength))) +
+    limits  = c(strength_min, strength_max)) +
   ggtitle("C. Corbicular pollen metabarcoding") +
   theme(plot.title = element_text(size = 9, face = "bold"),
         legend.text = element_text(size = 7))
 
-
+ggsave(here("docs/manuscript_figures/fig.3C.strength.png"),
+       fig.pmb.strength,
+       width = 6.5,
+       height = 2.8,
+       units = "in",
+       dpi = 320)
 
 # -----------------------------------------------------------------------------------------
 

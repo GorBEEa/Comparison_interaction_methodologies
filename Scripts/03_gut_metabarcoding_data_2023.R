@@ -64,12 +64,12 @@ bp.asv.genus.2023 <- bp.asv.tax.2023 %>%
   select(asv_id,genus) #at this point there aare 172 unique genera
 
 #General sequencing data stats and information
-gbp.reads.23 <- read_tsv(here("Data/dada2_outputs/2023_ITS2_GBP23_R1_read_summary.tsv"),
+gbp.reads.23 <- read_tsv(here("Data/dada2_outputs/2023_plant_GorBEEa_track_analysis_final.tsv"),
                          show_col_types = FALSE)
 gbp.reads.23 <- as.data.frame(gbp.reads.23[1:126,])
 
 
-fig.gbp23.read.coverage <- ggplot(gbp.reads.23, aes(x = sample, y = reads)) +
+fig.gbp23.read.coverage <- ggplot(gbp.reads.23, aes(x = sample, y = collapsed_100)) +
   geom_col(fill = "forestgreen", alpha = 0.8, width = 0.7) +
   theme_classic() +
   theme(axis.text.x = element_blank(),
@@ -132,21 +132,36 @@ bp.plant.asv.reads.2023 <- bp.plant.asvNs.w.genus.2023 %>%
   summarise(Count = sum(Count), .groups = "drop") %>%
   pivot_wider(names_from = asv_id, values_from = Count, values_fill = 0)
 
+gbp23.abundance <- bp.plant.asv.reads.2023[, -1]
+gbp23.abundance <- as.matrix(gbp23.abundance)
+
+# Convert read counts to detection/non-detection
+gbp23.incidence <- (gbp23.abundance > 0) * 1
+gbp23.incidence <- t(gbp23.incidence)
+colnames(gbp23.incidence) <- bp.plant.asv.reads.2023$sample
+gbp23.incidence.raw <- rbind(
+  122,
+  gbp23.incidence
+)
+gbp23.incidence.list <- list(
+  gbp23 = gbp23.incidence.raw
+)
+
 
 #format for iNEXT
-gbp23.asv.list <- apply(bp.plant.asv.reads.2023, 1, function(x) as.numeric(x))
+gbp23.asv.list <- apply(gbp23.abundance, 1, function(x) as.numeric(x))
 #`apply` returns a matrix for numeric input, so convert to list
-gbp23.asv.list <- split(gbp23.asv.list, seq(nrow(bp.plant.asv.reads.2023)))
+gbp23.asv.list <- split(gbp23.asv.list, seq(nrow(gbp23.abundance)))
 # But `split` won’t work properly here; better do:
-gbp23.asv.list <- lapply(1:nrow(bp.plant.asv.reads.2023), function(i) as.numeric(bp.plant.asv.reads.2023[i, ]))
-names(gbp23.asv.list) <- rownames(bp.plant.asv.reads.2023)
+gbp23.asv.list <- lapply(1:nrow(gbp23.abundance), function(i) as.numeric(gbp23.abundance[i, ]))
+names(gbp23.asv.list) <- rownames(gbp23.abundance)
 #NA control
 gbp23.asv.list <- lapply(gbp23.asv.list, function(x) {
   x[is.na(x)] <- 0
   x})
 
 # Now run iNEXT (takes a while)
-#gbp23.asv.inext <- iNEXT(gbp23.asv.list, q = 0, datatype = "abundance", size = NULL)
+gbp23.asv.inext <- iNEXT(gbp23.asv.list, q = 0, datatype = "abundance", size = NULL)
 #saveRDS(gbp23.asv.inext, file = here("Data/gbp23_inext_out")) #better to just save and reload if it is ok
 gbp23.asv.inext <- readRDS(here("Data/gbp23_inext_out"))
 #gbp23_covg <- estimateD(gbp23.asv.list, datatype = "abundance") #again, better to just save and reload if it is ok

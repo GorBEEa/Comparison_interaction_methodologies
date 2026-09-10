@@ -172,3 +172,5 @@ We advocate for a functional approach to pollinator network research: one that e
 
 ::: {#refs}
 :::
+
+@barrat2004 @bascompte2006

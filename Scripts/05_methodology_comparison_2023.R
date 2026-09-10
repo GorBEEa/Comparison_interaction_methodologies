@@ -264,6 +264,7 @@ all.plants <- clean4stats.bp23.all.binary %>%
   select(!c(site, period, method))
 
 
+
 #nMDS visualization of data
 
 #prepare nMDS data with vegan

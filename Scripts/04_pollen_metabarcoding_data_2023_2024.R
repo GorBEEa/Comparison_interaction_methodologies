@@ -46,11 +46,11 @@ poln.asv.genus.2023.24 <- poln.asv.tax.2023.24 %>%
 
 
 #General sequencing data stats and information
-poln.reads.23 <- read_tsv(here("Data/dada2_outputs/2023_pollen_R1_read_summary.tsv"), show_col_types = FALSE)
-poln.reads.23 <- as.data.frame(poln.reads.23[1:25,])
+poln.reads.23 <- read_tsv(here("Data/dada2_outputs/2023_24_pollen_GorBEEa_track_analysis.tsv"), show_col_types = FALSE)
+poln.reads.23 <- as.data.frame(poln.reads.23[2:26,])
 
 
-fig.poln.read.coverage <- ggplot(poln.reads.23, aes(x = sample, y = reads)) +
+fig.poln.read.coverage <- ggplot(poln.reads.23, aes(x = sample, y = merged)) +
   geom_col(fill = "goldenrod1", alpha = 0.8, width = 0.7) +
   theme_classic() +
   theme(axis.text.x = element_blank(),
@@ -118,25 +118,45 @@ poln.2023.genomic.specs <- poln23.24.genomic.specs %>%
   filter(year == 2023)
 
 
-#look at sampling completeness ------------------------------------
 
-poln.asv.list <- apply(poln.asvgn.wide.2023, 1, function(x) as.numeric(x))
+#look at sampling completeness ------------------------------------
+poln23.abundance <- poln.asvgn.wide.2023[, -1]
+poln23.abundance <- as.matrix(poln23.abundance)
+poln23.incidence <- (poln23.abundance > 0) * 1
+poln23.incidence <- t(poln23.incidence)
+colnames(poln23.incidence) <- poln.asvgn.wide.2023$sample
+poln23.incidence.list <- list(poln23.incidence)
+names(poln23.incidence.list) <- colnames(poln23.incidence)
+
+poln.asv.list <- apply(poln23.abundance, 1, function(x) as.numeric(x))
 #`apply` returns a matrix for numeric input, so convert to list
-poln.asv.list <- split(poln.asv.list, seq(nrow(poln.asvgn.wide.2023)))
+poln.asv.list <- split(poln.asv.list, seq(nrow(poln23.abundance)))
 # But `split` won’t work properly here; better do:
-poln.asv.list <- lapply(1:nrow(poln.asvgn.wide.2023), function(i) as.numeric(poln.asvgn.wide.2023[i, ]))
-names(poln.asv.list) <- rownames(poln.asvgn.wide.2023)
+poln.asv.list <- lapply(1:nrow(poln23.abundance), function(i) as.numeric(poln23.abundance[i, ]))
+names(poln.asv.list) <- rownames(poln23.abundance)
 #NA control
 poln.asv.list <- lapply(poln.asv.list, function(x) {
   x[is.na(x)] <- 0
   x})
+
+
+
 # Now run iNEXT
+poln23.inext.inc <- iNEXT(
+       poln23.incidence.list,
+       q = 0,
+       datatype = "incidence_raw",
+       endpoint = 25,
+       knots = 25,
+       se = FALSE)
+
+
 #poln.asv.inext <- iNEXT(poln.asv.list, q = 0, datatype = "abundance", size = NULL)
 #saveRDS(poln.asv.inext, file = here("Data/poln_inext_out")) #better to just save and reload if it is ok
 poln.asv.inext <- readRDS(here("Data/poln_inext_out"))
 #poln23_covg <- estimateD(poln.asv.list, datatype = "abundance")
-saveRDS(poln23_covg, file = here("Data/poln23_estimateD_out"))#better to just save and reload if it is ok
-#poln23_covg <- readRDS(here("Data/poln23_estimateD_out"))
+#saveRDS(poln23_covg, file = here("Data/poln23_estimateD_out"))#better to just save and reload if it is ok
+poln23_covg <- readRDS(here("Data/poln23_estimateD_out"))
 poln23_covg_obs <- poln23_covg[poln23_covg$Method == "Rarefaction", ]
 #median(poln23_covg_obs$SC) #median sampling completeness value
 

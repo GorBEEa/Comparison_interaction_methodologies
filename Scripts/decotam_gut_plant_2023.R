@@ -28,7 +28,6 @@ sample_info_pre_QC_gut23 <- read.delim(here("Data/dada2_outputs/2023_plant_GorBE
 #learn about data
 samples_gut23 <- sample_info_tab[-c(127:134),] #remove negatives
 samples_preQC_gut23 <- sample_info_pre_QC_gut23[-c(127:134),]
-
 total_reads_pre_QC_gut23 <-sum(samples_preQC_gut23$input) 
 total_reads_post_QC_gut23 <- sum(samples_gut23$quant_reading) #total after QC (quant reading is really reads)
 filt_reads_gut23 <- total_reads_pre_QC_gut23 - total_reads_post_QC_gut23
