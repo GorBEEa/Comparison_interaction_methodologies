@@ -120,14 +120,21 @@ poln.2023.genomic.specs <- poln23.24.genomic.specs %>%
 
 
 #look at sampling completeness ------------------------------------
-poln23.abundance <- poln.asvgn.wide.2023[, -1]
-poln23.abundance <- as.matrix(poln23.abundance)
-poln23.incidence <- (poln23.abundance > 0) * 1
-poln23.incidence <- t(poln23.incidence)
-colnames(poln23.incidence) <- poln.asvgn.wide.2023$sample
-poln23.incidence.list <- list(poln23.incidence)
-names(poln23.incidence.list) <- colnames(poln23.incidence)
+#this code should work once you resolve the dada2 issue
+poln23.asv.counts <- poln.asvNs.w.genus.2023 %>%
+  select(-genus, -asv_id) %>%
+  as.matrix()
+# Convert read counts to detection/non-detection
+poln23.asv.binary <- (poln23.asv.counts > 0) * 1 #take asv matrix and make binary
+colnames(poln23.asv.binary) <- poln.asvgn.wide.2023$sample #re-add sample names
+poln23.asv.binary.list <- list(poln23.asv.binary)
+poln23.asv.binary.iNext <- iNEXT(poln23.asv.binary.list, q = 0, datatype = "incidence_raw", size = NULL)
+poln23.asv.binary.iNext$iNextEst$size_based
+ggiNEXT(poln23.asv.binary.iNext, type = 1)
 
+
+
+#AMs code
 poln.asv.list <- apply(poln23.abundance, 1, function(x) as.numeric(x))
 #`apply` returns a matrix for numeric input, so convert to list
 poln.asv.list <- split(poln.asv.list, seq(nrow(poln23.abundance)))

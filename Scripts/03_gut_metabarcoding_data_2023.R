@@ -132,24 +132,22 @@ bp.plant.asv.reads.2023 <- bp.plant.asvNs.w.genus.2023 %>%
   summarise(Count = sum(Count), .groups = "drop") %>%
   pivot_wider(names_from = asv_id, values_from = Count, values_fill = 0)
 
-gbp23.abundance <- bp.plant.asv.reads.2023[, -1]
-gbp23.abundance <- as.matrix(gbp23.abundance)
+gbp23.asv.counts <- bp.plant.asv.reads.2023[, -1]
+gbp23.asv.counts <- as.matrix(gbp23.asv.counts)
 
 # Convert read counts to detection/non-detection
-gbp23.incidence <- (gbp23.abundance > 0) * 1
-gbp23.incidence <- t(gbp23.incidence)
-colnames(gbp23.incidence) <- bp.plant.asv.reads.2023$sample
-gbp23.incidence.raw <- rbind(
-  122,
-  gbp23.incidence
-)
-gbp23.incidence.list <- list(
-  gbp23 = gbp23.incidence.raw
-)
+gbp23.asv.binary <- (gbp23.asv.counts > 0) * 1 #take asv matrix and make binary
+gbp23.asv.binary <- t(gbp23.asv.binary) #re-transpose
+colnames(gbp23.asv.binary) <- bp.plant.asv.reads.2023$sample #re-add sample names
+gbp23.asv.binary.list <- list(gbp23.asv.binary)
+gbp.asv.binary.iNext <- iNEXT(gbp23.asv.binary.list, q = 0, datatype = "incidence_raw", size = NULL)
+
+gbp.asv.binary.iNext$iNextEst$size_based
+ggiNEXT(gbp.asv.binary.iNext, type = 1)
 
 
-#format for iNEXT
-gbp23.asv.list <- apply(gbp23.abundance, 1, function(x) as.numeric(x))
+#format for iNEXT (AMs code)
+gbp23.asv.list <- apply(gbp23.asv.counts, 1, function(x) as.numeric(x))
 #`apply` returns a matrix for numeric input, so convert to list
 gbp23.asv.list <- split(gbp23.asv.list, seq(nrow(gbp23.abundance)))
 # But `split` won’t work properly here; better do:
