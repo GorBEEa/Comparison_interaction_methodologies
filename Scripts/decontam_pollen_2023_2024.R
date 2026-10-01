@@ -5,36 +5,53 @@
 
 # Load libraries
 library(here)
+library(tidyverse)
 library(decontam); packageVersion("decontam")
 library(phyloseq) ; packageVersion("phyloseq")
 library(ggplot2); packageVersion("ggplot2")
 library(readxl)
 
 # Load data
-count_tab <- read.table(here("Data/dada2_outputs/2023_24_pollen_ASVs_counts.tsv"), header=T, row.names=1,
+#count_tab <- read.table(here("Data/dada2_outputs/2023_24_pollen_ASVs_counts.tsv"), header=T, row.names=1,
+#                        check.names=F, sep="\t")
+
+#tax_tab <- as.matrix(read.table(here("Data/dada2_outputs/2023_24_pollen_ASVs_taxonomy.tsv"), header=T,
+ #                               row.names=1, check.names=F, sep="\t"))
+
+#sample_info_tab <- read.delim(here("Data/dada2_outputs/2023_24_pollen_sample_info.tsv"),
+ #                             header=T, row.names=1, check.names=F, sep="\t")
+
+count_tab <- read.table(here("Data/dada2_outputs/2023_24_pollen_trimmed_ASVs_counts.tsv"), header=T, row.names=1,
                         check.names=F, sep="\t")
 
-tax_tab <- as.matrix(read.table(here("Data/dada2_outputs/2023_24_pollen_ASVs_taxonomy.tsv"), header=T,
+tax_tab <- as.matrix(read.table(here("Data/dada2_outputs/2023_24_pollen_trimmed_ASVs_taxonomy.tsv"), header=T,
                                 row.names=1, check.names=F, sep="\t"))
 
-sample_info_tab <- read.delim(here("Data/dada2_outputs/2023_24_pollen_sample_info.tsv"),
+sample_info_tab <- read.delim(here("Data/dada2_outputs/23_24_pollen_trimmed_sample_info.tsv"),
                               header=T, row.names=1, check.names=F, sep="\t")
-sample_info_tab$type[rownames(sample_info_tab) != "PBLANKP0101I_ITS"] <- "sample" #a correction. for some reason they all read as a negative control in type
+
+sample_info_tab$type <- "sample"
+sample_info_tab["PBLANKP0101I_ITS_trimmed", "type"] <- "negative"
 sample_info_tab <- sample_info_tab %>%
   mutate(long_ID = row.names(sample_info_tab)) %>% 
   mutate(ID = sub("_.*", "", long_ID)) #some shuffling to join in concentration data
 
 
 #learn a little about dada2 processing outputs
-sample_info_pre_QC_poln2324 <- read.delim(here("Data/dada2_outputs/2023_24_pollen_GorBEEa_track_analysis.tsv"),
-                                 header=T, row.names=1, check.names=F, sep="\t")
+#sample_info_pre_QC_poln2324 <- read.delim(here("Data/dada2_outputs/2023_24_pollen_GorBEEa_track_analysis.tsv"),
+ #                                header=T, row.names=1, check.names=F, sep="\t")
+
+sample_info_pre_QC_poln2324 <- read.delim(here("Data/dada2_outputs/2023_24_pollen_trimmed_track_analysis.tsv"), #table from dada step 1 input is raw reads
+                                          header=T, row.names=1, check.names=F, sep="\t")
 sample_info_pre_QC_poln23 <- sample_info_pre_QC_poln2324[-c(1,27:57),] #isolate 2023 and remove negative
 
-sample_info_postQC_poln23 <- sample_info_tab[-c(1,27:57),] #isolate 2023 and remove negative
+sample_info_postDADA_poln23 <- read.delim(here("Data/dada2_outputs/2023_24_pollen_trimmed_track_analysis_final.tsv"), #table from dada step 2 collapsed 100 is the final used read count (Raw is not raw, it's just the name for the input at that step - see the final count from step 1, should be the same)
+                                          header=T, row.names=1, check.names=F, sep="\t")
+sample_info_postDADA_poln23 <- sample_info_postDADA_poln23[-c(1,27:57),] #isolate 2023 and remove negative
 
 total_reads_pre_QC_poln23 <-sum(sample_info_pre_QC_poln23$input) 
-total_reads_post_QC_gut23 <- sum(sample_info_postQC_poln23$quant_reading) #total after QC (quant reading is really reads)
-filt_reads_gut23 <- total_reads_pre_QC_poln23 - total_reads_post_QC_gut23
+total_reads_post_DADA_gut23 <- sum(sample_info_postDADA_poln23$collapsed_100) #total after QC (quant reading is really reads)
+filt_reads_gut23 <- total_reads_pre_QC_poln23 - total_reads_post_DADA_gut23
 
 
 
@@ -75,7 +92,7 @@ head(sample_data(physeq))
 ## 1.a) Inspect Library Sizes     ####
 
 df <- as.data.frame(sample_data(physeq)) # Put sample_data into a ggplot-friendly data.frame
-max_negative <- max(df$quant_reading[df$type == "negative"]) # Calculate the highest quant_reading for "negative" samples
+max_negative <- max(df$conc[df$type == "negative"]) # Calculate the highest quant_reading for "negative" samples
 df$LibrarySize <- sample_sums(physeq)
 df <- df[order(df$LibrarySize),]
 df$Index <- seq(nrow(df))
@@ -172,11 +189,18 @@ ggplot(data=df.pa, aes(x=pa.neg, y=pa.pos, color=contaminant)) + geom_point() +
 
 ## 1.c) Remove contaminants     ####
 
-# create phyloseq object with contaminant ASVs removed  
-ps.nocont <- prune_taxa(!contamdf.prev$contaminant, physeq)
-# create a phyloseq object with only contaminant ASVs
-ps.cont <- prune_taxa(contamdf.prev$contaminant, physeq)
-#there are none - error because of this
+# Combine frequency and prevalence contaminant calls
+contam_both <- contamdf.freq$contaminant | contamdf.prev$contaminant
+
+# Remove ASVs identified as contaminants by either test
+ps.nocont <- prune_taxa(!contam_both, physeq)
+
+# Optional: create a phyloseq object containing all contaminants
+ps.cont <- prune_taxa(contam_both, physeq)
+
+# Check how many contaminants were identified
+table(contam_both)
+
 
 ## 1.d) Remove negative controls from phyloseq object     ####
 
@@ -206,7 +230,7 @@ saveRDS(ps.pollen23.24, file = here("Data/pollen23.24.decontam.0.5.RDS"))
 
 contamdf.prev
 contaminants <- contamdf.prev %>% filter(contaminant == "TRUE")
-asv_genus_pairs <-bp.plant.asvNs.w.genus.2023 %>% select(c(asv_id, genus)) #!!! CHECK THIS: bp.plant.asvNs.w.genus.2023 is from metabarcoding data and in theory created using the data from the RDS that THIS script creates (this is backwards?)
+#asv_genus_pairs <- bp.plant.asvNs.w.genus.2023 %>% select(c(asv_id, genus)) #!!! CHECK THIS: bp.plant.asvNs.w.genus.2023 is from metabarcoding data and in theory created using the data from the RDS that THIS script creates (this is backwards?)
 asv_ids <- rownames(contaminants)
 contaminants <- contaminants %>% mutate(asv_id = asv_ids)
 asv_taxa_contaminants <- left_join(contaminants,asv_genus_pairs, by = "asv_id")
