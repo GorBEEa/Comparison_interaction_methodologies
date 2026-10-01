@@ -36,19 +36,19 @@ int.genus.occur.gut.mb.detect <- full_join(gut.detected.int.genus, df.int.genus 
 poln.detected.int.genus <- df.int.genus %>% distinct(genus) #Clean list of genera (27) from BP interactions
 poln.detected.int.genus$mb.detected <- as.integer(poln.detected.int.genus$genus %in% poln.genus.hits.2023$genus) #presence absence comparison
 poln.genus.occur.gut.mb.detect <- full_join(poln.detected.int.genus, df.int.genus %>% count(genus)) #table with total interaction counts for 2023 by genus (n) and their binary value for detection y/n with mb
-#result: 24 of 27 interaction taxa were observed by MB, missing taxa: Anemone, Jasione, Arabis
+#result: 25 of 27 interaction taxa were observed by MB, missing taxa: Anemone, Arabis
 
 
 #Inverse analysis of above - which genera observed in gut metabarcoding were observed in interactions -----
 observed.mb.genus <- genus.hits.23
 observed.mb.genus$int.detected <- as.integer(observed.mb.genus$genus %in% df.int.genus$genus)
-observed.mb.genus %>% filter(int.detected == 1)
+observed.mb.genus %>% filter(int.detected == 1) %>% print(n =27)
 #result: Interactions did not detect any species beyond those detected by gut metabarcoding
 
 #Which genera observed in pollen metabarcoding were observed in interactions -----
 observed.pmb.genus <- poln.genus.hits.2023
 observed.pmb.genus$int.detected <- as.integer(observed.pmb.genus$genus %in% df.int.genus$genus)
-observed.pmb.genus %>% filter(int.detected == 1)
+observed.pmb.genus %>% filter(int.detected == 1) %>% print(n = 100)
 #result: Interactions did not detect any species beyond those detected by pollen metabarcoding
 
 
@@ -182,7 +182,7 @@ fig.methods.w.fc <- ggplot(int.gen.x.periods, aes(period, n.genera, fill = metho
   scale_x_continuous(breaks = 1:6, labels = 1:6) + 
   scale_fill_manual(values = method.colors, labels = c(
     "n.genera.int" = "Interactions transects",
-    "n.genera.pmb" = "Pollen metabarcoding",
+    "n.genera.pmb" = "Corbicular pollen metabarcoding",
     "n.genera.gmb" = "Gut-content metabarcoding")) +
   labs(fill = NULL, color = NULL, linetype = NULL) +
   theme(legend.position = "bottom",
@@ -280,14 +280,14 @@ nmds_points <- as.data.frame(all.plant.mds$points)
 nmds_points <- nmds_points %>% 
   mutate(methodology = methodology)  %>% 
   slice(-8) #if you want to remove the outlier point from interactions
-method.colors2 <- c("count" ="slategrey",
+  method.colors2 <- c("count" ="slategrey",
                     "interaction" = "lightblue",
                     "gut.metabarcoding" = "forestgreen",
                     "pollen.metabarcoding" = "goldenrod1")
 method_labels <- c("count" = "Flower count",
                    "interaction" = "Visitation observations",
                    "gut.metabarcoding" = "Gut-content metabarcoding",
-                   "pollen.metabarcoding" = "Pollen metabarcoding")
+                   "pollen.metabarcoding" = "Corbicular pollen metabarcoding")
 
 
 polygon_data <- nmds_points %>%
@@ -322,9 +322,17 @@ NMDS.method.comparisons <- ggplot(nmds_points, aes(x = MDS1, y = MDS2,
     legend.position = "bottom",        
     legend.direction = "vertical" 
   )+
+  annotate(
+    "text",
+    x = Inf, y = -Inf,
+    label = "stress = 0.17",
+    hjust = 1.1,
+    vjust = -0.5) +
   ggtitle("C.")
 
-
+png(here("docs/manuscript_figures/fig1_b_c.png"), width =3000, height = 2000, res = 350) 
+fig.methods.w.fc + NMDS.method.comparisons
+dev.off()
 
 #statistical analysis using PERMANOVA
 #Are the patterns observed withing NMDS real?
@@ -358,7 +366,7 @@ pairwise.disp.anova <- TukeyHSD(metodology.disp)
 
 
 
-
+F
 # try upset plot instead of ggvenn --------------------------------------------------------
 taxa_cols <- clean4stats.bp23.all.binary %>%
   select(-period, -site, -method) %>%

@@ -4,6 +4,7 @@
 
 
 # Load libraries
+library(here)
 library(decontam); packageVersion("decontam")
 library(phyloseq) ; packageVersion("phyloseq")
 library(ggplot2); packageVersion("ggplot2")

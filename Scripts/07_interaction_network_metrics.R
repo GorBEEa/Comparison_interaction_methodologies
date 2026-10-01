@@ -86,7 +86,7 @@ fig.dprime <- ggplot(specialization, aes(x = period, y = dprime, group = method,
     values = int.method.colors,
     labels = c(
       "interaction" = "Interactions Transects",
-      "pollen.metabarcoding" = "Pollen Metabarcoding",
+      "pollen.metabarcoding" = "Corbicular Pollen Metabarcoding",
       "gut.metabarcoding" = "Gut-content Metabarcoding")) +
   scale_shape_manual(
     values = c(
@@ -95,7 +95,7 @@ fig.dprime <- ggplot(specialization, aes(x = period, y = dprime, group = method,
       "pollen.metabarcoding" = 3),
     labels = c(
       "interaction" = "Interactions Transects",
-      "pollen.metabarcoding" = "Pollen Metabarcoding",
+      "pollen.metabarcoding" = "Corbicular Pollen Metabarcoding",
       "gut.metabarcoding" = "Gut-content Metabarcoding")) +
   scale_linetype_manual(
     values = c(
@@ -105,7 +105,7 @@ fig.dprime <- ggplot(specialization, aes(x = period, y = dprime, group = method,
     ),
     labels = c(
       "interaction" = "Interactions Transects",
-      "pollen.metabarcoding" = "Pollen Metabarcoding",
+      "pollen.metabarcoding" = "Corbicular Pollen Metabarcoding",
       "gut.metabarcoding" = "Gut-content Metabarcoding" )) +
   labs(color = "Methodology", shape = "Methodology", linetype = "Methodology") +
   geom_hline(yintercept = 1, linetype = "dashed", color = "black") + 

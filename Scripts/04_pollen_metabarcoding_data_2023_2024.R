@@ -36,6 +36,8 @@ poln.2023.24 <- data.frame(sample = poln.samples, poln.sample_data_tab.cl, strin
 
 poln.tax_table.cl <- as.data.frame(tax_table(pollen.decontam0.5))
 poln.tax_table.cl$Genus[poln.tax_table.cl$Genus == "Chaetopogon"] <- "Agrostis" #these are the same, we don't want to double count
+poln.tax_table.cl$Genus[poln.tax_table.cl$Genus == "Pontechium"] <- "Echium" #these are the same, we don't want to double count
+poln.tax_table.cl$Genus[poln.tax_table.cl$Genus == "Descurainia"] <- "Sisymbrium" #these are the same, we don't want to double count
 poln.asvs2 <- rownames(poln.tax_table.cl)
 poln.asv.tax.2023.24 <- poln.tax_table.cl%>% 
   rename(genus = Genus) %>% 
@@ -46,11 +48,11 @@ poln.asv.genus.2023.24 <- poln.asv.tax.2023.24 %>%
 
 
 #General sequencing data stats and information
-poln.reads.23 <- read_tsv(here("Data/dada2_outputs/2023_24_pollen_GorBEEa_track_analysis.tsv"), show_col_types = FALSE)
+poln.reads.23 <- read_tsv(here("Data/dada2_outputs/2023_24_pollen_trimmed_track_analysis_final.tsv"), show_col_types = FALSE)
 poln.reads.23 <- as.data.frame(poln.reads.23[2:26,])
 
 
-fig.poln.read.coverage <- ggplot(poln.reads.23, aes(x = sample, y = merged)) +
+fig.poln.read.coverage <- ggplot(poln.reads.23, aes(x = sample, y = collapsed_100)) +
   geom_col(fill = "goldenrod1", alpha = 0.8, width = 0.7) +
   theme_classic() +
   theme(axis.text.x = element_blank(),
@@ -68,7 +70,6 @@ poln.single.ASVs <- poln.ASVs.per.Genus %>%
 poln.single.ASVs <- left_join(poln.single.ASVs, poln.asv.genus.2023.24, by = 'genus')
 
 
-
 #create a table of ASV counts corresponding to genera names 
 poln.asvNs.w.genus.2023.24 <- right_join(poln.asv.counts.2023.24,poln.asv.genus.2023.24, by = "asv_id")
 poln.asvNs.w.genus.2023 <- poln.asvNs.w.genus.2023.24[,-c(27:57)] #just 2023, at this point there are 186 unique genera
@@ -79,14 +80,19 @@ poln.asvNs.w.genus.2023 <- poln.asvNs.w.genus.2023 %>% relocate(genus, .after = 
 poln.asvNs.w.genus.2023.24$genus[poln.asvNs.w.genus.2023.24$genus == "Chaetopogon"] <- "Agrostis"
 poln.asvNs.w.genus.2023$genus[poln.asvNs.w.genus.2023$genus == "Chaetopogon"] <- "Agrostis" #still 138
 
+#screen even more for contaminats based on expert knowledge reveiw of results
+load(file = here("Data/known.misIDs.RData")) #list of taxa that are either known contaminants or mistakenly identified ASVs
+poln.asvNs.w.genus.2023 <- poln.asvNs.w.genus.2023 %>% 
+  filter(!genus %in% known.misIDs) #remove taxa from the loaded list 
+
 
 
 #create a binary version of the above table
 #basically a genus occurence table organized by samples
 binary.poln.asvNs.w.genus.2023.24 <- poln.asvNs.w.genus.2023.24 %>% 
   relocate(genus, .after = asv_id) %>% 
-  mutate(across(Y23010501PI_ITS:last_col(), ~ifelse(. > 0, 1, 0))) %>% 
-  mutate(indiv.w.signal = rowSums(across(Y23010501PI_ITS:last_col()))) %>% 
+  mutate(across(3:last_col(), ~ifelse(. > 0, 1, 0))) %>% 
+  mutate(indiv.w.signal = rowSums(across(3:last_col()))) %>% 
   relocate(indiv.w.signal, .after = genus) 
 
 #transpose to be able to combine with other BP data
@@ -109,13 +115,14 @@ poln23.24.genomic.specs <- poln23.24.genomic.specs %>%
   mutate(
     period = as.integer(str_sub(sample, 4, 5)),
     site   = as.integer(str_sub(sample, 6, 7)),
-    year = case_when(str_sub(sample, 2, 3) == "23" ~ 2023L, str_sub(sample, 2, 3) == "24" ~ 2024L, TRUE ~ NA_integer_) 
+    year = 2000L + as.integer(str_sub(sample, 2, 3))
     ) %>% 
-  select(-last_col()) #Check that this is removing the NA column and not something important
+  select(-"NA")
 
 #Just 2023
 poln.2023.genomic.specs <- poln23.24.genomic.specs %>% 
-  filter(year == 2023)
+  filter(year == 2023) %>% 
+  relocate(c(period, site, year), .after = sample)
 
 
 
@@ -246,14 +253,15 @@ poln.genomic.xday.2023 <- poln.2023.genomic.specs %>%
 #make binary versions of 2023 data
 
 poln.genomic.binary.2023 <- poln.2023.genomic.specs %>% 
+  relocate(c(period,site,year), .after = sample) %>% 
   mutate(across(Achillea:last_col(), ~ifelse(. > 0, 1, 0))) %>% #read count data to presence absence 1s and 0s
   mutate(genera.by.indiv = rowSums(across(Achillea:last_col()))) %>%  #add a sum of genera for diversity by inv sample
-  relocate(genera.by.indiv, .after = quant_reading)
+  relocate(genera.by.indiv, .after = is.neg)
 
 poln.2023.genomic.xday.binary <- poln.genomic.xday.2023 %>% 
   mutate(across(Achillea:last_col(), ~ifelse(. > 0, 1, 0))) %>% #read count data to presence absence 1s and 0s
   mutate(genera.xday = rowSums(across(Achillea:last_col()))) %>%  #add a sum of genera for diversity by inv sample
-  relocate(genera.xday, .after = site)
+  relocate(c(genera.xday), .after = site)
 
 
 
@@ -277,9 +285,9 @@ ggplot(top.poln.mb.genus.detections, aes(x = reorder(genus, -n.sample.detections
   ggtitle(poln.fig.mb.title) 
 
 #Quickly visualize MB results by SAMPLING DAYS
-poln.mb.genus.detections.xday <- as.data.frame(colSums(poln.2023.genomic.xday.binary[5:ncol(poln.2023.genomic.xday.binary)])) %>% 
+poln.mb.genus.detections.xday <- as.data.frame(colSums(poln.2023.genomic.xday.binary[6:ncol(poln.2023.genomic.xday.binary)])) %>% 
   rownames_to_column(var = "genus") %>% 
-  rename(n.day.detections = "colSums(poln.2023.genomic.xday.binary[5:ncol(poln.2023.genomic.xday.binary)])")
+  rename(n.day.detections = "colSums(poln.2023.genomic.xday.binary[6:ncol(poln.2023.genomic.xday.binary)])")
 poln.mb.genus.detections.xday <- poln.mb.genus.detections.xday[order(poln.mb.genus.detections.xday$n.day.detections, decreasing = TRUE) , ]
 top.poln.mb.genus.detections.xday <- poln.mb.genus.detections.xday[1:32,]
 top.poln.mb.genus.detections.xday <- top.poln.mb.genus.detections.xday 
