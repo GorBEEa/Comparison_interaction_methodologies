@@ -55,6 +55,8 @@ samples <- rownames(sample_data_tab.cl)
 bp.2023 <- data.frame(sample = samples, sample_data_tab.cl, stringsAsFactors = FALSE)
 
 tax_table.cl <- as.data.frame(tax_table(plant.decontam0.5))
+paste("After decontam processing of gut content ASVs, before QC checking taxa with expert knowledge,", length(unique(tax_table.cl$Genus)),
+      "plant genera were identified within metabarcoding results")
 asvs2 <- rownames(tax_table.cl)
 bp.asv.tax.2023 <- tax_table.cl%>% 
   rename(genus = Genus) %>% 
@@ -63,30 +65,6 @@ bp.asv.tax.2023 <- tax_table.cl%>%
 bp.asv.genus.2023 <- bp.asv.tax.2023 %>% 
   select(asv_id,genus) #at this point there aare 172 unique genera
 
-#General sequencing data stats and information
-gbp.reads.23 <- read_tsv(here("Data/dada2_outputs/2023_plant_GorBEEa_track_analysis_final.tsv"),
-                         show_col_types = FALSE)
-gbp.reads.23 <- as.data.frame(gbp.reads.23[1:126,])
-
-
-fig.gbp23.read.coverage <- ggplot(gbp.reads.23, aes(x = sample, y = collapsed_100)) +
-  geom_col(fill = "forestgreen", alpha = 0.8, width = 0.7) +
-  theme_classic() +
-  theme(axis.text.x = element_blank(),
-        axis.ticks.x=element_blank()) +
-  labs(x = "Samples (N = 126)", y = "Reads") +
-  scale_y_continuous(labels = scales::comma) +
-  ggtitle("A.")
-
-#Look for genera that only correspond to one ASV. These could be contaminants/misidentified sequences
-#These can be confirmed by BLASTing the ASV sequence
-ASVs.per.Genus <- as.data.frame(table(bp.asv.genus.2023$genus))
-single.ASVs <- ASVs.per.Genus %>% 
-  filter(Freq == 1) %>% 
-  rename(genus = Var1)
-single.ASVs <- left_join(single.ASVs, bp.asv.genus.2023, by = 'genus')
-
-
 #condense two of these to have genera names assigned to asvs in samples
 bp.plant.asvNs.w.genus.2023 <- right_join(bp.asv.counts.2023,bp.asv.genus.2023, by = "asv_id")
 
@@ -94,6 +72,13 @@ bp.plant.asvNs.w.genus.2023 <- right_join(bp.asv.counts.2023,bp.asv.genus.2023, 
 load(file = here("Data/known.misIDs.RData")) #list of taxa that are either known contaminants or mistakenly identified ASVs
 bp.plant.asvNs.w.genus.2023 <- bp.plant.asvNs.w.genus.2023 %>% relocate(genus, .after = asv_id) %>%  #this is just to look and make sure it worked
   filter(!genus %in% known.misIDs) #remove taxa from the loaded list 
+
+#Look for genera that only correspond to one ASV. These could be contaminants/misidentified sequences
+#These can be confirmed by BLASTing the ASV sequence
+ASVs.per.Genus <- as.data.frame(table(bp.plant.asvNs.w.genus.2023$genus))
+single.ASVs <- ASVs.per.Genus %>% 
+  filter(Freq == 1) %>% 
+  rename(genus = Var1)
 
 #some samples have 0 ASVs - remove from analysis
 bp.plant.asvNs.w.genus.2023 <- bp.plant.asvNs.w.genus.2023 %>% select(!c(GBP23020802M_ITS_P96, GBP23021103M_ITS_P96, GBP23050403M_ITS_P48, GBP23061405M_ITS_P48))
@@ -121,6 +106,10 @@ bp23.genomic.specs <- bp23.genomic.specs %>%
   mutate(period = str_extract(period, "\\d+"), period = as.integer(period)) %>% 
   mutate(site = str_extract(site, "\\d+"), site = as.integer(site)) %>% 
   select(-last_col()) #Check that this is removing the NA column and not something important
+
+
+
+
 
 
 # Look at sampling completeness ------------------------------------

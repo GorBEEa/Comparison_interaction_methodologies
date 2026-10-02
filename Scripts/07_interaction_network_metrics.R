@@ -21,7 +21,7 @@ library(shadowtext)
 #the data in this script all come from clean4stats.bp23.all.binary, created in 05
 
 int.networks.x.methodology <- clean4stats.bp23.all.binary %>% 
-  group_by(method,period) %>% 
+  group_by(method, period) %>% 
   filter(method != "count") %>% 
   summarise(across(Lathyrus:last_col(), ~ sum(.))) %>% 
   mutate(sample = paste(method,"period", period)) %>% 
@@ -39,9 +39,9 @@ rownames(int.networks.x.methodology) <- int.networks.x.methodology[,1]
 int.networks.x.methodology <- int.networks.x.methodology[,-c(1:3)]
 
 #make interaction matrices for calculating d' over 6 periods
-int.web <- as.matrix(int.networks.x.methodology[7:12, 1:209])
-gmb.web <- as.matrix(int.networks.x.methodology[1:6, 2:209])
-pmb.web <- as.matrix(int.networks.x.methodology[13:18, 2:209])
+int.web <- as.matrix(int.networks.x.methodology[7:12, 1:208])
+gmb.web <- as.matrix(int.networks.x.methodology[1:6, 2:208])
+pmb.web <- as.matrix(int.networks.x.methodology[13:18, 2:208])
 
 #calculate d'
 dprime.int <- dfun(int.web)
@@ -321,9 +321,7 @@ plant_strength <- clean4stats.bp23.all.binary %>%
   summarise(
     across(
       all_of(genus_cols),
-      sum,
-      na.rm = TRUE
-    ),
+      \(x) sum(x, na.rm = TRUE)),
     .groups = "drop"
   ) %>%
   # Put results into long format

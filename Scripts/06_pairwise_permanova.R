@@ -12,7 +12,9 @@
 load(here("Data/05_output.RData"))
 
 #build function for a pairwise permanova ------
-pairwise_permanova <- function(sp_matrix, group_var, dist = "raup", adj = "holm", perm = 9999) {
+pairwise_permanova <- function(sp_matrix, group_var, dist = "raup",
+                               adj = "holm", perm = 9999) {
+  
   group_var <- as.factor(group_var)
   groups <- combn(levels(group_var), 2)
   
@@ -29,28 +31,42 @@ pairwise_permanova <- function(sp_matrix, group_var, dist = "raup", adj = "holm"
   )
   
   for (i in 1:ncol(groups)) {
+    
     g1 <- groups[1, i]
     g2 <- groups[2, i]
+    
     subset_idx <- group_var %in% c(g1, g2)
     
     sub_matrix <- sp_matrix[subset_idx, , drop = FALSE]
     sub_group <- droplevels(group_var[subset_idx])
     
-    fit <- adonis2(sub_matrix ~ sub_group, method = dist, permutations = perm)
+    # Remove taxa that are absent from BOTH groups
+    keep_taxa <- colSums(sub_matrix) > 0
+    sub_matrix <- sub_matrix[, keep_taxa, drop = FALSE]
     
-    results <- rbind(results, data.frame(
-      group1 = g1,
-      group2 = g2,
-      df1 = fit$Df,
-      df2 = fit$Df[1],
-      R2 = fit$R2,
-      F_value = fit$F,
-      p_value = fit$`Pr(>F)`,
-      p_adj = NA
-    ))
+    fit <- adonis2(
+      sub_matrix ~ sub_group,
+      method = dist,
+      permutations = perm
+    )
+    
+    results <- rbind(
+      results,
+      data.frame(
+        group1 = g1,
+        group2 = g2,
+        df1 = fit$Df[1],
+        df2 = fit$Df[2],
+        R2 = fit$R2[1],
+        F_value = fit$F[1],
+        p_value = fit$`Pr(>F)`[1],
+        p_adj = NA
+      )
+    )
   }
   
   results$p_adj <- p.adjust(results$p_value, method = adj)
+  
   return(results)
 }
 
@@ -61,6 +77,11 @@ pairwise_permanova <- function(sp_matrix, group_var, dist = "raup", adj = "holm"
 #load(here("Data/05_output.RData"))
 
 all.plants.matrix <- as.matrix(all.plants)
+all.plants.matrix <- all.plants.matrix[
+  rowSums(all.plants.matrix) != 0,
+  colSums(all.plants.matrix) != 0
+]
+
 
 pairwise.methodology <- recode_factor(methodology,
                                       count = "flower count",
@@ -78,8 +99,8 @@ clean_results <- pairwise.results %>%
   mutate(
     R2 = round(R2, 3),
     F_value = round(F_value, 2),
-    p_value = ifelse(p_value < 0.001, "<0.001", signif(p_value, 3)),
-    p_adj = ifelse(p_adj < 0.001, "<0.001", signif(p_adj, 3))
+    p_value = p_value, # can also make a simplified version: ifelse(p_value < 0.001, "<0.001", signif(p_value, 3)),
+    p_adj = p_adj # can also make a simplified version: ifelse(p_adj < 0.001, "<0.001", signif(p_adj, 3))
   )
   
 

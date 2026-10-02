@@ -11,7 +11,7 @@
 poln.2023.indv <- poln.2023.genomic.specs #copy the existing pollen mb data and clean it up for this analysis
 poln.2023.indv$ID <- sub('^(Y\\d{8}P).*', '\\1', poln.2023.genomic.specs$sample) #get clean IDs
 poln.2023.indv <- poln.2023.indv %>% relocate(ID) %>% 
-  select(!c(sample, year, period, site, specimen, color_p, color_s, type, plate, quant_reading, is.neg)) %>% 
+  select(!c(sample, year, period, site, color_p, color_s, type, conc, is.neg)) %>% 
   mutate(type = rep("pollen", 25))%>% 
   relocate(type, .after = ID)
 poln.2023.indv <- poln.2023.indv %>% filter(!ID %in% c("Y23050403P","Y23061405P")) #rm 2 samples with no gut pair
@@ -229,9 +229,6 @@ fig_nmds_mb2x <- ggplot(nmds_mb2x_points, aes(x = MDS1, y = MDS2, color = method
     alpha = 0.7)
 
 
-scores_df$ID     <- clean4stats.mb2x.2023.indv$ID
-scores_df$method <- clean4stats.mb2x.2023.indv$type
-scores_df <- scores_df %>% filter(!ID %in% c("Y23050403P","Y23061405P"))#removal of unpaired samples didn't propagate to here
 
 
 save.image(file = here("Data/05.2_output.RData"))

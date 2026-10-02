@@ -17,6 +17,11 @@ taxa_groups <- c("Entomophilous (floral)","Poaceae/grasses","Trees/Woody Plants"
 plot_labels <- c("Entomophilous (n = 90)","Poaceae/grasses (n = 9)","Trees/Woody Plants (n = 19)","Anemophilous herbaceous (n = 3)")
 taxa.df <- data.frame(taxa_breakdown,taxa_groups,plot_labels)
 
+#also, if of interest, this is a table with all of the mb detected taxa and their classification of pollination strategy
+#in case of partial identity, counted as entomophilous
+#load(here("Data/pollination_strategy.RData"))
+#view(pollination_strategy)
+
 
 #build a df with info for plotting
 taxa.df <- taxa.df %>% 
@@ -59,8 +64,8 @@ fig.gmb.fun.groups <- ggplot(taxa.df, aes(ymax = ymax, ymin = ymin, xmax = 5, xm
 #Breakdown of functional groups in pollen metabarcoding results ----------------------------------
 
 #I fed chat gpt the list of plant genera detected in metabarcoding results and asked it to classify each under one of 4 categories:
-pmb.taxa_breakdown <- c(79,15,21,7) #in order as listed below
-pmb.plot_labels <- c("Entomophilous (n = 79)","Poaceae/grasses (n = 15)","Trees/Woody Plants (n = 21)","Anemophilous herbaceous (n = 7)")
+pmb.taxa_breakdown <- c(82,15,23,4) #in order as listed below
+pmb.plot_labels <- c("Entomophilous (n = 82)","Poaceae/grasses (n = 15)","Trees/Woody Plants (n = 23)","Anemophilous herbaceous (n = 4)")
 pmb.taxa.df <- data.frame(pmb.taxa_breakdown,taxa_groups,pmb.plot_labels)
 
 

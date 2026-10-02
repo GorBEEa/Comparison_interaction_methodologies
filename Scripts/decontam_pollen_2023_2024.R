@@ -26,6 +26,10 @@ count_tab <- read.table(here("Data/dada2_outputs/2023_24_pollen_trimmed_ASVs_cou
 
 tax_tab <- as.matrix(read.table(here("Data/dada2_outputs/2023_24_pollen_trimmed_ASVs_taxonomy.tsv"), header=T,
                                 row.names=1, check.names=F, sep="\t"))
+tax_df_poln <- as.data.frame(tax_tab)
+paste("After DADA2 processing, before any QC, corbicular pollen metabarcoding ASVs identifed", length(unique(tax_df_poln$Genus)), "plant genera")
+
+
 
 sample_info_tab <- read.delim(here("Data/dada2_outputs/23_24_pollen_trimmed_sample_info.tsv"),
                               header=T, row.names=1, check.names=F, sep="\t")
@@ -49,10 +53,23 @@ sample_info_postDADA_poln23 <- read.delim(here("Data/dada2_outputs/2023_24_polle
                                           header=T, row.names=1, check.names=F, sep="\t")
 sample_info_postDADA_poln23 <- sample_info_postDADA_poln23[-c(1,27:57),] #isolate 2023 and remove negative
 
+
 total_reads_pre_QC_poln23 <-sum(sample_info_pre_QC_poln23$input) 
 total_reads_post_DADA_gut23 <- sum(sample_info_postDADA_poln23$collapsed_100) #total after QC (quant reading is really reads)
 filt_reads_gut23 <- total_reads_pre_QC_poln23 - total_reads_post_DADA_gut23
 
+
+sample_info_postDADA_poln23 <- as.data.frame(sample_info_postDADA_poln23) %>% #make read count data plot-able
+  mutate(sample = rownames(sample_info_postDADA_poln23))
+
+fig.poln.read.coverage <- ggplot(sample_info_postDADA_poln23, aes(x = sample, y = collapsed_100)) +
+  geom_col(fill = "goldenrod1", alpha = 0.8, width = 0.7) +
+  theme_classic() +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x=element_blank()) +
+  labs(x = "Samples (N = 25)", y = "Reads") +
+  scale_y_continuous(labels = scales::comma) +
+  ggtitle("B.")
 
 
 sample.conc <- as.data.frame(read_xls(here("Data/Y23.24P_sample_conc.xls")))
@@ -99,7 +116,6 @@ df$Index <- seq(nrow(df))
 plot <- ggplot(data=df, aes(x=Index, y=LibrarySize, color=type)) + 
   geom_point() +
   geom_hline(yintercept = max_negative, linetype = "dashed", color = "black")
-ggsave(here("results/library_size_plot.pdf", plot = plot, device = "pdf", width = 8, height = 6, units = "in"))
 plot
 
 ###########################################################################################################################
@@ -197,6 +213,7 @@ ps.nocont <- prune_taxa(!contam_both, physeq)
 
 # Optional: create a phyloseq object containing all contaminants
 ps.cont <- prune_taxa(contam_both, physeq)
+tax_table(ps.cont) #look at what these contaminants were identified as
 
 # Check how many contaminants were identified
 table(contam_both)
@@ -218,21 +235,5 @@ saveRDS(ps.pollen23.24, file = here("Data/pollen23.24.decontam.0.5.RDS"))
 
 
 
-
-
-#See which contaminant ASVs are related to which taxa ------------------------------------------
-
-# contaminants_ID<- _your_contamdf_ID_ %>% filter(contaminant == "TRUE")
-#asv_genus_pairs <-bp.plant.asvNs.w.genus.2023 %>% select(c(asv_id, genus))
-#asv_ids <- rownames(contaminants_ID)
-#contaminants_ID <- contaminants_ID %>% mutate(asv_id = asv_ids)
-#asv_taxa_contaminants_ID <- left_join(contaminants_ID,asv_genus_pairs, by = "asv_id")
-
-contamdf.prev
-contaminants <- contamdf.prev %>% filter(contaminant == "TRUE")
-#asv_genus_pairs <- bp.plant.asvNs.w.genus.2023 %>% select(c(asv_id, genus)) #!!! CHECK THIS: bp.plant.asvNs.w.genus.2023 is from metabarcoding data and in theory created using the data from the RDS that THIS script creates (this is backwards?)
-asv_ids <- rownames(contaminants)
-contaminants <- contaminants %>% mutate(asv_id = asv_ids)
-asv_taxa_contaminants <- left_join(contaminants,asv_genus_pairs, by = "asv_id")
 
 

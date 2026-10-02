@@ -105,7 +105,7 @@ taxa.all.methodologies <- list(
   "Gut-content\nMetabarcoding\n131 genera" = genus.hits.23$genus,
   "Interactions\n27 genera" = gut.detected.int.genus$genus, #this works to give the correct data, but it's sketchy. There is probably a better way
   "Flower Count\n117 genera" = flower.count.genera$flower_genus,
-  "Pollen\nMetabarcoding\n122 genera" = poln.genus.hits.2023$genus)
+  "Pollen\nMetabarcoding\n124 genera" = poln.genus.hits.2023$genus)
 
 
 fig.venn <- ggvenn(taxa.all.methodologies,
@@ -365,8 +365,6 @@ pairwise.disp.anova <- TukeyHSD(metodology.disp)
 
 
 
-
-F
 # try upset plot instead of ggvenn --------------------------------------------------------
 taxa_cols <- clean4stats.bp23.all.binary %>%
   select(-period, -site, -method) %>%
@@ -399,6 +397,7 @@ colnames(upset_bp23_all) <- c(
   "Pollen metabarcoding"
 )
 
+png(here("results/raw_upset_fig.png"), width = 3000, height = 2000, res = 350) 
 
 upset_fig <- UpSetR::upset(
   upset_bp23_all,
@@ -413,13 +412,15 @@ upset_fig <- UpSetR::upset(
   main.bar.color = adjustcolor("grey30", alpha.f = 0.4),
   
   # axis labels
-  mainbar.y.label = "Overlapping taxa",
+  mainbar.y.label = "Number of plant genera",
   sets.x.label = "Total taxa",
   
   show.numbers = "yes",   # make sure it is "yes" as string in older versions
   text.scale = c(2, 1.6, 1.6, 1.6, 1.4, 1.4)
 )
 
+upset_fig
+dev.off()
 
 
 

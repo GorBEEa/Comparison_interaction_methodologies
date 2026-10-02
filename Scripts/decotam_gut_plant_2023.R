@@ -16,6 +16,8 @@ count_tab <- read.table(here("Data/dada2_outputs/2023_plant_ASVs_counts.tsv"), h
 
 tax_tab <- as.matrix(read.table(here("Data/dada2_outputs/2023_plant_ASVs_taxonomy.tsv"), header=T,
                                 row.names=1, check.names=F, sep="\t"))
+tax_df_gut <- as.data.frame(tax_tab)
+paste("After DADA2 processing, before any QC, gut metabarcoding ASVs identifed", length(unique(tax_df_gut$Genus)), "plant genera")
 
 sample_info_tab <- read.delim(here("Data/dada2_outputs/2023_BP_metab_sample_info.tsv"),
                                    header=T, row.names=1, check.names=F, sep="\t")
@@ -23,14 +25,29 @@ sample_info_tab <- read.delim(here("Data/dada2_outputs/2023_BP_metab_sample_info
 sample_info_pre_QC_gut23 <- read.delim(here("Data/dada2_outputs/2023_plant_GorBEEa_track_analysis.tsv"),
                               header=T, row.names=1, check.names=F, sep="\t")
 
-
+sample_info_post_DADA_gut23 <- read.delim(here("Data/dada2_outputs/2023_plant_GorBEEa_track_analysis_final.tsv"),
+                                          header=T, row.names=1, check.names=F, sep="\t")
 
 #learn about data
-samples_gut23 <- sample_info_tab[-c(127:134),] #remove negatives
 samples_preQC_gut23 <- sample_info_pre_QC_gut23[-c(127:134),]
+samples_post_DADA_gut23 <- sample_info_post_DADA_gut23[-c(127:134),]
 total_reads_pre_QC_gut23 <-sum(samples_preQC_gut23$input) 
-total_reads_post_QC_gut23 <- sum(samples_gut23$quant_reading) #total after QC (quant reading is really reads)
-filt_reads_gut23 <- total_reads_pre_QC_gut23 - total_reads_post_QC_gut23
+total_reads_post_DADA_gut23 <- sum(sample_info_post_DADA_gut23$collapsed_100) 
+filt_reads_gut23 <- total_reads_pre_QC_gut23 - total_reads_post_DADA_gut23
+
+
+sample_info_post_DADA_gut23 <- as.data.frame(sample_info_post_DADA_gut23) %>% #make read count data plot-able
+  mutate(sample = rownames(sample_info_post_DADA_gut23))
+
+fig.gbp23.read.coverage <- ggplot(sample_info_post_DADA_gut23, aes(x = sample, y = collapsed_100)) +
+  geom_col(fill = "forestgreen", alpha = 0.8, width = 0.7) +
+  theme_classic() +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x=element_blank()) +
+  labs(x = "Samples (N = 126)", y = "Reads") +
+  scale_y_continuous(labels = scales::comma) +
+  ggtitle("A.")
+
 
 # Setting the color column to be of type "character", which helps later
 sample_info_tab$color_p <- as.character(sample_info_tab$color_p)
@@ -158,6 +175,8 @@ ggplot(data=df.pa, aes(x=pa.neg, y=pa.pos, color=contaminant)) + geom_point() +
 ps.nocont <- prune_taxa(!contamdf.prev$contaminant, physeq)
 # create a phyloseq object with only contaminant ASVs
 ps.cont <- prune_taxa(contamdf.prev$contaminant, physeq)
+tax_table(ps.cont) #look at what these contaminants were identified as
+
 
 ## 1.d) Remove negative controls from phyloseq object     ####
 
@@ -172,24 +191,5 @@ table(sample_data(ps.gbp23.plant)$type)
 
 # Save the ps.gbp23 object to an RDS file
 saveRDS(ps.gbp23.plant, file = here("Data/long.gbp23.plant.decontam.0.5.RDS"))
-
-
-
-
-
-#See which contaminant ASVs are related to which taxa ------------------------------------------
-
-# contaminants_ID<- _your_contamdf_ID_ %>% filter(contaminant == "TRUE")
-#asv_genus_pairs <-bp.plant.asvNs.w.genus.2023 %>% select(c(asv_id, genus))
-#asv_ids <- rownames(contaminants_ID)
-#contaminants_ID <- contaminants_ID %>% mutate(asv_id = asv_ids)
-#asv_taxa_contaminants_ID <- left_join(contaminants_ID,asv_genus_pairs, by = "asv_id")
-
-contamdf.prev
-contaminants <- contamdf.prev %>% filter(contaminant == "TRUE")
-asv_genus_pairs <-bp.plant.asvNs.w.genus.2023 %>% select(c(asv_id, genus)) #!!! CHECK THIS: bp.plant.asvNs.w.genus.2023 is from metabarcoding data and in theory created using the data from the RDS that THIS script creates (this is backwards?)
-asv_ids <- rownames(contaminants)
-contaminants <- contaminants %>% mutate(asv_id = asv_ids)
-asv_taxa_contaminants <- left_join(contaminants,asv_genus_pairs, by = "asv_id")
 
 

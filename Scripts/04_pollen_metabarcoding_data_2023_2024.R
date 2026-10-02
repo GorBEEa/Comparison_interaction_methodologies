@@ -16,7 +16,7 @@ library(phyloseq) ; packageVersion("phyloseq")
 library(iNEXT)
 
 
-#Load Data -----
+#Load Data ------------------------------------------------------
 
 #Working with data cleaned with decontam
 
@@ -35,9 +35,9 @@ poln.samples <- rownames(poln.sample_data_tab.cl)
 poln.2023.24 <- data.frame(sample = poln.samples, poln.sample_data_tab.cl, stringsAsFactors = FALSE)
 
 poln.tax_table.cl <- as.data.frame(tax_table(pollen.decontam0.5))
-poln.tax_table.cl$Genus[poln.tax_table.cl$Genus == "Chaetopogon"] <- "Agrostis" #these are the same, we don't want to double count
-poln.tax_table.cl$Genus[poln.tax_table.cl$Genus == "Pontechium"] <- "Echium" #these are the same, we don't want to double count
-poln.tax_table.cl$Genus[poln.tax_table.cl$Genus == "Descurainia"] <- "Sisymbrium" #these are the same, we don't want to double count
+paste("After decontam processing of corbicular pollen ASVs, before QC checking taxa with expert knowledge,", length(unique(poln.tax_table.cl$Genus)),
+      "plant genera were identified within metabarcoding results")
+
 poln.asvs2 <- rownames(poln.tax_table.cl)
 poln.asv.tax.2023.24 <- poln.tax_table.cl%>% 
   rename(genus = Genus) %>% 
@@ -47,45 +47,29 @@ poln.asv.genus.2023.24 <- poln.asv.tax.2023.24 %>%
   select(asv_id,genus)
 
 
-#General sequencing data stats and information
-poln.reads.23 <- read_tsv(here("Data/dada2_outputs/2023_24_pollen_trimmed_track_analysis_final.tsv"), show_col_types = FALSE)
-poln.reads.23 <- as.data.frame(poln.reads.23[2:26,])
-
-
-fig.poln.read.coverage <- ggplot(poln.reads.23, aes(x = sample, y = collapsed_100)) +
-  geom_col(fill = "goldenrod1", alpha = 0.8, width = 0.7) +
-  theme_classic() +
-  theme(axis.text.x = element_blank(),
-        axis.ticks.x=element_blank()) +
-  labs(x = "Samples (N = 25)", y = "Reads") +
-  scale_y_continuous(labels = scales::comma) +
-  ggtitle("B.")
-
-#Look for genera that only correspond to one ASV. These could be contaminants/misidentified sequences
-#These can be confirmed by BLASTing the ASV sequence, but technically this is redundant
-poln.ASVs.per.Genus <- as.data.frame(table(poln.asv.genus.2023.24$genus))
-poln.single.ASVs <- poln.ASVs.per.Genus %>% 
-  filter(Freq == 1) %>% 
-  rename(genus = Var1)
-poln.single.ASVs <- left_join(poln.single.ASVs, poln.asv.genus.2023.24, by = 'genus')
 
 
 #create a table of ASV counts corresponding to genera names 
-poln.asvNs.w.genus.2023.24 <- right_join(poln.asv.counts.2023.24,poln.asv.genus.2023.24, by = "asv_id")
-poln.asvNs.w.genus.2023 <- poln.asvNs.w.genus.2023.24[,-c(27:57)] #just 2023, at this point there are 186 unique genera
-poln.asvNs.w.genus.2023.24 <- poln.asvNs.w.genus.2023.24 %>% relocate(genus, .after = asv_id) %>%  #this is just to look and make sure it worked
-  filter(!genus %in% known.misIDs)
-poln.asvNs.w.genus.2023 <- poln.asvNs.w.genus.2023 %>% relocate(genus, .after = asv_id) %>%  #this is just to look and make sure it worked
-  filter(!genus %in% known.misIDs) #just 2023, at this point there are 138 unique genera
-poln.asvNs.w.genus.2023.24$genus[poln.asvNs.w.genus.2023.24$genus == "Chaetopogon"] <- "Agrostis"
-poln.asvNs.w.genus.2023$genus[poln.asvNs.w.genus.2023$genus == "Chaetopogon"] <- "Agrostis" #still 138
-
-#screen even more for contaminats based on expert knowledge reveiw of results
+poln.asvNs.w.genus.2023.24 <- right_join(poln.asv.counts.2023.24,poln.asv.genus.2023.24, by = "asv_id") %>% 
+  relocate(genus, .after = asv_id)
+#Set straight some common taxonomic confusions in our dataset
+poln.asvNs.w.genus.2023.24$genus[poln.asvNs.w.genus.2023.24$genus == "Pontechium"] <- "Echium" #these are the same, we don't want to double count
+poln.asvNs.w.genus.2023.24$genus[poln.asvNs.w.genus.2023.24$genus == "Descurainia"] <- "Sisymbrium" #these are the same, we don't want to double count
+#remove taxa known to appear in our data that expert knowledge input has directed to remove
 load(file = here("Data/known.misIDs.RData")) #list of taxa that are either known contaminants or mistakenly identified ASVs
-poln.asvNs.w.genus.2023 <- poln.asvNs.w.genus.2023 %>% 
-  filter(!genus %in% known.misIDs) #remove taxa from the loaded list 
+poln.asvNs.w.genus.2023.24 <- poln.asvNs.w.genus.2023.24  %>% 
+  filter(!genus %in% known.misIDs)
 
+#isolate 2023 data 
+poln.asvNs.w.genus.2023 <- poln.asvNs.w.genus.2023.24[,-c(27:57)]
+poln.asvNs.w.genus.2023 <- poln.asvNs.w.genus.2023[rowSums(poln.asvNs.w.genus.2023[3:ncol(poln.asvNs.w.genus.2023)]) != 0, ] #0 sum rows inevitable from last step and problematic later
 
+#Optional: Look for genera that only correspond to one ASV. These could be remaining contaminants/misidentified sequences
+#These can be confirmed by BLASTing the ASV sequence, but technically this is redundant
+poln.ASVs.per.Genus <- as.data.frame(table(poln.asvNs.w.genus.2023.24$genus))
+poln.single.ASVs <- poln.ASVs.per.Genus %>% 
+  filter(Freq == 1) %>% 
+  rename(genus = Var1)
 
 #create a binary version of the above table
 #basically a genus occurence table organized by samples
@@ -123,6 +107,9 @@ poln23.24.genomic.specs <- poln23.24.genomic.specs %>%
 poln.2023.genomic.specs <- poln23.24.genomic.specs %>% 
   filter(year == 2023) %>% 
   relocate(c(period, site, year), .after = sample)
+
+
+
 
 
 
@@ -222,7 +209,7 @@ poln.genus.hits.23.24 <- poln.asvNs.w.genus.2023.24 %>%
   select(genus) %>%  #create just a list of the genera
   filter(genus != "NA")
 
-paste("Metabarcoding detected", nrow(poln.genus.hits.23.24),"plant genera across all of the 2023 and 2024 corbicular pollen samples")
+paste("After QC, metabarcoding detected", nrow(poln.genus.hits.23.24),"plant genera across all of the 2023 and 2024 corbicular pollen samples")
 
 
 #Just 2023
@@ -236,7 +223,7 @@ poln.genus.hits.2023 <- poln.asvNs.w.genus.2023 %>%
   select(genus) %>%  #create just a list of the genera
   filter(genus != "NA")
 
-paste("Metabarcoding detected", nrow(poln.genus.hits.2023),"plant genera across all of the 2023 corbicular pollen samples")
+paste("After QC, metabarcoding detected", nrow(poln.genus.hits.2023),"plant genera across all of the 2023 corbicular pollen samples")
 
 
 #From here I am going to only work with 2023 samples---------------------------
