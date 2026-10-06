@@ -55,6 +55,7 @@ poln.asvNs.w.genus.2023.24 <- right_join(poln.asv.counts.2023.24,poln.asv.genus.
 #Set straight some common taxonomic confusions in our dataset
 poln.asvNs.w.genus.2023.24$genus[poln.asvNs.w.genus.2023.24$genus == "Pontechium"] <- "Echium" #these are the same, we don't want to double count
 poln.asvNs.w.genus.2023.24$genus[poln.asvNs.w.genus.2023.24$genus == "Descurainia"] <- "Sisymbrium" #these are the same, we don't want to double count
+poln.asvNs.w.genus.2023.24$genus[poln.asvNs.w.genus.2023.24$genus == "Pritzelago"] <- "Hutchinsia" #these are the same, we don't want to double count
 #remove taxa known to appear in our data that expert knowledge input has directed to remove
 load(file = here("Data/known.misIDs.RData")) #list of taxa that are either known contaminants or mistakenly identified ASVs
 poln.asvNs.w.genus.2023.24 <- poln.asvNs.w.genus.2023.24  %>% 
@@ -122,9 +123,13 @@ poln23.asv.counts <- poln.asvNs.w.genus.2023 %>%
 poln23.asv.binary <- (poln23.asv.counts > 0) * 1 #take asv matrix and make binary
 colnames(poln23.asv.binary) <- poln.asvgn.wide.2023$sample #re-add sample names
 poln23.asv.binary.list <- list(poln23.asv.binary)
-poln23.asv.binary.iNext <- iNEXT(poln23.asv.binary.list, q = 0, datatype = "incidence_raw", size = NULL)
+poln23.asv.binary.iNext <- iNEXT(poln23.asv.binary.list, 
+                                 q = 0, 
+                                 datatype = "incidence_raw",
+                                 size = NULL)
 poln23.asv.binary.iNext$iNextEst$size_based
 ggiNEXT(poln23.asv.binary.iNext, type = 1)
+poln23_covg <- estimateD(poln23.asv.binary.list, datatype = "incidence_raw")
 
 
 
