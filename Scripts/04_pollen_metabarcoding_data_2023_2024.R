@@ -335,6 +335,39 @@ poln.2023.genomic.periods <- poln.2023.genomic.specs %>%
             n.genera.pmb = n_distinct(genus),
             .groups = 'drop')
 
+
+#what about mean genera per sample by period?
+
+poln23.period.means <- poln.2023.genomic.specs %>% 
+  pivot_longer(
+    cols = Achillea:last_col(),
+    names_to = "genus",
+    values_to = "count") %>% 
+  # Calculate taxa per sample within each sampling day
+  group_by(period, site, sample) %>% 
+  summarise(
+    n_taxa = sum(count > 0),
+    .groups = "drop"
+  ) %>% 
+  # Calculate mean taxa per sampling day
+  group_by(period, site) %>% 
+  summarise(
+    mean_taxa_day = mean(n_taxa),
+    .groups = "drop") %>% 
+  # Now aggregate sampling days within each period
+  group_by(period) %>% 
+  summarise(
+    mean_taxa = mean(mean_taxa_day),
+    sd_taxa = sd(mean_taxa_day),
+    se_taxa = sd(mean_taxa_day) / sqrt(n()),
+    n_days = n(),
+    .groups = "drop"
+  ) %>% 
+  mutate(type = "pmb")
+
+
+
+
 #is there a significant diference in genera by period detected by stats?
 #boxplot(genera.by.indiv ~ period, data = poln.genomic.binary.23.24)
 #dist_alphadiv <- vegdist(poln.genomic.binary.23.24$genera.by.indiv, method = 'jaccard') #there may be two rows that sum to zero from the poln.samples with 0 reads

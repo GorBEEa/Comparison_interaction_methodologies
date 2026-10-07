@@ -25,6 +25,23 @@ flower.genus.by.period <-  flower.count.2023 %>%
   group_by(period) %>% 
   summarise(n.genera.fc = as.integer(n_distinct(flower_genus)))
 
+fc.period.means <- flower.count.2023 %>%
+  group_by(period, site) %>%
+  summarise(
+    n_genera = n_distinct(flower_genus, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  group_by(period) %>%
+  summarise(
+    mean_taxa = mean(n_genera, na.rm = TRUE),
+    sd_taxa = sd(n_genera, na.rm = TRUE),
+    se_taxa = sd(n_genera, na.rm = TRUE)/sqrt(n()),
+    .groups = "drop"
+  ) %>% 
+  mutate(type = "fc")
+
+
+
 flower.genus.by.site <-  flower.count.2023 %>% 
   group_by(site) %>% 
   summarise(n.flower.count.genera = as.integer(n_distinct(flower_genus)))

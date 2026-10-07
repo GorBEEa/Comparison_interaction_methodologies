@@ -154,23 +154,23 @@ mean.taxa.periods <- long.gen.by.periods %>%
   group_by(period) %>% 
   summarise(mean.genera = mean(n.genera))
 
-mean.gut.taxa.periods <- long.gen.by.periods %>% 
+total.gut.taxa.periods<- long.gen.by.periods %>% 
   filter(method == "n.genera.gmb") %>% 
   group_by(period) %>% 
-  summarise(mean.genera = mean(n.genera))
+  summarise(total.genera = n.genera)
 
-mean.fc.taxa.periods <- long.gen.by.periods %>% 
+total.fc.taxa.periods <- long.gen.by.periods %>% 
   filter(method == "n.genera.fc") %>% 
   group_by(period) %>% 
-  summarise(mean.genera = mean(n.genera))
+  summarise(total.genera = n.genera)
 
-mean.gut.taxa.periods$LineType <- "Gut Content Metabarcoding"
-mean.fc.taxa.periods$LineType <- "Flower Count"
-mean.lines <- rbind(mean.gut.taxa.periods, mean.fc.taxa.periods)
+total.gut.taxa.periods$LineType <- "Gut Content Metabarcoding"
+total.fc.taxa.periods$LineType <- "Flower Count"
+total.lines <- rbind(total.gut.taxa.periods, total.fc.taxa.periods)
 
 
 
-fc.line <- mean.lines %>% filter(LineType == "Flower Count")
+fc.line <- total.lines %>% filter(LineType == "Flower Count")
 
 png(here("docs/manuscript_figures/interaction.diversity.periods.png"), width =2000, height = 2000, res = 350) 
 
@@ -190,7 +190,7 @@ fig.methods.w.fc <- ggplot(int.gen.x.periods, aes(period, n.genera, fill = metho
         axis.ticks.x = element_blank()) + 
   geom_line(
     data = fc.line,
-    aes(x = period, y = mean.genera, linetype = "Flower Count"),
+    aes(x = period, y = total.genera, linetype = "Flower Count"),
     color = "slategrey",
     linewidth = 1,
     inherit.aes = FALSE) +
@@ -202,13 +202,25 @@ fig.methods.w.fc
 dev.off()
 
 #this is the code I have been using to compare mean taxa detections rather than totals
-#just would need to do the same for pollen
-plot_data <- bind_rows(gmb23.period.means, int.mean.gnra.by.period)
-ggplot(plot_data, aes(x = factor(period), y = mean_taxa, fill = type)) +
+
+mean.int.gen.x.periods <- bind_rows(gmb23.period.means, int.mean.gnra.by.period, poln23.period.means)
+mean.int.gen.x.periods <- mean.int.gen.x.periods %>%
+  mutate(type = recode(
+      type,
+      "Interaction transect" = "n.genera.int",
+      "pmb" = "n.genera.pmb",
+      "gmb" = "n.genera.gmb"),
+    type = factor(
+      type,
+      levels = c("n.genera.int", "n.genera.pmb", "n.genera.gmb")))
+
+ggplot(mean.int.gen.x.periods, aes(x = period, y = mean_taxa, fill = type)) +
   geom_col(
     position = position_dodge(width = 0.8),
-    width = 0.7
+    width = 0.7,
+    alpha = 0.8
   ) +
+  
   geom_errorbar(
     aes(
       ymin = mean_taxa - se_taxa,
@@ -217,12 +229,68 @@ ggplot(plot_data, aes(x = factor(period), y = mean_taxa, fill = type)) +
     position = position_dodge(width = 0.8),
     width = 0.2
   ) +
-  labs(
-    x = "Period",
-    y = "Mean taxa detected per sampling day",
-    fill = NULL
+  
+  theme_classic() +
+  
+  xlab("Sampling Period") +
+  ylab("Mean taxa detected per sampling day") +
+  
+  scale_x_continuous(
+    breaks = 1:6,
+    labels = 1:6
   ) +
-  theme_classic()
+  
+  scale_fill_manual(
+    values = method.colors,
+    labels = c(
+      "n.genera.int" = "Interactions transects",
+      "n.genera.pmb" = "Corbicular pollen metabarcoding",
+      "n.genera.gmb" = "Gut-content metabarcoding"
+    )
+  ) +
+  
+  labs(
+    fill = NULL,
+    color = NULL,
+    linetype = NULL
+  ) +
+  
+  theme(
+    legend.position = "bottom",
+    legend.direction = "vertical",
+    axis.ticks.x = element_blank()
+  ) +
+  
+  geom_line(
+    data = fc.period.means,
+    aes(
+      x = period,
+      y = mean_taxa,
+      group = 1,
+      linetype = "Flower Count"
+    ),
+    color = "slategrey",
+    linewidth = 1,
+    inherit.aes = FALSE
+  ) +
+  geom_ribbon(
+    data = fc.period.means,
+    aes(
+      x = period,
+      ymin = mean_taxa - se_taxa,
+      ymax = mean_taxa + se_taxa,
+      group = 1
+    ),
+    fill = "slategrey",
+    alpha = 0.15,
+    inherit.aes = FALSE
+  ) +
+  scale_linetype_manual(
+    values = c("Flower Count" = "dotdash")
+  ) +
+  
+  ggtitle("B.")
+
 
 
 
