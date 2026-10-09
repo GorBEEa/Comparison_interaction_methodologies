@@ -462,7 +462,7 @@ colnames(upset_bp23_all) <- c(
   "Flower count",
   "Visitation observations",
   "Gut-content metabarcoding",
-  "Pollen metabarcoding"
+  "Corbicular Pollen metabarcoding"
 )
 
 png(here("results/raw_upset_fig.png"), width = 3000, height = 2000, res = 350) 
@@ -477,7 +477,7 @@ upset_fig <- UpSetR::upset(
   # colors
   sets.bar.color = unname(method.colors2),
   matrix.color = "black",
-  main.bar.color = adjustcolor("grey30", alpha.f = 0.4),
+  main.bar.color = adjustcolor("#781399", alpha.f = 0.8),
   
   # axis labels
   mainbar.y.label = "Number of plant genera",

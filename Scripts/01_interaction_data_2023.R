@@ -114,38 +114,6 @@ bp23.int4stats.wide.binary <- bp23.int4stats.wide %>% #make binary version
   mutate(method = rep("interaction")) %>% #add a methodology identifier for next analysis
   relocate(method, .after = "site")
 
-#going to look at sampling completeness for interaction data ----------------------------------------
-
-#format for iNEXT
-int23_inext <- bp23.int4stats.wide %>% 
-  mutate(
-    ps = paste0("p", period, "s", site)
-  ) %>%
-  select(ps, everything(), -period, -site)
-
-int23_inext_list <- apply(int23_inext, 1, function(x) as.numeric(x))
-#`apply` returns a matrix for numeric input, so convert to list
-int23_inext_list <- split(int23_inext_list, seq(nrow(int23_inext)))
-# But `split` won’t work properly here; better do:
-int23_inext_list <- lapply(1:nrow(int23_inext), function(i) as.numeric(int23_inext[i, ]))
-names(int23_inext_list) <- rownames(int23_inext)
-#NA control
-int23_inext_list <- lapply(int23_inext_list, function(x) {
-  x[is.na(x)] <- 0
-  x})
-
-# Now run iNEXT
-int23_inext_run <- iNEXT(int23_inext_list, q = 0, datatype = "abundance", size = NULL)
-int23_covg <- estimateD(int23_inext_list, datatype = "abundance") 
-int23_covg_obs <- int23_covg[int23_covg$Method == "Rarefaction", ]
-median(int23_covg_obs$SC) #median sampling completeness value
-
-
-
-
-
-
-
 
 save(bp23.int4stats.wide.binary, file = here("Data/gbp23.interaction.data4analysis.RData") )
 
