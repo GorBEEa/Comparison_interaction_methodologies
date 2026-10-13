@@ -1,10 +1,13 @@
 #Sampling completeness, rarefaction, extrapolation
 
-#library(here)
-#library(tidyverse)
-#library(ggplot2)
+library(here)
+library(tidyverse)
+library(ggplot2)
 library(patchwork)
 library(iNEXT)
+
+
+load(here("Data/05_output.RData"))
 
 
 #bring together binary presence absence data from interactions and metabarcoding into one table
@@ -66,11 +69,50 @@ inext.all <- iNEXT(
 
 inext.all$DataInfo
 
-sampling_units_fig <- ggiNEXT(inext.all,
-                              type = 1) #How does observed/estimated richness change as the number of informative sampling units increases?
+method_labels_inext <- c("interactions23" = "Visitation observations",
+                         "gut23_mb" = "Gut-content metabarcoding",
+                         "poln23_mb" = "Corbicular pollen metabarcoding")
+method.colors.inext <- c("interactions23" = "lightblue",
+                   "poln23_mb" = "goldenrod1",
+                   "gut23_mb" = "forestgreen")
 
-sampling_completeness_fig <- ggiNEXT(inext.all,
-                                     type = 3) #How does richness change as estimated sampling completeness increases?
+
+
+sampling_units_fig <- ggiNEXT(inext.all, type = 1) + #How does observed/estimated richness change as the number of informative sampling units increases?
+  scale_y_continuous(limits = c(0, 200), breaks = seq(0, 200, 50)) +
+  ggtitle("A.") + 
+  ylab("Number of plant genera") +
+  scale_color_manual(values = method.colors.inext,
+                     labels = method_labels) +
+  scale_shape_manual(values = c(
+    "gut23_mb" = 17,   
+    "interactions23" = 15,         
+    "poln23_mb" = 3)) +
+  theme_minimal() +
+  theme(legend.position = "none")
+  
+  
+sampling_completeness_fig <- ggiNEXT(inext.all, type = 3) + #How does richness change as estimated sampling completeness increases?
+  scale_y_continuous(limits = c(0, 200), breaks = seq(0, 200, 50)) +
+  ggtitle("B.") + 
+  ylab(NULL) +
+  scale_color_manual(values = method.colors.inext,
+                     labels = method_labels) +
+  scale_shape_manual(values = c(
+    "gut23_mb" = 17,   
+    "interactions23" = 15,         
+    "poln23_mb" = 3))+
+  theme_minimal()+
+  theme(legend.position = "none",
+        axis.text.y = element_blank())
+
+legend_combined_plot <- cowplot::get_legend(
+  sampling_units_fig +
+    theme(legend.position = "top"))
+
+(sampling_units_fig + sampling_completeness_fig) /
+  legend_combined_plot +
+  plot_layout(heights = c(1, 0.25))
 
 #unpack results and look at specific rarefaction/extrapolation scenarios
 target_SC <- c(0.74, 0.76, 0.78, 0.80, 0.82, 0.84, 0.86)
