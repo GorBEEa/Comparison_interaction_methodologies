@@ -65,16 +65,18 @@ inext.all <- iNEXT(
   datatype = "incidence_raw"
 )
 
-#look at results
+#look at results 
 
 inext.all$DataInfo
 
+#Figure generation
+
+method.colors.inext <- c("interactions23" = "lightblue",
+                         "poln23_mb" = "goldenrod1",
+                         "gut23_mb" = "forestgreen")
 method_labels_inext <- c("interactions23" = "Visitation observations",
                          "gut23_mb" = "Gut-content metabarcoding",
                          "poln23_mb" = "Corbicular pollen metabarcoding")
-method.colors.inext <- c("interactions23" = "lightblue",
-                   "poln23_mb" = "goldenrod1",
-                   "gut23_mb" = "forestgreen")
 
 
 
@@ -82,12 +84,25 @@ sampling_units_fig <- ggiNEXT(inext.all, type = 1) + #How does observed/estimate
   scale_y_continuous(limits = c(0, 200), breaks = seq(0, 200, 50)) +
   ggtitle("A.") + 
   ylab("Number of plant genera") +
-  scale_color_manual(values = method.colors.inext,
-                     labels = method_labels) +
-  scale_shape_manual(values = c(
-    "gut23_mb" = 17,   
-    "interactions23" = 15,         
-    "poln23_mb" = 3)) +
+  scale_color_manual(
+    name = "Sampling method",
+    values = method.colors.inext,
+    breaks = names(method.colors.inext),
+    labels = method_labels_inext
+  ) +
+  scale_shape_manual(
+    name = "Sampling method",
+    values = c(
+      "gut23_mb" = 17,
+      "interactions23" = 15,
+      "poln23_mb" = 3
+    ),
+    breaks = names(method.colors.inext),
+    labels = method_labels_inext
+  ) +
+  scale_fill_manual(
+    values = method.colors.inext,
+    guide = "none") +
   theme_minimal() +
   theme(legend.position = "none")
   
@@ -96,12 +111,25 @@ sampling_completeness_fig <- ggiNEXT(inext.all, type = 3) + #How does richness c
   scale_y_continuous(limits = c(0, 200), breaks = seq(0, 200, 50)) +
   ggtitle("B.") + 
   ylab(NULL) +
-  scale_color_manual(values = method.colors.inext,
-                     labels = method_labels) +
-  scale_shape_manual(values = c(
-    "gut23_mb" = 17,   
-    "interactions23" = 15,         
-    "poln23_mb" = 3))+
+  scale_color_manual(
+    name = "Sampling method",
+    values = method.colors.inext,
+    breaks = names(method.colors.inext),
+    labels = method_labels_inext
+  ) +
+  scale_shape_manual(
+    name = "Sampling method",
+    values = c(
+      "gut23_mb" = 17,
+      "interactions23" = 15,
+      "poln23_mb" = 3
+    ),
+    breaks = names(method.colors.inext),
+    labels = method_labels_inext
+  ) +
+  scale_fill_manual(
+    values = method.colors.inext,
+    guide = "none")+
   theme_minimal()+
   theme(legend.position = "none",
         axis.text.y = element_blank())
@@ -110,6 +138,7 @@ legend_combined_plot <- cowplot::get_legend(
   sampling_units_fig +
     theme(legend.position = "top"))
 
+#figure for all results, legend is not coming out nicely
 (sampling_units_fig + sampling_completeness_fig) /
   legend_combined_plot +
   plot_layout(heights = c(1, 0.25))
