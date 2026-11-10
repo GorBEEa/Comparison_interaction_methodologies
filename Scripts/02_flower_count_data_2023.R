@@ -67,3 +67,8 @@ bp23.fc4stats.wide.binary <- bp23.fc4stats.wide %>% #make binary version
   mutate(method = rep("count")) %>% #add a methodology identifier for next analysis
   relocate(method, .after = "site")
 
+#FYI, there should be 96 sampling days for FC, but there are only 94. 
+#Data from the last two sites sampled in period 6 are missing.
+#Whoever was in the field was a little too excited to finish the season...
+
+

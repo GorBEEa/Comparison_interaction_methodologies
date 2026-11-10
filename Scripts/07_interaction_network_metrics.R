@@ -305,33 +305,21 @@ genus_cols <- setdiff(
 )
 
 plant_strength <- clean4stats.bp23.all.binary %>%
-  # Calculate k_i = number of plant genera detected on each sampling day (day specific degree for B. pascuorum)
-  mutate(
-    k_i = rowSums(across(all_of(genus_cols)))
-  ) %>%
-  # Calculate number genus of interactions (ALWAYS 1 or 0 with this approach) a_ij and / k_i for every genus
-  mutate(
-    across(
-      all_of(genus_cols),
-      ~ ifelse(k_i > 0, .x / k_i, 0)
+  filter(method != "count") %>%
+  group_split(method) %>%
+  map_dfr(function(df) {
+    m <- unique(df$method)
+    mat <- as.matrix(df[, genus_cols])
+    mat <- mat[rowSums(mat) > 0, , drop = FALSE] # remove all-zero rows if any
+    
+    sl <- specieslevel(mat, index = "species strength", level = "higher")
+    
+    tibble(
+      method   = m,
+      genus    = rownames(sl),
+      strength = sl[, "species.strength"]
     )
-  ) %>%
-  # Sum across all sampling days, separately for each method to get strength by genus
-  group_by(method) %>%
-  summarise(
-    across(
-      all_of(genus_cols),
-      \(x) sum(x, na.rm = TRUE)),
-    .groups = "drop"
-  ) %>%
-  # Put results into long format
-  pivot_longer(
-    cols = all_of(genus_cols),
-    names_to = "genus",
-    values_to = "strength"
-  ) %>% 
-  filter(method != "count") #not interested in flower count data because it isn't interaction data
-
+  })
 strength_gmb <- plant_strength %>% filter(method == "gut.metabarcoding") %>% arrange(-strength) %>% select(c(genus,strength))
 strength_pmb <- plant_strength %>% filter(method == "pollen.metabarcoding") %>% arrange(-strength) %>% select(c(genus,strength))
 strength_int <- plant_strength %>% filter(method == "interaction") %>% arrange(-strength) %>% select(c(genus,strength))
